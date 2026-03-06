@@ -2,6 +2,7 @@
 #include <unistd.h>
 
 #include <cstdio>
+#include <fstream>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -9,9 +10,11 @@
 #include "input_device.h"
 
 static void print_usage(const char* prog) {
-  std::cout << "Usage: " << prog << " -r [touchpad] [mouse] [keyboard] ...\n"
+  std::cout << "Usage: " << prog
+            << " -r [-o FILE] [touchpad] [mouse] [keyboard] ...\n"
             << "  -r: start recording. With no types, record touchpad, mouse, "
-               "keyboard.\n";
+               "keyboard.\n"
+            << "  -o FILE: write events to FILE (default: stdout).\n";
 }
 
 static bool parse_kind(const std::string& s, std::string* out_label) {
@@ -23,20 +26,37 @@ static bool parse_kind(const std::string& s, std::string* out_label) {
 }
 
 int main(int argc, char* argv[]) {
-  if (argc < 2 || std::string(argv[1]) != "-r") {
-    print_usage(argv[0]);
-    return 1;
+  std::string output_path;
+  bool recording = false;
+  std::vector<std::string> kinds;
+
+  for (int i = 1; i < argc; ++i) {
+    if (std::string(argv[i]) == "-o") {
+      if (i + 1 < argc) output_path = argv[++i];
+    } else if (std::string(argv[i]) == "-r") {
+      recording = true;
+      ++i;
+      while (i < argc) {
+        if (std::string(argv[i]) == "-o") {
+          if (i + 1 < argc) output_path = argv[++i];
+          ++i;
+          continue;
+        }
+        std::string label;
+        if (parse_kind(argv[i], &label)) {
+          kinds.push_back(label);
+          ++i;
+        } else {
+          break;
+        }
+      }
+      break;
+    }
   }
 
-  std::vector<std::string> kinds;
-  for (int i = 2; i < argc; ++i) {
-    std::string label;
-    if (!parse_kind(argv[i], &label)) {
-      std::cout << "Unknown device type: " << argv[i] << std::endl;
-      print_usage(argv[0]);
-      return 1;
-    }
-    kinds.push_back(label);
+  if (!recording) {
+    print_usage(argv[0]);
+    return 1;
   }
   if (kinds.empty()) kinds = {"touchpad", "mouse", "keyboard"};
 
@@ -69,7 +89,17 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  record_events_multi(targets);
+  if (!output_path.empty()) {
+    std::ofstream out(output_path);
+    if (!out) {
+      std::perror(output_path.c_str());
+      for (const auto& t : targets) close(t.fd);
+      return 1;
+    }
+    record_events_multi(targets, out);
+  } else {
+    record_events_multi(targets, std::cout);
+  }
 
   for (const auto& t : targets) close(t.fd);
   return 0;

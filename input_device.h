@@ -1,6 +1,7 @@
 #ifndef EVRP_INPUT_DEVICE_H
 #define EVRP_INPUT_DEVICE_H
 
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -18,6 +19,7 @@ std::string find_first_touchpad();
 std::string find_first_mouse();
 std::string find_first_keyboard();
 
-void record_events_multi(const std::vector<RecordTarget>& targets);
+void record_events_multi(const std::vector<RecordTarget>& targets,
+                         std::ostream& event_out);
 
 #endif  // EVRP_INPUT_DEVICE_H

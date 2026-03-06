@@ -1,13 +1,20 @@
 #include "input_device.h"
 
 #include <fcntl.h>
-#include <cstdio>
 #include <linux/input.h>
 #include <poll.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
 
+#include <cerrno>
+#include <csignal>
+#include <cstdio>
 #include <iostream>
+
+namespace {
+volatile sig_atomic_t g_stop = 0;
+void sigint_handler(int) { g_stop = 1; }
+}  // namespace
 
 #define BITS_PER_LONG (sizeof(long) * 8)
 #define NBITS(x) ((((x) - 1) / BITS_PER_LONG) + 1)
@@ -160,8 +167,17 @@ std::string find_first_keyboard() {
   return {};
 }
 
-void record_events_multi(const std::vector<RecordTarget>& targets) {
+void record_events_multi(const std::vector<RecordTarget>& targets,
+                         std::ostream& event_out) {
   if (targets.empty()) return;
+
+  g_stop = 0;
+  struct sigaction sa = {};
+  sa.sa_handler = sigint_handler;
+  sigemptyset(&sa.sa_mask);
+  sa.sa_flags = 0;
+  struct sigaction old_sa;
+  sigaction(SIGINT, &sa, &old_sa);
 
   std::vector<pollfd> pfds;
   pfds.reserve(targets.size());
@@ -172,9 +188,10 @@ void record_events_multi(const std::vector<RecordTarget>& targets) {
   std::cout << "(Ctrl+C to stop)" << std::endl;
 
   struct input_event events[64];
-  while (true) {
+  while (!g_stop) {
     int ret = poll(pfds.data(), static_cast<nfds_t>(pfds.size()), -1);
     if (ret < 0) {
+      if (errno == EINTR && g_stop) break;
       std::perror("poll");
       break;
     }
@@ -185,7 +202,7 @@ void record_events_multi(const std::vector<RecordTarget>& targets) {
       ssize_t n = read(targets[i].fd, events, sizeof(events));
       if (n <= 0) {
         if (n < 0) std::perror("read");
-        return;
+        goto done;
       }
 
       int count = static_cast<int>(n / sizeof(struct input_event));
@@ -193,10 +210,14 @@ void record_events_multi(const std::vector<RecordTarget>& targets) {
         const auto& ev = events[j];
         if (ev.type == EV_SYN) continue;
 
-        std::cout << "[" << targets[i].label << "] " << ev.time.tv_sec << "."
+        event_out << "[" << targets[i].label << "] " << ev.time.tv_sec << "."
                   << ev.time.tv_usec << " type=" << ev.type
-                  << " code=" << ev.code << " value=" << ev.value << std::endl;
+                  << " code=" << ev.code << " value=" << ev.value << "\n";
       }
     }
   }
+
+done:
+  event_out.flush();
+  sigaction(SIGINT, &old_sa, nullptr);
 }
