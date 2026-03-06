@@ -75,9 +75,10 @@ bool get_capabilities(int fd, Capabilities* caps) {
 
 int read_events(int fd, Event* events, int max_count) {
   if (fd < 0 || !events || max_count <= 0) return -1;
+  FileSystem fs;
 
   struct input_event raw[64];
-  ssize_t n = ::read(fd, raw, sizeof(raw));
+  long n = fs.read_fd(fd, raw, sizeof(raw));
   if (n <= 0) return static_cast<int>(n);
   if (n % sizeof(struct input_event) != 0) return -1;
 

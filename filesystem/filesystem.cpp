@@ -24,6 +24,11 @@ void FileSystem::close_fd(int fd) const {
   }
 }
 
+long FileSystem::read_fd(int fd, void* buffer, unsigned long size) const {
+  if (fd < 0 || !buffer || size == 0) return -1;
+  return static_cast<long>(::read(fd, buffer, size));
+}
+
 int FileSystem::poll_fds(int* fds, int nfds, int timeout_ms, bool* ready) const {
   if (!fds || nfds <= 0 || !ready) return -1;
 
