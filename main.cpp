@@ -1,11 +1,13 @@
 #include <fcntl.h>
 #include <linux/input.h>
+#include <poll.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
 
 #include <cstring>
 #include <iostream>
 #include <string>
+#include <vector>
 
 #define BITS_PER_LONG (sizeof(long) * 8)
 #define NBITS(x) ((((x) - 1) / BITS_PER_LONG) + 1)
@@ -158,76 +160,116 @@ std::string find_first_keyboard() {
   return {};
 }
 
-void record_events(const std::string& dev_path, const std::string& label) {
-  int fd = open(dev_path.c_str(), O_RDONLY);
-  if (fd < 0) {
-    std::perror("open input device");
-    return;
+struct RecordTarget {
+  int fd;
+  std::string label;
+  std::string path;
+};
+
+void record_events_multi(const std::vector<RecordTarget>& targets) {
+  if (targets.empty()) return;
+
+  std::vector<pollfd> pfds;
+  pfds.reserve(targets.size());
+  for (const auto& t : targets) {
+    std::cout << "Recording " << t.label << " from " << t.path << std::endl;
+    pfds.push_back({t.fd, POLLIN, 0});
   }
+  std::cout << "(Ctrl+C to stop)" << std::endl;
 
-  std::cout << "Recording " << label << " events from " << dev_path
-            << " (Ctrl+C to stop)" << std::endl;
-
+  struct input_event events[64];
   while (true) {
-    struct input_event events[64];
-    ssize_t n = read(fd, events, sizeof(events));
-    if (n <= 0) {
-      std::perror("read");
+    int ret = poll(pfds.data(), static_cast<nfds_t>(pfds.size()), -1);
+    if (ret < 0) {
+      std::perror("poll");
       break;
     }
 
-    int count = static_cast<int>(n / sizeof(struct input_event));
-    for (int i = 0; i < count; ++i) {
-      const auto& ev = events[i];
-      if (ev.type == EV_SYN) continue;
+    for (size_t i = 0; i < pfds.size(); ++i) {
+      if (!(pfds[i].revents & POLLIN)) continue;
 
-      std::cout << ev.time.tv_sec << "." << ev.time.tv_usec
-                << " type=" << ev.type << " code=" << ev.code
-                << " value=" << ev.value << std::endl;
+      ssize_t n = read(targets[i].fd, events, sizeof(events));
+      if (n <= 0) {
+        if (n < 0) std::perror("read");
+        return;
+      }
+
+      int count = static_cast<int>(n / sizeof(struct input_event));
+      for (int j = 0; j < count; ++j) {
+        const auto& ev = events[j];
+        if (ev.type == EV_SYN) continue;
+
+        std::cout << "[" << targets[i].label << "] " << ev.time.tv_sec << "."
+                  << ev.time.tv_usec << " type=" << ev.type
+                  << " code=" << ev.code << " value=" << ev.value << std::endl;
+      }
     }
   }
-
-  close(fd);
 }
 
 void print_usage(const char* prog) {
-  std::cout << "Usage: " << prog << " -r [touchpad|mouse|keyboard]\n";
+  std::cout << "Usage: " << prog << " -r [touchpad] [mouse] [keyboard] ...\n"
+            << "  -r: start recording. With no types, record touchpad, mouse, keyboard.\n";
+}
+
+bool parse_kind(const std::string& s, std::string* out_label) {
+  if (s == "touchpad" || s == "mouse" || s == "keyboard") {
+    *out_label = s;
+    return true;
+  }
+  return false;
 }
 
 int main(int argc, char* argv[]) {
-  if (argc != 3 || std::string(argv[1]) != "-r") {
+  if (argc < 2 || std::string(argv[1]) != "-r") {
     print_usage(argv[0]);
     return 1;
   }
 
-  std::string kind = argv[2];
-  std::string dev;
+  std::vector<std::string> kinds;
+  for (int i = 2; i < argc; ++i) {
+    std::string label;
+    if (!parse_kind(argv[i], &label)) {
+      std::cout << "Unknown device type: " << argv[i] << std::endl;
+      print_usage(argv[0]);
+      return 1;
+    }
+    kinds.push_back(label);
+  }
+  if (kinds.empty())
+    kinds = {"touchpad", "mouse", "keyboard"};
 
-  if (kind == "touchpad") {
-    dev = find_first_touchpad();
-    if (dev.empty()) {
-      std::cout << "No touchpad detected. Try running with sudo." << std::endl;
-      return 1;
+  std::vector<RecordTarget> targets;
+  for (const auto& kind : kinds) {
+    std::string path;
+    if (kind == "touchpad")
+      path = find_first_touchpad();
+    else if (kind == "mouse")
+      path = find_first_mouse();
+    else
+      path = find_first_keyboard();
+
+    if (path.empty()) {
+      std::cout << "No " << kind << " detected. Try running with sudo."
+                << std::endl;
+      continue;
     }
-    record_events(dev, "touchpad");
-  } else if (kind == "mouse") {
-    dev = find_first_mouse();
-    if (dev.empty()) {
-      std::cout << "No mouse detected. Try running with sudo." << std::endl;
-      return 1;
+
+    int fd = open(path.c_str(), O_RDONLY);
+    if (fd < 0) {
+      std::perror(path.c_str());
+      continue;
     }
-    record_events(dev, "mouse");
-  } else if (kind == "keyboard") {
-    dev = find_first_keyboard();
-    if (dev.empty()) {
-      std::cout << "No keyboard detected. Try running with sudo." << std::endl;
-      return 1;
-    }
-    record_events(dev, "keyboard");
-  } else {
-    print_usage(argv[0]);
+    targets.push_back({fd, kind, path});
+  }
+
+  if (targets.empty()) {
+    std::cout << "No devices to record." << std::endl;
     return 1;
   }
 
+  record_events_multi(targets);
+
+  for (const auto& t : targets) close(t.fd);
   return 0;
 }
