@@ -1,14 +1,12 @@
-#include "evdev.h"
+#include "evdev/evdev.h"
+#include "filesystem/filesystem.h"
 
-#include <fcntl.h>
 #include <linux/input.h>
 #include <poll.h>
 #include <signal.h>
 #include <sys/ioctl.h>
-#include <unistd.h>
 
 #include <cerrno>
-#include <cstdio>
 #include <cstring>
 
 namespace evdev {
@@ -29,21 +27,12 @@ void sigint_handler(int) { g_stop = 1; }
 }  // namespace
 
 bool open_and_get_capabilities(const char* path, Capabilities* caps) {
-  int fd = open(path, true);
+  FileSystem fs;
+  int fd = fs.open_read_only(path, true);
   if (fd < 0) return false;
   bool ok = get_capabilities(fd, caps);
-  close(fd);
+  fs.close_fd(fd);
   return ok;
-}
-
-int open(const char* path, bool nonblocking) {
-  int flags = O_RDONLY;
-  if (nonblocking) flags |= O_NONBLOCK;
-  return ::open(path, flags);
-}
-
-void close(int fd) {
-  if (fd >= 0) ::close(fd);
 }
 
 bool get_capabilities(int fd, Capabilities* caps) {
@@ -139,14 +128,11 @@ void signal_install_sigint() {
   sigaction(SIGINT, &sa, &g_old_sa);
 }
 
-void signal_restore_sigint() {
-  sigaction(SIGINT, &g_old_sa, nullptr);
-}
+void signal_restore_sigint() { sigaction(SIGINT, &g_old_sa, nullptr); }
 
 bool signal_stop_requested() { return g_stop != 0; }
-
-void perror(const char* msg) { std::perror(msg); }
 
 bool errno_is_eintr() { return errno == EINTR; }
 
 }  // namespace evdev
+

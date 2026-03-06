@@ -1,0 +1,27 @@
+---
+description: Project naming conventions based on Google C++ style
+alwaysApply: true
+---
+
+# Naming Conventions
+
+- Follow Google C++ style as the baseline.
+- All function names use lowercase with underscores (`snake_case`).
+- File names use lowercase letters only and do not use underscores.
+- Apply naming consistently to new files and refactors.
+
+## Examples
+
+```cpp
+// Good
+int read_events();
+bool open_output(const std::string& path);
+```
+
+```text
+// Good file names
+inputdevice.cpp
+filesystem.h
+evdevlinux.cpp
+```
+

@@ -1,6 +1,7 @@
-#include "input_device.h"
+#include "inputdevice.h"
 
 #include "evdev/evdev.h"
+#include "filesystem/filesystem.h"
 
 #include <iostream>
 
@@ -32,10 +33,9 @@ bool is_touchpad(const char* dev_path) {
   evdev::Capabilities caps;
   if (!evdev::open_and_get_capabilities(dev_path, &caps)) return false;
 
-  bool has_abs = caps.ev_abs &&
-                 (caps.abs_x || caps.abs_mt_position_x);
-  bool has_finger_tool = caps.btn_tool_finger || caps.btn_tool_doubletap ||
-                         caps.btn_tool_tripletap;
+  bool has_abs = caps.ev_abs && (caps.abs_x || caps.abs_mt_position_x);
+  bool has_finger_tool =
+      caps.btn_tool_finger || caps.btn_tool_doubletap || caps.btn_tool_tripletap;
 
   return has_abs && has_finger_tool && name_like_touchpad(caps.name);
 }
@@ -54,8 +54,8 @@ bool is_keyboard(const char* dev_path) {
   evdev::Capabilities caps;
   if (!evdev::open_and_get_capabilities(dev_path, &caps)) return false;
 
-  bool has_keyboard_keys = caps.key_enter || caps.key_space ||
-                           caps.key_esc || caps.key_a;
+  bool has_keyboard_keys =
+      caps.key_enter || caps.key_space || caps.key_esc || caps.key_a;
 
   return caps.ev_key && has_keyboard_keys && name_like_keyboard(caps.name);
 }
@@ -87,6 +87,7 @@ std::string find_first_keyboard() {
 void record_events_multi(const std::vector<RecordTarget>& targets,
                          std::ostream& event_out) {
   if (targets.empty()) return;
+  FileSystem fs;
 
   evdev::signal_install_sigint();
 
@@ -104,7 +105,7 @@ void record_events_multi(const std::vector<RecordTarget>& targets,
     int ret = evdev::poll(fds.data(), static_cast<int>(fds.size()), -1, ready);
     if (ret < 0) {
       if (evdev::errno_is_eintr() && evdev::signal_stop_requested()) break;
-      evdev::perror("poll");
+      fs.print_error("poll");
       break;
     }
 
@@ -113,7 +114,7 @@ void record_events_multi(const std::vector<RecordTarget>& targets,
 
       int count = evdev::read_events(fds[i], events, 64);
       if (count < 0) {
-        evdev::perror("read");
+        fs.print_error("read");
         break;
       }
       if (count == 0) continue;
@@ -132,3 +133,4 @@ void record_events_multi(const std::vector<RecordTarget>& targets,
   event_out.flush();
   evdev::signal_restore_sigint();
 }
+

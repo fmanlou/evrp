@@ -1,8 +1,7 @@
-#include "input_device.h"
+#include "inputdevice.h"
 
 #include <gtest/gtest.h>
 
-// Non-existent device paths should not be detected as any device type.
 TEST(InputDevice, NonExistentPathNotTouchpad) {
   EXPECT_FALSE(is_touchpad("/dev/input/event999"));
   EXPECT_FALSE(is_touchpad("/nonexistent"));
@@ -18,7 +17,6 @@ TEST(InputDevice, NonExistentPathNotKeyboard) {
   EXPECT_FALSE(is_keyboard("/nonexistent"));
 }
 
-// find_first_* return empty string or a path starting with /dev/input/event
 TEST(InputDevice, FindFirstReturnsValidPathFormat) {
   std::string tp = find_first_touchpad();
   std::string m = find_first_mouse();
@@ -31,3 +29,4 @@ TEST(InputDevice, FindFirstReturnsValidPathFormat) {
   EXPECT_TRUE(valid_or_empty(m));
   EXPECT_TRUE(valid_or_empty(k));
 }
+

@@ -1,10 +1,9 @@
-#include <fstream>
 #include <iostream>
 #include <string>
 #include <vector>
 
-#include "evdev/evdev.h"
-#include "input_device.h"
+#include "filesystem/filesystem.h"
+#include "inputdevice.h"
 
 static void print_usage(const char* prog) {
   std::cout << "Usage: " << prog
@@ -23,6 +22,7 @@ static bool parse_kind(const std::string& s, std::string* out_label) {
 }
 
 int main(int argc, char* argv[]) {
+  FileSystem fs;
   std::string output_path;
   bool recording = false;
   std::vector<std::string> kinds;
@@ -73,9 +73,9 @@ int main(int argc, char* argv[]) {
       continue;
     }
 
-    int fd = evdev::open(path.c_str(), false);
+    int fd = fs.open_read_only(path.c_str(), false);
     if (fd < 0) {
-      evdev::perror(path.c_str());
+      fs.print_error(path.c_str());
       continue;
     }
     targets.push_back({fd, kind, path});
@@ -86,18 +86,13 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  if (!output_path.empty()) {
-    std::ofstream out(output_path);
-    if (!out) {
-      evdev::perror(output_path.c_str());
-      for (const auto& t : targets) evdev::close(t.fd);
-      return 1;
-    }
-    record_events_multi(targets, out);
-  } else {
-    record_events_multi(targets, std::cout);
+  if (!fs.open_output(output_path)) {
+    std::cerr << fs.error_message() << std::endl;
+    for (const auto& t : targets) fs.close_fd(t.fd);
+    return 1;
   }
+  record_events_multi(targets, fs.output_stream());
 
-  for (const auto& t : targets) evdev::close(t.fd);
+  for (const auto& t : targets) fs.close_fd(t.fd);
   return 0;
 }

@@ -37,9 +37,6 @@ struct Event {
 // Event type constant (EV_SYN)
 constexpr unsigned short EV_SYN = 0;
 
-// Device handle: -1 means invalid
-int open(const char* path, bool nonblocking = false);
-void close(int fd);
 bool get_capabilities(int fd, Capabilities* out);
 
 // Convenience: open nonblocking, get caps, close. Returns true on success.
@@ -53,7 +50,6 @@ int poll(int* fds, int nfds, int timeout_ms, bool* ready);
 
 // After poll returns -1, check if errno was EINTR
 bool errno_is_eintr();
-void perror(const char* msg);
 
 // Signal handling for graceful shutdown
 void signal_install_sigint();
