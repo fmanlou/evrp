@@ -3,6 +3,7 @@
 #include "evdev/evdev.h"
 #include "filesystem/filesystem.h"
 
+#include <cctype>
 #include <iostream>
 
 static bool name_like_touchpad(const std::string& name) {
@@ -33,6 +34,24 @@ bool is_touchpad(const char* dev_path) {
   evdev::Capabilities caps;
   if (!evdev::open_and_get_capabilities(dev_path, &caps)) return false;
 
+  return is_touchpad_from_capabilities(caps);
+}
+
+bool is_mouse(const char* dev_path) {
+  evdev::Capabilities caps;
+  if (!evdev::open_and_get_capabilities(dev_path, &caps)) return false;
+
+  return is_mouse_from_capabilities(caps);
+}
+
+bool is_keyboard(const char* dev_path) {
+  evdev::Capabilities caps;
+  if (!evdev::open_and_get_capabilities(dev_path, &caps)) return false;
+
+  return is_keyboard_from_capabilities(caps);
+}
+
+bool is_touchpad_from_capabilities(const evdev::Capabilities& caps) {
   bool has_abs = caps.ev_abs && (caps.abs_x || caps.abs_mt_position_x);
   bool has_finger_tool =
       caps.btn_tool_finger || caps.btn_tool_doubletap || caps.btn_tool_tripletap;
@@ -40,20 +59,14 @@ bool is_touchpad(const char* dev_path) {
   return has_abs && has_finger_tool && name_like_touchpad(caps.name);
 }
 
-bool is_mouse(const char* dev_path) {
-  evdev::Capabilities caps;
-  if (!evdev::open_and_get_capabilities(dev_path, &caps)) return false;
-
+bool is_mouse_from_capabilities(const evdev::Capabilities& caps) {
   bool has_rel = caps.ev_rel && caps.rel_x && caps.rel_y;
   bool has_buttons = caps.btn_left || caps.btn_right || caps.btn_middle;
 
   return has_rel && has_buttons && name_like_mouse(caps.name);
 }
 
-bool is_keyboard(const char* dev_path) {
-  evdev::Capabilities caps;
-  if (!evdev::open_and_get_capabilities(dev_path, &caps)) return false;
-
+bool is_keyboard_from_capabilities(const evdev::Capabilities& caps) {
   bool has_keyboard_keys =
       caps.key_enter || caps.key_space || caps.key_esc || caps.key_a;
 

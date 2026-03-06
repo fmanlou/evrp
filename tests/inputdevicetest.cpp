@@ -2,31 +2,40 @@
 
 #include <gtest/gtest.h>
 
-TEST(InputDevice, NonExistentPathNotTouchpad) {
-  EXPECT_FALSE(is_touchpad("/dev/input/event999"));
-  EXPECT_FALSE(is_touchpad("/nonexistent"));
+static evdev::Capabilities make_base_caps(const std::string& name) {
+  evdev::Capabilities caps = {};
+  caps.name = name;
+  return caps;
 }
 
-TEST(InputDevice, NonExistentPathNotMouse) {
-  EXPECT_FALSE(is_mouse("/dev/input/event999"));
-  EXPECT_FALSE(is_mouse("/nonexistent"));
+TEST(InputDevice, DetectTouchpadFromCapabilities) {
+  evdev::Capabilities caps = make_base_caps("Synaptics TouchPad");
+  caps.ev_abs = true;
+  caps.abs_x = true;
+  caps.btn_tool_finger = true;
+  EXPECT_TRUE(is_touchpad_from_capabilities(caps));
 }
 
-TEST(InputDevice, NonExistentPathNotKeyboard) {
-  EXPECT_FALSE(is_keyboard("/dev/input/event999"));
-  EXPECT_FALSE(is_keyboard("/nonexistent"));
+TEST(InputDevice, RejectTouchpadWithoutFingerTool) {
+  evdev::Capabilities caps = make_base_caps("TouchPad");
+  caps.ev_abs = true;
+  caps.abs_x = true;
+  EXPECT_FALSE(is_touchpad_from_capabilities(caps));
 }
 
-TEST(InputDevice, FindFirstReturnsValidPathFormat) {
-  std::string tp = find_first_touchpad();
-  std::string m = find_first_mouse();
-  std::string k = find_first_keyboard();
+TEST(InputDevice, DetectMouseFromCapabilities) {
+  evdev::Capabilities caps = make_base_caps("USB Optical Mouse");
+  caps.ev_rel = true;
+  caps.rel_x = true;
+  caps.rel_y = true;
+  caps.btn_left = true;
+  EXPECT_TRUE(is_mouse_from_capabilities(caps));
+}
 
-  auto valid_or_empty = [](const std::string& s) {
-    return s.empty() || (s.find("/dev/input/event") == 0);
-  };
-  EXPECT_TRUE(valid_or_empty(tp));
-  EXPECT_TRUE(valid_or_empty(m));
-  EXPECT_TRUE(valid_or_empty(k));
+TEST(InputDevice, DetectKeyboardFromCapabilities) {
+  evdev::Capabilities caps = make_base_caps("AT Translated Set 2 keyboard");
+  caps.ev_key = true;
+  caps.key_enter = true;
+  EXPECT_TRUE(is_keyboard_from_capabilities(caps));
 }
 

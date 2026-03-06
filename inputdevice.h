@@ -1,6 +1,8 @@
 #ifndef EVRP_INPUTDEVICE_H
 #define EVRP_INPUTDEVICE_H
 
+#include "evdev/evdev.h"
+
 #include <ostream>
 #include <string>
 #include <vector>
@@ -14,6 +16,10 @@ struct RecordTarget {
 bool is_touchpad(const char* dev_path);
 bool is_mouse(const char* dev_path);
 bool is_keyboard(const char* dev_path);
+
+bool is_touchpad_from_capabilities(const evdev::Capabilities& caps);
+bool is_mouse_from_capabilities(const evdev::Capabilities& caps);
+bool is_keyboard_from_capabilities(const evdev::Capabilities& caps);
 
 std::string find_first_touchpad();
 std::string find_first_mouse();
