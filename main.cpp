@@ -1,12 +1,9 @@
-#include <fcntl.h>
-#include <unistd.h>
-
-#include <cstdio>
 #include <fstream>
 #include <iostream>
 #include <string>
 #include <vector>
 
+#include "evdev/evdev.h"
 #include "input_device.h"
 
 static void print_usage(const char* prog) {
@@ -76,9 +73,9 @@ int main(int argc, char* argv[]) {
       continue;
     }
 
-    int fd = open(path.c_str(), O_RDONLY);
+    int fd = evdev::open(path.c_str(), false);
     if (fd < 0) {
-      std::perror(path.c_str());
+      evdev::perror(path.c_str());
       continue;
     }
     targets.push_back({fd, kind, path});
@@ -92,8 +89,8 @@ int main(int argc, char* argv[]) {
   if (!output_path.empty()) {
     std::ofstream out(output_path);
     if (!out) {
-      std::perror(output_path.c_str());
-      for (const auto& t : targets) close(t.fd);
+      evdev::perror(output_path.c_str());
+      for (const auto& t : targets) evdev::close(t.fd);
       return 1;
     }
     record_events_multi(targets, out);
@@ -101,6 +98,6 @@ int main(int argc, char* argv[]) {
     record_events_multi(targets, std::cout);
   }
 
-  for (const auto& t : targets) close(t.fd);
+  for (const auto& t : targets) evdev::close(t.fd);
   return 0;
 }
