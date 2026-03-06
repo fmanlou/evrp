@@ -128,30 +128,55 @@ bool is_keyboard(const char* dev_path) {
   return has_key && has_keyboard_keys && name_like_keyboard;
 }
 
-int main() {
-  std::cout << "Scanning /dev/input/eventX for input devices..." << std::endl;
-
-  bool found_any = false;
+std::string find_first_touchpad() {
   for (int i = 0; i < 32; ++i) {
     std::string dev = "/dev/input/event" + std::to_string(i);
     if (is_touchpad(dev.c_str())) {
-      std::cout << "  Touchpad: " << dev << std::endl;
-      found_any = true;
+      return dev;
     }
-    if (is_mouse(dev.c_str())) {
-      std::cout << "  Mouse:    " << dev << std::endl;
-      found_any = true;
+  }
+  return {};
+}
+
+void record_touchpad_events(const std::string& dev_path) {
+  int fd = open(dev_path.c_str(), O_RDONLY);
+  if (fd < 0) {
+    std::perror("open touchpad device");
+    return;
+  }
+
+  std::cout << "Recording events from " << dev_path << " (Ctrl+C to stop)"
+            << std::endl;
+
+  while (true) {
+    struct input_event events[64];
+    ssize_t n = read(fd, events, sizeof(events));
+    if (n <= 0) {
+      std::perror("read");
+      break;
     }
-    if (is_keyboard(dev.c_str())) {
-      std::cout << "  Keyboard: " << dev << std::endl;
-      found_any = true;
+
+    int count = static_cast<int>(n / sizeof(struct input_event));
+    for (int i = 0; i < count; ++i) {
+      const auto& ev = events[i];
+      if (ev.type == EV_SYN) continue;
+
+      std::cout << ev.time.tv_sec << "." << ev.time.tv_usec
+                << " type=" << ev.type << " code=" << ev.code
+                << " value=" << ev.value << std::endl;
     }
   }
 
-  if (!found_any) {
-    std::cout << "No input devices detected. Try running with sudo."
-              << std::endl;
+  close(fd);
+}
+
+int main() {
+  std::string touchpad_dev = find_first_touchpad();
+  if (touchpad_dev.empty()) {
+    std::cout << "No touchpad detected. Try running with sudo." << std::endl;
+    return 1;
   }
 
+  record_touchpad_events(touchpad_dev);
   return 0;
 }
