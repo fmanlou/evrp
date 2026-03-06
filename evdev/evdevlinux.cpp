@@ -2,7 +2,6 @@
 #include "filesystem/filesystem.h"
 
 #include <linux/input.h>
-#include <poll.h>
 #include <signal.h>
 #include <sys/ioctl.h>
 
@@ -93,30 +92,6 @@ int read_events(int fd, Event* events, int max_count) {
     ++out;
   }
   return out;
-}
-
-int poll(int* fds, int nfds, int timeout_ms, bool* ready) {
-  if (!fds || nfds <= 0 || !ready) return -1;
-
-  struct pollfd pfds[32];
-  int n = (nfds > 32) ? 32 : nfds;
-  for (int i = 0; i < n; ++i) {
-    pfds[i].fd = fds[i];
-    pfds[i].events = POLLIN;
-    pfds[i].revents = 0;
-    ready[i] = false;
-  }
-
-  int ret = ::poll(pfds, static_cast<nfds_t>(n), timeout_ms);
-  if (ret < 0) return -1;
-  if (ret == 0) return 0;
-
-  int count = 0;
-  for (int i = 0; i < n; ++i) {
-    ready[i] = (pfds[i].revents & POLLIN) != 0;
-    if (ready[i]) ++count;
-  }
-  return count;
 }
 
 void signal_install_sigint() {

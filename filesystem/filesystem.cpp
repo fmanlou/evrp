@@ -1,6 +1,7 @@
 #include "filesystem/filesystem.h"
 
 #include <fcntl.h>
+#include <poll.h>
 #include <unistd.h>
 
 #include <cstdio>
@@ -21,6 +22,30 @@ void FileSystem::close_fd(int fd) const {
   if (fd >= 0) {
     ::close(fd);
   }
+}
+
+int FileSystem::poll_fds(int* fds, int nfds, int timeout_ms, bool* ready) const {
+  if (!fds || nfds <= 0 || !ready) return -1;
+
+  struct pollfd pfds[32];
+  int n = (nfds > 32) ? 32 : nfds;
+  for (int i = 0; i < n; ++i) {
+    pfds[i].fd = fds[i];
+    pfds[i].events = POLLIN;
+    pfds[i].revents = 0;
+    ready[i] = false;
+  }
+
+  int ret = ::poll(pfds, static_cast<nfds_t>(n), timeout_ms);
+  if (ret < 0) return -1;
+  if (ret == 0) return 0;
+
+  int count = 0;
+  for (int i = 0; i < n; ++i) {
+    ready[i] = (pfds[i].revents & POLLIN) != 0;
+    if (ready[i]) ++count;
+  }
+  return count;
 }
 
 void FileSystem::print_error(const char* message) const { std::perror(message); }

@@ -102,7 +102,7 @@ void record_events_multi(const std::vector<RecordTarget>& targets,
   evdev::Event events[64];
   bool ready[32];
   while (!evdev::signal_stop_requested()) {
-    int ret = evdev::poll(fds.data(), static_cast<int>(fds.size()), -1, ready);
+    int ret = fs.poll_fds(fds.data(), static_cast<int>(fds.size()), -1, ready);
     if (ret < 0) {
       if (evdev::errno_is_eintr() && evdev::signal_stop_requested()) break;
       fs.print_error("poll");

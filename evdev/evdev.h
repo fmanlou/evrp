@@ -45,9 +45,6 @@ bool open_and_get_capabilities(const char* path, Capabilities* out);
 // Returns number of events read, or -1 on error
 int read_events(int fd, Event* events, int max_count);
 
-// Poll: fills ready[i] for each fd with data. Returns n_ready, 0 on timeout, -1 on error.
-int poll(int* fds, int nfds, int timeout_ms, bool* ready);
-
 // After poll returns -1, check if errno was EINTR
 bool errno_is_eintr();
 

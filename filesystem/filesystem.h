@@ -11,6 +11,7 @@ class FileSystem {
 
   int open_read_only(const char* path, bool nonblocking) const;
   void close_fd(int fd) const;
+  int poll_fds(int* fds, int nfds, int timeout_ms, bool* ready) const;
   void print_error(const char* message) const;
 
   // Empty path means writing to stdout.
