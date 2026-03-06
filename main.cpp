@@ -138,15 +138,35 @@ std::string find_first_touchpad() {
   return {};
 }
 
-void record_touchpad_events(const std::string& dev_path) {
+std::string find_first_mouse() {
+  for (int i = 0; i < 32; ++i) {
+    std::string dev = "/dev/input/event" + std::to_string(i);
+    if (is_mouse(dev.c_str())) {
+      return dev;
+    }
+  }
+  return {};
+}
+
+std::string find_first_keyboard() {
+  for (int i = 0; i < 32; ++i) {
+    std::string dev = "/dev/input/event" + std::to_string(i);
+    if (is_keyboard(dev.c_str())) {
+      return dev;
+    }
+  }
+  return {};
+}
+
+void record_events(const std::string& dev_path, const std::string& label) {
   int fd = open(dev_path.c_str(), O_RDONLY);
   if (fd < 0) {
-    std::perror("open touchpad device");
+    std::perror("open input device");
     return;
   }
 
-  std::cout << "Recording events from " << dev_path << " (Ctrl+C to stop)"
-            << std::endl;
+  std::cout << "Recording " << label << " events from " << dev_path
+            << " (Ctrl+C to stop)" << std::endl;
 
   while (true) {
     struct input_event events[64];
@@ -170,13 +190,44 @@ void record_touchpad_events(const std::string& dev_path) {
   close(fd);
 }
 
-int main() {
-  std::string touchpad_dev = find_first_touchpad();
-  if (touchpad_dev.empty()) {
-    std::cout << "No touchpad detected. Try running with sudo." << std::endl;
+void print_usage(const char* prog) {
+  std::cout << "Usage: " << prog << " -r [touchpad|mouse|keyboard]\n";
+}
+
+int main(int argc, char* argv[]) {
+  if (argc != 3 || std::string(argv[1]) != "-r") {
+    print_usage(argv[0]);
     return 1;
   }
 
-  record_touchpad_events(touchpad_dev);
+  std::string kind = argv[2];
+  std::string dev;
+
+  if (kind == "touchpad") {
+    dev = find_first_touchpad();
+    if (dev.empty()) {
+      std::cout << "No touchpad detected. Try running with sudo." << std::endl;
+      return 1;
+    }
+    record_events(dev, "touchpad");
+  } else if (kind == "mouse") {
+    dev = find_first_mouse();
+    if (dev.empty()) {
+      std::cout << "No mouse detected. Try running with sudo." << std::endl;
+      return 1;
+    }
+    record_events(dev, "mouse");
+  } else if (kind == "keyboard") {
+    dev = find_first_keyboard();
+    if (dev.empty()) {
+      std::cout << "No keyboard detected. Try running with sudo." << std::endl;
+      return 1;
+    }
+    record_events(dev, "keyboard");
+  } else {
+    print_usage(argv[0]);
+    return 1;
+  }
+
   return 0;
 }
