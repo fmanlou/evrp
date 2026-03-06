@@ -1,5 +1,4 @@
-#ifndef EVRP_EVDEV_H
-#define EVRP_EVDEV_H
+#pragma once
 
 #include <string>
 
@@ -55,4 +54,3 @@ bool signal_stop_requested();
 
 }  // namespace evdev
 
-#endif  // EVRP_EVDEV_H

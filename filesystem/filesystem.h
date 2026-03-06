@@ -1,5 +1,4 @@
-#ifndef EVRP_FILESYSTEM_FILESYSTEM_H
-#define EVRP_FILESYSTEM_FILESYSTEM_H
+#pragma once
 
 #include <memory>
 #include <ostream>
@@ -26,5 +25,4 @@ class FileSystem {
   std::string error_message_;
 };
 
-#endif  // EVRP_FILESYSTEM_FILESYSTEM_H
 

@@ -1,5 +1,4 @@
-#ifndef EVRP_INPUTDEVICE_H
-#define EVRP_INPUTDEVICE_H
+#pragma once
 
 #include "evdev/evdev.h"
 
@@ -40,5 +39,4 @@ std::string find_first_keyboard();
 void record_events_multi(const std::vector<RecordTarget>& targets,
                          std::ostream& event_out);
 
-#endif  // EVRP_INPUTDEVICE_H
 

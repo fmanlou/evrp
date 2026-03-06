@@ -8,6 +8,7 @@ alwaysApply: true
 - Follow Google C++ style as the baseline.
 - All function names use lowercase with underscores (`snake_case`).
 - File names use lowercase letters only and do not use underscores.
+- All header files use `#pragma once` only; do not use include guards.
 - Apply naming consistently to new files and refactors.
 
 ## Examples
