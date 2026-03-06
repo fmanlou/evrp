@@ -31,6 +31,52 @@ static bool name_like_keyboard(const std::string& name) {
          n.find("keypad") != std::string::npos;
 }
 
+static std::string key_name_from_code(unsigned short code) {
+  if (code >= KEY_A && code <= KEY_Z) {
+    char letter = static_cast<char>('A' + (code - KEY_A));
+    return std::string(1, letter);
+  }
+  if (code >= KEY_1 && code <= KEY_9) {
+    char digit = static_cast<char>('1' + (code - KEY_1));
+    return std::string(1, digit);
+  }
+  if (code == KEY_0) return "0";
+
+  switch (code) {
+    case KEY_LEFTCTRL:
+      return "LEFTCTRL";
+    case KEY_RIGHTCTRL:
+      return "RIGHTCTRL";
+    case KEY_LEFTSHIFT:
+      return "LEFTSHIFT";
+    case KEY_RIGHTSHIFT:
+      return "RIGHTSHIFT";
+    case KEY_LEFTALT:
+      return "LEFTALT";
+    case KEY_RIGHTALT:
+      return "RIGHTALT";
+    case KEY_SPACE:
+      return "SPACE";
+    case KEY_ENTER:
+      return "ENTER";
+    case KEY_ESC:
+      return "ESC";
+    case KEY_TAB:
+      return "TAB";
+    case KEY_BACKSPACE:
+      return "BACKSPACE";
+    default:
+      return "unknown(" + std::to_string(code) + ")";
+  }
+}
+
+static std::string key_action_from_value(int value) {
+  if (value == 0) return "release";
+  if (value == 1) return "press";
+  if (value == 2) return "repeat";
+  return "unknown(" + std::to_string(value) + ")";
+}
+
 bool is_touchpad(const char* dev_path) {
   evdev::Capabilities caps;
   if (!evdev::open_and_get_capabilities(dev_path, &caps)) return false;
@@ -149,7 +195,16 @@ void record_events_multi(const std::vector<RecordTarget>& targets,
 
         event_out << "[" << targets[i].label << "] " << ev.sec << "."
                   << ev.usec << " type=" << ev.type << " code=" << ev.code
-                  << " value=" << ev.value << "\n";
+                  << " value=" << ev.value;
+        if (targets[i].label == "keyboard") {
+          if (ev.type == EV_KEY) {
+            event_out << " // key=" << key_name_from_code(ev.code)
+                      << " action=" << key_action_from_value(ev.value);
+          } else {
+            event_out << " // key=N/A action=non-key-event";
+          }
+        }
+        event_out << "\n";
       }
     }
   }
