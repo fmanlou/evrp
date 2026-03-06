@@ -5,6 +5,7 @@
 
 #include <cctype>
 #include <iostream>
+#include <linux/input-event-codes.h>
 
 static bool name_like_touchpad(const std::string& name) {
   std::string n = name;
@@ -114,6 +115,7 @@ void record_events_multi(const std::vector<RecordTarget>& targets,
 
   evdev::Event events[64];
   bool ready[32];
+  std::vector<bool> ctrl_pressed(fds.size(), false);
   while (!evdev::signal_stop_requested()) {
     int ret = fs.poll_fds(fds.data(), static_cast<int>(fds.size()), -1, ready);
     if (ret < 0) {
@@ -134,7 +136,16 @@ void record_events_multi(const std::vector<RecordTarget>& targets,
 
       for (int j = 0; j < count; ++j) {
         const auto& ev = events[j];
-        if (ev.type == evdev::EV_SYN) continue;
+        if (ev.type == EV_SYN) continue;
+
+        if (targets[i].label == "keyboard" && ev.type == EV_KEY) {
+          if (ev.code == KEY_LEFTCTRL || ev.code == KEY_RIGHTCTRL) {
+            ctrl_pressed[i] = (ev.value != 0);
+          }
+          if (ev.code == KEY_C && ev.value == 1 && ctrl_pressed[i]) {
+            continue;
+          }
+        }
 
         event_out << "[" << targets[i].label << "] " << ev.sec << "."
                   << ev.usec << " type=" << ev.type << " code=" << ev.code
