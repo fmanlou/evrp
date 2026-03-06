@@ -25,7 +25,7 @@ target_link_libraries(inputdevice PUBLIC evdev filesystem)
 add_executable(evrp main.cpp)
 target_link_libraries(evrp PRIVATE inputdevice evdev filesystem argparser)
 
-add_executable(evrp_tests tests/inputdevicetest.cpp tests/argparsertest.cpp)
+add_executable(evrp_tests tests/inputdevice_test.cpp tests/argparser_test.cpp)
 target_link_libraries(evrp_tests PRIVATE inputdevice argparser GTest::gtest_main)
 include(GoogleTest)
 gtest_discover_tests(evrp_tests)

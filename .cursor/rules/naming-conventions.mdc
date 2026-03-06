@@ -7,7 +7,8 @@ alwaysApply: true
 
 - Follow Google C++ style as the baseline.
 - All function names use lowercase with underscores (`snake_case`).
-- File names use lowercase letters only and do not use underscores.
+- Production file names use lowercase letters only and do not use underscores.
+- Unit test file names must be `<corresponding_file_name>_test.cpp`.
 - All header files use `#pragma once` only; do not use include guards.
 - Apply naming consistently to new files and refactors.
 
@@ -24,5 +25,7 @@ bool open_output(const std::string& path);
 inputdevice.cpp
 filesystem.h
 evdevlinux.cpp
+inputdevice_test.cpp
+argparser_test.cpp
 ```
 
