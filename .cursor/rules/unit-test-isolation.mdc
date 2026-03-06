@@ -1,0 +1,12 @@
+---
+description: Keep unit tests isolated from real filesystem
+alwaysApply: true
+---
+
+# Unit Test Isolation
+
+- Unit tests must not verify behavior by accessing the real filesystem.
+- Do not read or write real device paths (for example `/dev/input/*`) in unit tests.
+- Prefer pure-function tests, test doubles, and in-memory test data.
+- If filesystem behavior must be validated, use integration tests instead of unit tests.
+
