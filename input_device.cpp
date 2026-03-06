@@ -202,7 +202,7 @@ void record_events_multi(const std::vector<RecordTarget>& targets,
       ssize_t n = read(targets[i].fd, events, sizeof(events));
       if (n <= 0) {
         if (n < 0) std::perror("read");
-        goto done;
+        break;
       }
 
       int count = static_cast<int>(n / sizeof(struct input_event));
@@ -217,7 +217,6 @@ void record_events_multi(const std::vector<RecordTarget>& targets,
     }
   }
 
-done:
   event_out.flush();
   sigaction(SIGINT, &old_sa, nullptr);
 }

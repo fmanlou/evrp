@@ -1,0 +1,32 @@
+---
+description: Avoid goto syntax in project code
+globs: **/*.cpp **/*.c **/*.h **/*.hpp
+alwaysApply: false
+---
+
+# No goto
+
+Do not use `goto` in this project. Use structured control flow instead:
+
+- **Loop exit**: Use `break` to exit loops
+- **Early return**: Use `return` or `break` to exit early
+- **Cleanup**: Use RAII, or place cleanup code after the loop so it runs on both normal exit and `break`
+
+```cpp
+// ❌ BAD
+while (running) {
+  if (read(fd, buf, size) <= 0) goto done;
+  process(buf);
+}
+done:
+flush();
+cleanup();
+
+// ✅ GOOD
+while (running) {
+  if (read(fd, buf, size) <= 0) break;
+  process(buf);
+}
+flush();
+cleanup();
+```
