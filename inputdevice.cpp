@@ -6,6 +6,7 @@
 #include <cctype>
 #include <iostream>
 #include <linux/input-event-codes.h>
+#include <sstream>
 
 static bool name_like_touchpad(const std::string& name) {
   std::string n = name;
@@ -77,6 +78,21 @@ static std::string key_action_from_value(int value) {
   return "unknown(" + std::to_string(value) + ")";
 }
 
+static std::string format_event_line(const std::string& label, const evdev::Event& ev) {
+  std::ostringstream oss;
+  oss << "[" << label << "] " << ev.sec << "." << ev.usec << " type=" << ev.type
+      << " code=" << ev.code << " value=" << ev.value;
+  if (label == "keyboard") {
+    if (ev.type == EV_KEY) {
+      oss << " // key=" << key_name_from_code(ev.code)
+          << " action=" << key_action_from_value(ev.value);
+    } else {
+      oss << " // key=N/A action=non-key-event";
+    }
+  }
+  return oss.str();
+}
+
 bool is_touchpad(const char* dev_path) {
   evdev::Capabilities caps;
   if (!evdev::open_and_get_capabilities(dev_path, &caps)) return false;
@@ -120,6 +136,80 @@ bool is_keyboard_from_capabilities(const evdev::Capabilities& caps) {
   return caps.ev_key && has_keyboard_keys && name_like_keyboard(caps.name);
 }
 
+evdev::Event make_key_event(unsigned short code, int value) {
+  evdev::Event ev = {};
+  ev.type = EV_KEY;
+  ev.code = code;
+  ev.value = value;
+  return ev;
+}
+
+void process_keyboard_event_with_ctrl_filter(
+    const evdev::Event& ev, keyboard_filter_state* state,
+    std::vector<evdev::Event>* emitted_events) {
+  if (!state || !emitted_events) return;
+
+  if (ev.type == EV_KEY) {
+    bool is_ctrl_key = (ev.code == KEY_LEFTCTRL || ev.code == KEY_RIGHTCTRL);
+    bool is_press = (ev.value == 1);
+    bool is_repeat = (ev.value == 2);
+    bool is_release = (ev.value == 0);
+
+    if (is_ctrl_key) {
+      if (is_press) {
+        state->ctrl_down_count += 1;
+      }
+      state->pending_events.push_back(ev);
+      if (is_release && state->ctrl_down_count > 0) {
+        state->ctrl_down_count -= 1;
+      }
+      if (is_release && state->ctrl_down_count == 0) {
+        if (!state->saw_ctrl_c) {
+          emitted_events->insert(emitted_events->end(), state->pending_events.begin(),
+                                 state->pending_events.end());
+        }
+        state->saw_ctrl_c = false;
+        state->pending_events.clear();
+      }
+      return;
+    }
+
+    if (state->ctrl_down_count > 0) {
+      state->pending_events.push_back(ev);
+      if (ev.code == KEY_C && (is_press || is_repeat)) {
+        state->saw_ctrl_c = true;
+      }
+      return;
+    }
+  } else if (state->ctrl_down_count > 0) {
+    state->pending_events.push_back(ev);
+    return;
+  }
+
+  if (!state->pending_events.empty() && state->ctrl_down_count == 0) {
+    if (!state->saw_ctrl_c) {
+      emitted_events->insert(emitted_events->end(), state->pending_events.begin(),
+                             state->pending_events.end());
+    }
+    state->saw_ctrl_c = false;
+    state->pending_events.clear();
+  }
+
+  emitted_events->push_back(ev);
+}
+
+void flush_keyboard_event_filter(keyboard_filter_state* state,
+                                 std::vector<evdev::Event>* emitted_events) {
+  if (!state || !emitted_events) return;
+  if (state->ctrl_down_count != 0) return;
+  if (!state->saw_ctrl_c && !state->pending_events.empty()) {
+    emitted_events->insert(emitted_events->end(), state->pending_events.begin(),
+                           state->pending_events.end());
+  }
+  state->saw_ctrl_c = false;
+  state->pending_events.clear();
+}
+
 std::string find_first_touchpad() {
   for (int i = 0; i < 32; ++i) {
     std::string dev = "/dev/input/event" + std::to_string(i);
@@ -161,7 +251,7 @@ void record_events_multi(const std::vector<RecordTarget>& targets,
 
   evdev::Event events[64];
   bool ready[32];
-  std::vector<bool> ctrl_pressed(fds.size(), false);
+  std::vector<keyboard_filter_state> keyboard_states(fds.size());
   while (!evdev::signal_stop_requested()) {
     int ret = fs.poll_fds(fds.data(), static_cast<int>(fds.size()), -1, ready);
     if (ret < 0) {
@@ -184,27 +274,17 @@ void record_events_multi(const std::vector<RecordTarget>& targets,
         const auto& ev = events[j];
         if (ev.type == EV_SYN) continue;
 
-        if (targets[i].label == "keyboard" && ev.type == EV_KEY) {
-          if (ev.code == KEY_LEFTCTRL || ev.code == KEY_RIGHTCTRL) {
-            ctrl_pressed[i] = (ev.value != 0);
+        if (targets[i].label == "keyboard") {
+          std::vector<evdev::Event> emitted_events;
+          process_keyboard_event_with_ctrl_filter(ev, &keyboard_states[i],
+                                                  &emitted_events);
+          for (const auto& out_ev : emitted_events) {
+            event_out << format_event_line(targets[i].label, out_ev) << "\n";
           }
-          if (ev.code == KEY_C && ev.value == 1 && ctrl_pressed[i]) {
-            continue;
-          }
+          continue;
         }
 
-        event_out << "[" << targets[i].label << "] " << ev.sec << "."
-                  << ev.usec << " type=" << ev.type << " code=" << ev.code
-                  << " value=" << ev.value;
-        if (targets[i].label == "keyboard") {
-          if (ev.type == EV_KEY) {
-            event_out << " // key=" << key_name_from_code(ev.code)
-                      << " action=" << key_action_from_value(ev.value);
-          } else {
-            event_out << " // key=N/A action=non-key-event";
-          }
-        }
-        event_out << "\n";
+        event_out << format_event_line(targets[i].label, ev) << "\n";
       }
     }
   }
