@@ -5,11 +5,15 @@
 #include <sys/time.h>
 #include <unistd.h>
 
+#include <atomic>
 #include <chrono>
+#include <condition_variable>
 #include <cstdio>
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <mutex>
+#include <queue>
 #include <string>
 #include <thread>
 
@@ -154,8 +158,29 @@ int playback_file_to_uinput(const std::string& path, bool quiet) {
     return fd;
   };
 
+  std::queue<std::string> log_queue;
+  std::mutex log_mutex;
+  std::condition_variable log_cv;
+  std::atomic<bool> log_done{false};
+  std::thread log_thread;
+
   if (!quiet) {
     std::cout << "Playing back to input devices (Ctrl+C to stop)..." << std::endl;
+    log_thread = std::thread([&]() {
+      std::unique_lock<std::mutex> lock(log_mutex);
+      while (!log_done.load() || !log_queue.empty()) {
+        log_cv.wait(lock, [&]() {
+          return log_done.load() || !log_queue.empty();
+        });
+        while (!log_queue.empty()) {
+          std::string s = std::move(log_queue.front());
+          log_queue.pop();
+          lock.unlock();
+          std::cout << s << std::endl;
+          lock.lock();
+        }
+      }
+    });
   }
   evdev::signal_install_sigint();
 
@@ -220,8 +245,16 @@ int playback_file_to_uinput(const std::string& path, bool quiet) {
     }
 
     if (!quiet) {
-      std::cout << line << std::endl;
+      std::lock_guard<std::mutex> lock(log_mutex);
+      log_queue.push(line);
+      log_cv.notify_one();
     }
+  }
+
+  log_done = true;
+  if (log_thread.joinable()) {
+    log_cv.notify_one();
+    log_thread.join();
   }
 
   for (const auto& p : label_to_fd) {
