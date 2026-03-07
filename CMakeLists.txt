@@ -18,6 +18,10 @@ target_link_libraries(evdev PRIVATE filesystem)
 add_library(argparser STATIC argparser.cpp)
 target_include_directories(argparser PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
+add_library(inputeventwriter STATIC inputeventwriter.cpp)
+target_include_directories(inputeventwriter PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(inputeventwriter PRIVATE filesystem inputdevice)
+
 add_library(eventformat STATIC eventformat.cpp)
 target_include_directories(eventformat PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(eventformat PRIVATE evdev inputdevice)
@@ -35,7 +39,7 @@ target_include_directories(asynclogwriter PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_library(playback STATIC playback.cpp)
 target_include_directories(playback PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(playback PUBLIC asynclogwriter PRIVATE evdev eventformat inputdevice filesystem)
+target_link_libraries(playback PUBLIC asynclogwriter PRIVATE evdev eventformat inputeventwriter inputdevice filesystem)
 
 add_executable(evrp main.cpp)
 target_link_libraries(evrp PRIVATE inputdevice evdev filesystem argparser playback record)
