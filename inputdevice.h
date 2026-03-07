@@ -24,6 +24,7 @@ std::string find_first_mouse();
 std::string find_first_keyboard();
 
 void record_events_multi(const std::vector<RecordTarget>& targets,
-                         std::ostream& event_out);
+                         std::ostream& event_out,
+                         std::ostream* console_out = nullptr);
 
 

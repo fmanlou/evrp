@@ -18,6 +18,10 @@ int FileSystem::open_read_only(const char* path, bool nonblocking) const {
   return ::open(path, flags);
 }
 
+int FileSystem::open_read_write(const char* path) const {
+  return ::open(path, O_RDWR);
+}
+
 void FileSystem::close_fd(int fd) const {
   if (fd >= 0) {
     ::close(fd);

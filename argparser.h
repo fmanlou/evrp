@@ -5,6 +5,9 @@
 
 struct run_options {
   bool recording;
+  bool playback;
+  bool quiet;
+  std::string playback_path;
   std::string output_path;
   std::vector<std::string> kinds;
 };

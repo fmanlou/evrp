@@ -141,7 +141,8 @@ std::string find_first_keyboard() {
 }
 
 void record_events_multi(const std::vector<RecordTarget>& targets,
-                         std::ostream& event_out) {
+                         std::ostream& event_out,
+                         std::ostream* console_out) {
   if (targets.empty()) return;
   FileSystem fs;
 
@@ -150,10 +151,23 @@ void record_events_multi(const std::vector<RecordTarget>& targets,
   std::vector<int> fds;
   fds.reserve(targets.size());
   for (const auto& t : targets) {
-    std::cout << "Recording " << t.label << " from " << t.path << std::endl;
+    if (console_out) {
+      *console_out << "Recording " << t.label << " from " << t.path << std::endl;
+    }
     fds.push_back(t.fd);
   }
-  std::cout << "(Ctrl+C to stop)" << std::endl;
+  if (console_out) {
+    *console_out << "(Ctrl+C to stop)" << std::endl;
+  }
+
+  auto write_line = [&](const std::string& line) {
+    event_out << line << "\n";
+    if (console_out) *console_out << line << "\n";
+  };
+  auto write_newline = [&]() {
+    event_out << "\n";
+    if (console_out) *console_out << "\n";
+  };
 
   evdev::Event events[64];
   bool ready[32];
@@ -186,7 +200,7 @@ void record_events_multi(const std::vector<RecordTarget>& targets,
           process_keyboard_event_with_ctrl_filter(ev, &keyboard_states[i],
                                                   &emitted_events);
           for (const auto& out_ev : emitted_events) {
-            event_out << format_event_line(targets[i].label, out_ev) << "\n";
+            write_line(format_event_line(targets[i].label, out_ev));
           }
           continue;
         }
@@ -196,24 +210,24 @@ void record_events_multi(const std::vector<RecordTarget>& targets,
           touch_segment_decision decision =
               process_touch_event_for_segment(ev, &touch_state);
           if (decision.emit_break_before_event) {
-            event_out << "\n";
+            write_newline();
           }
 
-          event_out << format_event_line(targets[i].label, ev) << "\n";
+          write_line(format_event_line(targets[i].label, ev));
           if (decision.emit_break_after_event) {
-            event_out << "\n";
+            write_newline();
           }
           continue;
         }
 
-        event_out << format_event_line(targets[i].label, ev) << "\n";
+        write_line(format_event_line(targets[i].label, ev));
       }
     }
   }
 
   for (size_t i = 0; i < touch_states.size(); ++i) {
     if (touch_states[i].pending_segment_break) {
-      event_out << "\n";
+      write_newline();
       touch_states[i].pending_segment_break = false;
     }
   }

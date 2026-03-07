@@ -33,9 +33,6 @@ struct Event {
   int value;
 };
 
-// Event type constant (EV_SYN)
-constexpr unsigned short EV_SYN = 0;
-
 bool get_capabilities(int fd, Capabilities* out);
 
 // Convenience: open nonblocking, get caps, close. Returns true on success.

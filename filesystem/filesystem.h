@@ -9,6 +9,7 @@ class FileSystem {
   FileSystem();
 
   int open_read_only(const char* path, bool nonblocking) const;
+  int open_read_write(const char* path) const;
   void close_fd(int fd) const;
   long read_fd(int fd, void* buffer, unsigned long size) const;
   int poll_fds(int* fds, int nfds, int timeout_ms, bool* ready) const;
