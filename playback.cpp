@@ -111,6 +111,52 @@ static bool write_event(const FileSystem* fs, int fd, unsigned short type,
   return n == static_cast<long>(sizeof(ev));
 }
 
+class AsyncLogWriter {
+ public:
+  AsyncLogWriter() : done_(false) {}
+
+  void start() {
+    thread_ = std::thread(&AsyncLogWriter::run, this);
+  }
+
+  void push(const std::string& line) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    queue_.push(line);
+    cv_.notify_one();
+  }
+
+  void stop() {
+    done_ = true;
+    if (thread_.joinable()) {
+      cv_.notify_one();
+      thread_.join();
+    }
+  }
+
+  ~AsyncLogWriter() { stop(); }
+
+ private:
+  void run() {
+    std::unique_lock<std::mutex> lock(mutex_);
+    while (!done_ || !queue_.empty()) {
+      cv_.wait(lock, [this]() { return done_ || !queue_.empty(); });
+      while (!queue_.empty()) {
+        std::string s = std::move(queue_.front());
+        queue_.pop();
+        lock.unlock();
+        std::cout << s << std::endl;
+        lock.lock();
+      }
+    }
+  }
+
+  std::queue<std::string> queue_;
+  std::mutex mutex_;
+  std::condition_variable cv_;
+  std::atomic<bool> done_;
+  std::thread thread_;
+};
+
 }  // namespace
 
 int playback_file_to_uinput(const std::string& path, bool quiet) {
@@ -157,29 +203,10 @@ int playback_file_to_uinput(const std::string& path, bool quiet) {
     return fd;
   };
 
-  std::queue<std::string> log_queue;
-  std::mutex log_mutex;
-  std::condition_variable log_cv;
-  std::atomic<bool> log_done{false};
-  std::thread log_thread;
-
+  AsyncLogWriter log_writer;
   if (!quiet) {
     std::cout << "Playing back to input devices (Ctrl+C to stop)..." << std::endl;
-    log_thread = std::thread([&]() {
-      std::unique_lock<std::mutex> lock(log_mutex);
-      while (!log_done.load() || !log_queue.empty()) {
-        log_cv.wait(lock, [&]() {
-          return log_done.load() || !log_queue.empty();
-        });
-        while (!log_queue.empty()) {
-          std::string s = std::move(log_queue.front());
-          log_queue.pop();
-          lock.unlock();
-          std::cout << s << std::endl;
-          lock.lock();
-        }
-      }
-    });
+    log_writer.start();
   }
   evdev::signal_install_sigint();
 
@@ -244,17 +271,11 @@ int playback_file_to_uinput(const std::string& path, bool quiet) {
     }
 
     if (!quiet) {
-      std::lock_guard<std::mutex> lock(log_mutex);
-      log_queue.push(line);
-      log_cv.notify_one();
+      log_writer.push(line);
     }
   }
 
-  log_done = true;
-  if (log_thread.joinable()) {
-    log_cv.notify_one();
-    log_thread.join();
-  }
+  log_writer.stop();
 
   for (const auto& p : label_to_fd) {
     if (p.second >= 0) fs.close_fd(p.second);
