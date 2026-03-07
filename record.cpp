@@ -1,5 +1,6 @@
 #include "record.h"
 
+#include "asynclogwriter.h"
 #include "evdev/evdev.h"
 #include "filesystem/filesystem.h"
 #include "inputdevice.h"
@@ -126,27 +127,32 @@ void record_events_multi(const std::vector<RecordTarget>& targets,
   if (targets.empty()) return;
   FileSystem fs;
 
+  AsyncLogWriter log_writer;
+  if (console_out) {
+    log_writer.start();
+  }
+
   evdev::signal_install_sigint();
 
   std::vector<int> fds;
   fds.reserve(targets.size());
   for (const auto& t : targets) {
     if (console_out) {
-      *console_out << "Recording " << t.label << " from " << t.path << std::endl;
+      log_writer.push("Recording " + t.label + " from " + t.path);
     }
     fds.push_back(t.fd);
   }
   if (console_out) {
-    *console_out << "(Ctrl+C to stop)" << std::endl;
+    log_writer.push("(Ctrl+C to stop)");
   }
 
   auto write_line = [&](const std::string& line) {
     event_out << line << "\n";
-    if (console_out) *console_out << line << "\n";
+    if (console_out) log_writer.push(line);
   };
   auto write_newline = [&]() {
     event_out << "\n";
-    if (console_out) *console_out << "\n";
+    if (console_out) log_writer.push("");
   };
 
   evdev::Event events[64];
@@ -213,5 +219,6 @@ void record_events_multi(const std::vector<RecordTarget>& targets,
   }
 
   event_out.flush();
+  log_writer.stop();
   evdev::signal_restore_sigint();
 }
