@@ -212,18 +212,10 @@ bool Playback::write_event(int fd, unsigned short type, unsigned short code,
   return n == static_cast<long>(sizeof(ev));
 }
 
-namespace {
-
-static int playback_file_to_uinput(const std::string& path, bool quiet) {
-  return Playback(path, quiet).run();
-}
-
-}  // namespace
-
 int run_playback(const run_options& options) {
   if (options.playback_path.empty()) {
     std::cerr << "Playback mode requires a file path after -p." << std::endl;
     return 1;
   }
-  return playback_file_to_uinput(options.playback_path, options.quiet);
+  return Playback(options.playback_path, options.quiet).run();
 }
