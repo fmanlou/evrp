@@ -16,6 +16,7 @@
 #include "evdev/evdev.h"
 #include "filesystem/filesystem.h"
 #include "inputdevice.h"
+#include "scopeguard.h"
 
 namespace {
 
@@ -131,17 +132,6 @@ static bool write_event_with_sync(FileSystem* fs, int fd, unsigned short type,
   return true;
 }
 
-struct PlaybackCleanup {
-  std::map<std::string, int>* fds;
-  FileSystem* fs;
-  ~PlaybackCleanup() {
-    for (const auto& p : *fds) {
-      if (p.second >= 0) fs->close_fd(p.second);
-    }
-    evdev::signal_restore_sigint();
-  }
-};
-
 }  // namespace
 
 int playback_file_to_uinput(const std::string& path, bool quiet) {
@@ -183,7 +173,12 @@ int playback_file_to_uinput(const std::string& path, bool quiet) {
   if (!quiet) log_writer.start();
   evdev::signal_install_sigint();
 
-  PlaybackCleanup cleanup{&label_to_fd, &fs};
+  auto cleanup = make_scope_guard([&]() {
+    for (const auto& p : label_to_fd) {
+      if (p.second >= 0) fs.close_fd(p.second);
+    }
+    evdev::signal_restore_sigint();
+  });
   std::istream& input = fs.input_stream();
   std::string line;
   long long prev_timestamp_us = 0;
