@@ -15,14 +15,6 @@
 
 namespace {
 
-static bool name_like_mouse(const std::string& name) {
-  std::string n = name;
-  for (auto& c : n) c = static_cast<char>(std::tolower(c));
-  return n.find("mouse") != std::string::npos ||
-         n.find("trackball") != std::string::npos ||
-         n.find("pointer") != std::string::npos;
-}
-
 static std::string event_type_name(unsigned short type) {
   switch (type) {
     case EV_SYN:
@@ -94,11 +86,11 @@ static std::string find_device_path(const std::string& kind) {
 
 }  // namespace
 
-std::vector<RecordTarget> collect_targets(FileSystem* fs,
-                                           const std::vector<std::string>& kinds) {
-  std::vector<RecordTarget> targets;
+Record::Record(const run_options& options) : options_(options) {}
 
-  for (const auto& kind : kinds) {
+std::vector<RecordTarget> Record::collect_targets() {
+  std::vector<RecordTarget> result;
+  for (const auto& kind : options_.kinds) {
     std::string path = find_device_path(kind);
     if (path.empty()) {
       std::cout << "No " << kind << " detected. Try running with sudo."
@@ -106,40 +98,37 @@ std::vector<RecordTarget> collect_targets(FileSystem* fs,
       continue;
     }
 
-    int fd = fs->open_read_only(path.c_str(), false);
+    int fd = fs_.open_read_only(path.c_str(), false);
     if (fd < 0) {
       std::perror(path.c_str());
       continue;
     }
-    targets.push_back({fd, kind, path});
+    result.push_back({fd, kind, path});
   }
-
-  return targets;
+  return result;
 }
 
-void close_targets(FileSystem* fs, const std::vector<RecordTarget>& targets) {
-  for (const auto& t : targets) fs->close_fd(t.fd);
+void Record::close_targets() {
+  for (const auto& t : targets_) fs_.close_fd(t.fd);
 }
 
-void record_events_multi(const std::vector<RecordTarget>& targets,
-                         std::ostream& event_out,
-                         bool log_events_to_console) {
-  if (targets.empty()) return;
-  FileSystem fs;
+void Record::record_events() {
+  if (targets_.empty()) return;
 
   AsyncLogWriter log_writer;
   log_writer.start();
-
   evdev::signal_install_sigint();
 
   std::vector<int> fds;
-  fds.reserve(targets.size());
-  for (const auto& t : targets) {
+  fds.reserve(targets_.size());
+  for (const auto& t : targets_) {
     log_writer.push("Recording " + t.label + " from " + t.path);
     fds.push_back(t.fd);
   }
   log_writer.push("(Ctrl+C to stop)");
 
+  std::ostream& event_out = fs_.output_stream();
+  bool log_events_to_console = !options_.quiet;
   auto write_line = [&](const std::string& line) {
     event_out << line << "\n";
     if (log_events_to_console) log_writer.push(line);
@@ -154,7 +143,7 @@ void record_events_multi(const std::vector<RecordTarget>& targets,
   std::vector<keyboard_filter_state> keyboard_states(fds.size());
   std::vector<touch_segment_state> touch_states(fds.size());
   while (!evdev::signal_stop_requested()) {
-    int ret = fs.poll_fds(fds.data(), static_cast<int>(fds.size()), -1, ready);
+    int ret = fs_.poll_fds(fds.data(), static_cast<int>(fds.size()), -1, ready);
     if (ret < 0) {
       if (evdev::errno_is_eintr() && evdev::signal_stop_requested()) break;
       std::perror("poll");
@@ -175,17 +164,17 @@ void record_events_multi(const std::vector<RecordTarget>& targets,
         const auto& ev = events[j];
         if (ev.type == EV_SYN) continue;
 
-        if (targets[i].label == "keyboard") {
+        if (targets_[i].label == "keyboard") {
           std::vector<evdev::Event> emitted_events;
           process_keyboard_event_with_ctrl_filter(ev, &keyboard_states[i],
                                                   &emitted_events);
           for (const auto& out_ev : emitted_events) {
-            write_line(format_event_line(targets[i].label, out_ev));
+            write_line(format_event_line(targets_[i].label, out_ev));
           }
           continue;
         }
 
-        if (targets[i].label == "touchpad") {
+        if (targets_[i].label == "touchpad") {
           touch_segment_state& touch_state = touch_states[i];
           touch_segment_decision decision =
               process_touch_event_for_segment(ev, &touch_state);
@@ -193,14 +182,14 @@ void record_events_multi(const std::vector<RecordTarget>& targets,
             write_newline();
           }
 
-          write_line(format_event_line(targets[i].label, ev));
+          write_line(format_event_line(targets_[i].label, ev));
           if (decision.emit_break_after_event) {
             write_newline();
           }
           continue;
         }
 
-        write_line(format_event_line(targets[i].label, ev));
+        write_line(format_event_line(targets_[i].label, ev));
       }
     }
   }
@@ -217,22 +206,25 @@ void record_events_multi(const std::vector<RecordTarget>& targets,
   evdev::signal_restore_sigint();
 }
 
-int run_recording(const run_options& options) {
-  FileSystem fs;
-  std::vector<RecordTarget> targets = collect_targets(&fs, options.kinds);
+int Record::run() {
+  targets_ = collect_targets();
 
-  if (targets.empty()) {
+  if (targets_.empty()) {
     std::cout << "No devices to record." << std::endl;
     return 1;
   }
 
-  if (!fs.open_output(options.output_path)) {
-    std::cerr << fs.error_message() << std::endl;
-    close_targets(&fs, targets);
+  if (!fs_.open_output(options_.output_path)) {
+    std::cerr << fs_.error_message() << std::endl;
+    close_targets();
     return 1;
   }
 
-  record_events_multi(targets, fs.output_stream(), !options.quiet);
-  close_targets(&fs, targets);
+  record_events();
+  close_targets();
   return 0;
+}
+
+int run_recording(const run_options& options) {
+  return Record(options).run();
 }

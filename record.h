@@ -1,6 +1,8 @@
 #pragma once
 
 #include "argparser.h"
+#include "asynclogwriter.h"
+#include "filesystem/filesystem.h"
 
 #include <ostream>
 #include <string>
@@ -12,13 +14,19 @@ struct RecordTarget {
   std::string path;
 };
 
-class FileSystem;
+class Record {
+ public:
+  explicit Record(const run_options& options);
+  int run();
 
-std::vector<RecordTarget> collect_targets(FileSystem* fs,
-                                          const std::vector<std::string>& kinds);
-void close_targets(FileSystem* fs, const std::vector<RecordTarget>& targets);
-void record_events_multi(const std::vector<RecordTarget>& targets,
-                         std::ostream& event_out,
-                         bool log_events_to_console = true);
+ private:
+  std::vector<RecordTarget> collect_targets();
+  void close_targets();
+  void record_events();
+
+  run_options options_;
+  FileSystem fs_;
+  std::vector<RecordTarget> targets_;
+};
 
 int run_recording(const run_options& options);
