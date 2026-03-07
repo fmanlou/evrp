@@ -140,18 +140,6 @@ static std::string format_event_line(const std::string& label, const evdev::Even
   return oss.str();
 }
 
-struct touch_segment_state {
-  int current_slot;
-  std::vector<char> slot_active;
-  int active_mt_count;
-  bool btn_touch_active;
-  bool tool_finger_active;
-  bool tool_doubletap_active;
-  bool tool_tripletap_active;
-  bool tool_quadtap_active;
-  bool pending_segment_break;
-};
-
 static bool is_touching_now(const touch_segment_state& state) {
   bool any_tool_active = state.tool_finger_active || state.tool_doubletap_active ||
                          state.tool_tripletap_active || state.tool_quadtap_active;
@@ -201,6 +189,31 @@ static bool update_touch_segment_state(const evdev::Event& ev, touch_segment_sta
   return was_touching && !is_touching;
 }
 
+touch_segment_decision process_touch_event_for_segment(
+    const evdev::Event& ev, touch_segment_state* state) {
+  touch_segment_decision decision = {false, false};
+  if (!state) return decision;
+
+  bool is_msc_timestamp = (ev.type == EV_MSC && ev.code == MSC_TIMESTAMP);
+
+  if (state->pending_segment_break && !is_msc_timestamp) {
+    decision.emit_break_before_event = true;
+    state->pending_segment_break = false;
+  }
+
+  bool segment_ended = update_touch_segment_state(ev, state);
+  if (segment_ended) {
+    state->pending_segment_break = true;
+  }
+
+  if (state->pending_segment_break && is_msc_timestamp) {
+    decision.emit_break_after_event = true;
+    state->pending_segment_break = false;
+  }
+
+  return decision;
+}
+
 bool is_touchpad(const char* dev_path) {
   evdev::Capabilities caps;
   if (!evdev::open_and_get_capabilities(dev_path, &caps)) return false;
@@ -244,12 +257,16 @@ bool is_keyboard_from_capabilities(const evdev::Capabilities& caps) {
   return caps.ev_key && has_keyboard_keys && name_like_keyboard(caps.name);
 }
 
-evdev::Event make_key_event(unsigned short code, int value) {
+evdev::Event make_event(unsigned short type, unsigned short code, int value) {
   evdev::Event ev = {};
-  ev.type = EV_KEY;
+  ev.type = type;
   ev.code = code;
   ev.value = value;
   return ev;
+}
+
+evdev::Event make_key_event(unsigned short code, int value) {
+  return make_event(EV_KEY, code, value);
 }
 
 void process_keyboard_event_with_ctrl_filter(
@@ -395,22 +412,15 @@ void record_events_multi(const std::vector<RecordTarget>& targets,
 
         if (targets[i].label == "touchpad") {
           touch_segment_state& touch_state = touch_states[i];
-          bool is_msc_timestamp = (ev.type == EV_MSC && ev.code == MSC_TIMESTAMP);
-
-          if (touch_state.pending_segment_break && !is_msc_timestamp) {
+          touch_segment_decision decision =
+              process_touch_event_for_segment(ev, &touch_state);
+          if (decision.emit_break_before_event) {
             event_out << "\n";
-            touch_state.pending_segment_break = false;
           }
 
           event_out << format_event_line(targets[i].label, ev) << "\n";
-          bool segment_ended = update_touch_segment_state(ev, &touch_state);
-          if (segment_ended) {
-            touch_state.pending_segment_break = true;
-          }
-
-          if (touch_state.pending_segment_break && is_msc_timestamp) {
+          if (decision.emit_break_after_event) {
             event_out << "\n";
-            touch_state.pending_segment_break = false;
           }
           continue;
         }

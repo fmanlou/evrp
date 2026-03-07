@@ -113,3 +113,76 @@ TEST(InputDevice, EventAfterCtrlReleaseShouldRecordNormally) {
   EXPECT_EQ(emitted[0].code, KEY_B);
 }
 
+TEST(InputDevice, TouchSegmentBreakAfterTimestamp) {
+  touch_segment_state state = {};
+  touch_segment_decision decision;
+
+  decision = process_touch_event_for_segment(make_event(EV_KEY, BTN_TOUCH, 1), &state);
+  EXPECT_FALSE(decision.emit_break_before_event);
+  EXPECT_FALSE(decision.emit_break_after_event);
+
+  decision = process_touch_event_for_segment(make_event(EV_KEY, BTN_TOUCH, 0), &state);
+  EXPECT_FALSE(decision.emit_break_before_event);
+  EXPECT_FALSE(decision.emit_break_after_event);
+
+  decision =
+      process_touch_event_for_segment(make_event(EV_MSC, MSC_TIMESTAMP, 1234), &state);
+  EXPECT_FALSE(decision.emit_break_before_event);
+  EXPECT_TRUE(decision.emit_break_after_event);
+}
+
+TEST(InputDevice, TouchSegmentBreakBeforeNextEventWithoutTimestamp) {
+  touch_segment_state state = {};
+  touch_segment_decision decision;
+
+  decision = process_touch_event_for_segment(make_event(EV_KEY, BTN_TOUCH, 1), &state);
+  EXPECT_FALSE(decision.emit_break_before_event);
+  EXPECT_FALSE(decision.emit_break_after_event);
+
+  decision = process_touch_event_for_segment(make_event(EV_KEY, BTN_TOUCH, 0), &state);
+  EXPECT_FALSE(decision.emit_break_before_event);
+  EXPECT_FALSE(decision.emit_break_after_event);
+
+  decision = process_touch_event_for_segment(make_event(EV_ABS, ABS_X, 10), &state);
+  EXPECT_TRUE(decision.emit_break_before_event);
+  EXPECT_FALSE(decision.emit_break_after_event);
+}
+
+TEST(InputDevice, MultiTouchSegmentEndsAfterAllTrackingReleased) {
+  touch_segment_state state = {};
+  touch_segment_decision decision;
+
+  decision = process_touch_event_for_segment(make_event(EV_ABS, ABS_MT_SLOT, 0), &state);
+  EXPECT_FALSE(decision.emit_break_before_event);
+  EXPECT_FALSE(decision.emit_break_after_event);
+  decision =
+      process_touch_event_for_segment(make_event(EV_ABS, ABS_MT_TRACKING_ID, 100), &state);
+  EXPECT_FALSE(decision.emit_break_before_event);
+  EXPECT_FALSE(decision.emit_break_after_event);
+
+  decision = process_touch_event_for_segment(make_event(EV_ABS, ABS_MT_SLOT, 1), &state);
+  EXPECT_FALSE(decision.emit_break_before_event);
+  EXPECT_FALSE(decision.emit_break_after_event);
+  decision =
+      process_touch_event_for_segment(make_event(EV_ABS, ABS_MT_TRACKING_ID, 200), &state);
+  EXPECT_FALSE(decision.emit_break_before_event);
+  EXPECT_FALSE(decision.emit_break_after_event);
+
+  decision =
+      process_touch_event_for_segment(make_event(EV_ABS, ABS_MT_TRACKING_ID, -1), &state);
+  EXPECT_FALSE(decision.emit_break_before_event);
+  EXPECT_FALSE(decision.emit_break_after_event);
+
+  decision = process_touch_event_for_segment(make_event(EV_ABS, ABS_MT_SLOT, 0), &state);
+  EXPECT_FALSE(decision.emit_break_before_event);
+  EXPECT_FALSE(decision.emit_break_after_event);
+  decision =
+      process_touch_event_for_segment(make_event(EV_ABS, ABS_MT_TRACKING_ID, -1), &state);
+  EXPECT_FALSE(decision.emit_break_before_event);
+  EXPECT_FALSE(decision.emit_break_after_event);
+
+  decision = process_touch_event_for_segment(make_event(EV_REL, REL_X, 1), &state);
+  EXPECT_TRUE(decision.emit_break_before_event);
+  EXPECT_FALSE(decision.emit_break_after_event);
+}
+
