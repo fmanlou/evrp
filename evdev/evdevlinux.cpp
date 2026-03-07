@@ -19,10 +19,6 @@ namespace {
 #define TEST_BIT(bit, array) \
   ((array[(bit) / BITS_PER_LONG] & BIT(bit)) != 0)
 
-volatile sig_atomic_t g_stop = 0;
-struct sigaction g_old_sa;
-void sigint_handler(int) { g_stop = 1; }
-
 }  // namespace
 
 bool open_and_get_capabilities(const char* path, Capabilities* caps) {
@@ -95,18 +91,22 @@ int read_events(int fd, Event* events, int max_count) {
   return out;
 }
 
-void signal_install_sigint() {
-  g_stop = 0;
+volatile sig_atomic_t SigintGuard::stop_ = 0;
+
+void SigintGuard::handler(int) { stop_ = 1; }
+
+SigintGuard::SigintGuard() {
+  stop_ = 0;
   struct sigaction sa = {};
-  sa.sa_handler = sigint_handler;
+  sa.sa_handler = handler;
   sigemptyset(&sa.sa_mask);
   sa.sa_flags = 0;
-  sigaction(SIGINT, &sa, &g_old_sa);
+  sigaction(SIGINT, &sa, &old_sa_);
 }
 
-void signal_restore_sigint() { sigaction(SIGINT, &g_old_sa, nullptr); }
+SigintGuard::~SigintGuard() { sigaction(SIGINT, &old_sa_, nullptr); }
 
-bool signal_stop_requested() { return g_stop != 0; }
+bool SigintGuard::stop_requested() const { return stop_ != 0; }
 
 bool errno_is_eintr() { return errno == EINTR; }
 

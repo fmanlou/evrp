@@ -1,5 +1,6 @@
 #pragma once
 
+#include <csignal>
 #include <string>
 
 namespace evdev {
@@ -44,10 +45,18 @@ int read_events(int fd, Event* events, int max_count);
 // After poll returns -1, check if errno was EINTR
 bool errno_is_eintr();
 
-// Signal handling for graceful shutdown
-void signal_install_sigint();
-void signal_restore_sigint();
-bool signal_stop_requested();
+// RAII: installs SIGINT handler in ctor, restores in dtor
+class SigintGuard {
+ public:
+  SigintGuard();
+  ~SigintGuard();
+  bool stop_requested() const;
+
+ private:
+  struct sigaction old_sa_;
+  static volatile sig_atomic_t stop_;
+  static void handler(int);
+};
 
 }  // namespace evdev
 

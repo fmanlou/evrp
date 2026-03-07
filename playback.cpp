@@ -33,13 +33,12 @@ int Playback::run() {
 
   std::cout << "Playing back to input devices (Ctrl+C to stop)..." << std::endl;
   if (!options_.quiet) log_writer_.start();
-  evdev::signal_install_sigint();
+  evdev::SigintGuard sigint;
 
   auto cleanup = make_scope_guard([this]() {
     for (const auto& p : label_to_fd_) {
       if (p.second >= 0) fs_.close_fd(p.second);
     }
-    evdev::signal_restore_sigint();
   });
 
   std::istream& input = fs_.input_stream();
@@ -47,7 +46,7 @@ int Playback::run() {
   long long prev_timestamp_us = 0;
   bool has_prev = false;
 
-  while (!evdev::signal_stop_requested() && std::getline(input, line)) {
+  while (!sigint.stop_requested() && std::getline(input, line)) {
     if (line.empty()) continue;
 
     std::string label = parse_event_label(line);
