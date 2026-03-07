@@ -22,12 +22,16 @@ add_library(inputdevice STATIC inputdevice.cpp keyboarddevice.cpp touchdevice.cp
 target_include_directories(inputdevice PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(inputdevice PUBLIC evdev filesystem)
 
+add_library(record STATIC record.cpp)
+target_include_directories(record PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(record PRIVATE evdev filesystem inputdevice)
+
 add_library(playback STATIC playback.cpp)
 target_include_directories(playback PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(playback PRIVATE evdev inputdevice filesystem)
 
 add_executable(evrp main.cpp)
-target_link_libraries(evrp PRIVATE inputdevice evdev filesystem argparser playback)
+target_link_libraries(evrp PRIVATE inputdevice evdev filesystem argparser playback record)
 
 add_executable(evrp_tests tests/inputdevice_test.cpp tests/argparser_test.cpp)
 target_link_libraries(evrp_tests PRIVATE inputdevice argparser GTest::gtest_main)

@@ -2,15 +2,7 @@
 
 #include "evdev/evdev.h"
 
-#include <ostream>
 #include <string>
-#include <vector>
-
-struct RecordTarget {
-  int fd;
-  std::string label;
-  std::string path;
-};
 
 bool is_touchpad(const char* dev_path);
 bool is_mouse(const char* dev_path);
@@ -22,9 +14,4 @@ evdev::Event make_event(unsigned short type, unsigned short code, int value);
 std::string find_first_touchpad();
 std::string find_first_mouse();
 std::string find_first_keyboard();
-
-void record_events_multi(const std::vector<RecordTarget>& targets,
-                         std::ostream& event_out,
-                         std::ostream* console_out = nullptr);
-
 

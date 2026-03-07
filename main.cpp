@@ -4,41 +4,8 @@
 
 #include "argparser.h"
 #include "filesystem/filesystem.h"
-#include "inputdevice.h"
 #include "playback.h"
-
-static std::string find_device_path(const std::string& kind) {
-  if (kind == "touchpad") return find_first_touchpad();
-  if (kind == "mouse") return find_first_mouse();
-  return find_first_keyboard();
-}
-
-static std::vector<RecordTarget> collect_targets(
-    FileSystem* fs, const std::vector<std::string>& kinds) {
-  std::vector<RecordTarget> targets;
-
-  for (const auto& kind : kinds) {
-    std::string path = find_device_path(kind);
-    if (path.empty()) {
-      std::cout << "No " << kind << " detected. Try running with sudo."
-                << std::endl;
-      continue;
-    }
-
-    int fd = fs->open_read_only(path.c_str(), false);
-    if (fd < 0) {
-      fs->print_error(path.c_str());
-      continue;
-    }
-    targets.push_back({fd, kind, path});
-  }
-
-  return targets;
-}
-
-static void close_targets(FileSystem* fs, const std::vector<RecordTarget>& targets) {
-  for (const auto& t : targets) fs->close_fd(t.fd);
-}
+#include "record.h"
 
 int main(int argc, char* argv[]) {
   FileSystem fs;
