@@ -1,7 +1,7 @@
 #include "inputdevice.h"
 
 #include "evdev.h"
-#include "filesystem/filesystem.h"
+#include "filesystem.h"
 #include "keyboarddevice.h"
 #include "touchdevice.h"
 

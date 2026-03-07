@@ -1,4 +1,4 @@
-#include "filesystem/filesystem.h"
+#include "filesystem.h"
 
 #include <fcntl.h>
 #include <poll.h>
@@ -103,4 +103,3 @@ bool FileSystem::open_input(const std::string& path) {
 }
 
 std::istream& FileSystem::input_stream() { return *in_; }
-

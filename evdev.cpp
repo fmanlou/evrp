@@ -1,5 +1,5 @@
 #include "evdev.h"
-#include "filesystem/filesystem.h"
+#include "filesystem.h"
 
 #include <linux/input.h>
 #include <signal.h>

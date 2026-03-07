@@ -11,7 +11,7 @@ enable_testing()
 add_library(evdev STATIC evdev.cpp)
 target_include_directories(evdev PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_library(filesystem STATIC filesystem/filesystem.cpp)
+add_library(filesystem STATIC filesystem.cpp)
 target_include_directories(filesystem PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(evdev PRIVATE filesystem)
 

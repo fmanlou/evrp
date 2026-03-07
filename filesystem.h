@@ -32,5 +32,3 @@ class FileSystem {
   std::istream* in_;
   std::string error_message_;
 };
-
-

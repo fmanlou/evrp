@@ -3,7 +3,7 @@
 #include "asynclogwriter.h"
 #include "eventformat.h"
 #include "evdev.h"
-#include "filesystem/filesystem.h"
+#include "filesystem.h"
 #include "inputdevice.h"
 #include "keyboarddevice.h"
 #include "touchdevice.h"

@@ -2,7 +2,7 @@
 
 #include "argparser.h"
 #include "asynclogwriter.h"
-#include "filesystem/filesystem.h"
+#include "filesystem.h"
 
 #include <ostream>
 #include <string>
