@@ -8,16 +8,12 @@
 #include <cerrno>
 #include <cstring>
 
-namespace {
-
 #define BITS_PER_LONG (sizeof(unsigned long) * 8)
 #define NBITS(x) ((((x)-1) / BITS_PER_LONG) + 1)
 #define OFF(x) ((x) % BITS_PER_LONG)
 #define BIT(x) (1UL << OFF(x))
 #define TEST_BIT(bit, array) \
   ((array[(bit) / BITS_PER_LONG] & BIT(bit)) != 0)
-
-}  // namespace
 
 bool open_and_get_capabilities(const char* path, Capabilities* caps) {
   FileSystem fs;
