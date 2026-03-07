@@ -5,14 +5,14 @@
 #include <gtest/gtest.h>
 #include <linux/input-event-codes.h>
 
-static evdev::Capabilities make_base_caps(const std::string& name) {
-  evdev::Capabilities caps = {};
+static Capabilities make_base_caps(const std::string& name) {
+  Capabilities caps = {};
   caps.name = name;
   return caps;
 }
 
 TEST(InputDevice, DetectTouchpadFromCapabilities) {
-  evdev::Capabilities caps = make_base_caps("Synaptics TouchPad");
+  Capabilities caps = make_base_caps("Synaptics TouchPad");
   caps.ev_abs = true;
   caps.abs_x = true;
   caps.btn_tool_finger = true;
@@ -20,14 +20,14 @@ TEST(InputDevice, DetectTouchpadFromCapabilities) {
 }
 
 TEST(InputDevice, RejectTouchpadWithoutFingerTool) {
-  evdev::Capabilities caps = make_base_caps("TouchPad");
+  Capabilities caps = make_base_caps("TouchPad");
   caps.ev_abs = true;
   caps.abs_x = true;
   EXPECT_FALSE(is_touchpad_from_capabilities(caps));
 }
 
 TEST(InputDevice, DetectMouseFromCapabilities) {
-  evdev::Capabilities caps = make_base_caps("USB Optical Mouse");
+  Capabilities caps = make_base_caps("USB Optical Mouse");
   caps.ev_rel = true;
   caps.rel_x = true;
   caps.rel_y = true;
@@ -36,7 +36,7 @@ TEST(InputDevice, DetectMouseFromCapabilities) {
 }
 
 TEST(InputDevice, RejectMouseWithoutButtons) {
-  evdev::Capabilities caps = make_base_caps("USB Optical Mouse");
+  Capabilities caps = make_base_caps("USB Optical Mouse");
   caps.ev_rel = true;
   caps.rel_x = true;
   caps.rel_y = true;
@@ -44,21 +44,21 @@ TEST(InputDevice, RejectMouseWithoutButtons) {
 }
 
 TEST(InputDevice, DetectKeyboardFromCapabilities) {
-  evdev::Capabilities caps = make_base_caps("AT Translated Set 2 keyboard");
+  Capabilities caps = make_base_caps("AT Translated Set 2 keyboard");
   caps.ev_key = true;
   caps.key_enter = true;
   EXPECT_TRUE(is_keyboard_from_capabilities(caps));
 }
 
 TEST(InputDevice, RejectKeyboardWithWrongName) {
-  evdev::Capabilities caps = make_base_caps("generic input device");
+  Capabilities caps = make_base_caps("generic input device");
   caps.ev_key = true;
   caps.key_enter = true;
   EXPECT_FALSE(is_keyboard_from_capabilities(caps));
 }
 
 TEST(InputDevice, NameMatchIsCaseInsensitive) {
-  evdev::Capabilities caps = make_base_caps("sYnApTiCs tOuChPaD");
+  Capabilities caps = make_base_caps("sYnApTiCs tOuChPaD");
   caps.ev_abs = true;
   caps.abs_x = true;
   caps.btn_tool_finger = true;
@@ -67,7 +67,7 @@ TEST(InputDevice, NameMatchIsCaseInsensitive) {
 
 TEST(InputDevice, CtrlAThenReleaseShouldBeRecorded) {
   keyboard_filter_state state = {};
-  std::vector<evdev::Event> emitted;
+  std::vector<Event> emitted;
 
   process_keyboard_event_with_ctrl_filter(make_key_event(KEY_LEFTCTRL, 1), &state,
                                           &emitted);
@@ -85,7 +85,7 @@ TEST(InputDevice, CtrlAThenReleaseShouldBeRecorded) {
 
 TEST(InputDevice, CtrlAThenCtrlCShouldDropWholeCtrlWindow) {
   keyboard_filter_state state = {};
-  std::vector<evdev::Event> emitted;
+  std::vector<Event> emitted;
 
   process_keyboard_event_with_ctrl_filter(make_key_event(KEY_LEFTCTRL, 1), &state,
                                           &emitted);
@@ -101,7 +101,7 @@ TEST(InputDevice, CtrlAThenCtrlCShouldDropWholeCtrlWindow) {
 
 TEST(InputDevice, EventAfterCtrlReleaseShouldRecordNormally) {
   keyboard_filter_state state = {};
-  std::vector<evdev::Event> emitted;
+  std::vector<Event> emitted;
 
   process_keyboard_event_with_ctrl_filter(make_key_event(KEY_LEFTCTRL, 1), &state,
                                           &emitted);

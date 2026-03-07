@@ -8,8 +8,6 @@
 #include <cerrno>
 #include <cstring>
 
-namespace evdev {
-
 namespace {
 
 #define BITS_PER_LONG (sizeof(unsigned long) * 8)
@@ -109,6 +107,4 @@ SigintGuard::~SigintGuard() { sigaction(SIGINT, &old_sa_, nullptr); }
 bool SigintGuard::stop_requested() const { return stop_ != 0; }
 
 bool errno_is_eintr() { return errno == EINTR; }
-
-}  // namespace evdev
 

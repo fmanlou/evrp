@@ -11,15 +11,15 @@ static bool name_like_keyboard(const std::string& name) {
          n.find("keypad") != std::string::npos;
 }
 
-bool is_keyboard_from_capabilities(const evdev::Capabilities& caps) {
+bool is_keyboard_from_capabilities(const Capabilities& caps) {
   bool has_keyboard_keys =
       caps.key_enter || caps.key_space || caps.key_esc || caps.key_a;
 
   return caps.ev_key && has_keyboard_keys && name_like_keyboard(caps.name);
 }
 
-evdev::Event make_key_event(unsigned short code, int value) {
-  evdev::Event ev = {};
+Event make_key_event(unsigned short code, int value) {
+  Event ev = {};
   ev.type = EV_KEY;
   ev.code = code;
   ev.value = value;
@@ -73,8 +73,8 @@ std::string keyboard_key_action_from_value(int value) {
 }
 
 void process_keyboard_event_with_ctrl_filter(
-    const evdev::Event& ev, keyboard_filter_state* state,
-    std::vector<evdev::Event>* emitted_events) {
+    const Event& ev, keyboard_filter_state* state,
+    std::vector<Event>* emitted_events) {
   if (!state || !emitted_events) return;
 
   if (ev.type == EV_KEY) {
@@ -127,7 +127,7 @@ void process_keyboard_event_with_ctrl_filter(
 }
 
 void flush_keyboard_event_filter(keyboard_filter_state* state,
-                                 std::vector<evdev::Event>* emitted_events) {
+                                 std::vector<Event>* emitted_events) {
   if (!state || !emitted_events) return;
   if (state->ctrl_down_count != 0) return;
   if (!state->saw_ctrl_c && !state->pending_events.empty()) {

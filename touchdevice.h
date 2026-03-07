@@ -22,6 +22,6 @@ struct touch_segment_decision {
 };
 
 touch_segment_decision process_touch_event_for_segment(
-    const evdev::Event& ev, touch_segment_state* state);
-bool is_touchpad_from_capabilities(const evdev::Capabilities& caps);
+    const Event& ev, touch_segment_state* state);
+bool is_touchpad_from_capabilities(const Capabilities& caps);
 

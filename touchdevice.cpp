@@ -13,7 +13,7 @@ static bool name_like_touchpad(const std::string& name) {
          n.find("elan") != std::string::npos;
 }
 
-bool is_touchpad_from_capabilities(const evdev::Capabilities& caps) {
+bool is_touchpad_from_capabilities(const Capabilities& caps) {
   bool has_abs = caps.ev_abs && (caps.abs_x || caps.abs_mt_position_x);
   bool has_finger_tool =
       caps.btn_tool_finger || caps.btn_tool_doubletap || caps.btn_tool_tripletap;
@@ -27,7 +27,7 @@ static bool is_touching_now(const touch_segment_state& state) {
   return state.active_mt_count > 0 || state.btn_touch_active || any_tool_active;
 }
 
-static bool update_touch_segment_state(const evdev::Event& ev, touch_segment_state* state) {
+static bool update_touch_segment_state(const Event& ev, touch_segment_state* state) {
   if (!state) return false;
 
   bool was_touching = is_touching_now(*state);
@@ -71,7 +71,7 @@ static bool update_touch_segment_state(const evdev::Event& ev, touch_segment_sta
 }
 
 touch_segment_decision process_touch_event_for_segment(
-    const evdev::Event& ev, touch_segment_state* state) {
+    const Event& ev, touch_segment_state* state) {
   touch_segment_decision decision = {false, false};
   if (!state) return decision;
 

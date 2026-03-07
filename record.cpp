@@ -52,7 +52,7 @@ void Record::record_events() {
   }
   log_writer.push("(Ctrl+C to stop)");
 
-  evdev::SigintGuard sigint;
+  SigintGuard sigint;
   std::ostream& event_out = fs_.output_stream();
   bool log_events_to_console = !options_.quiet;
   auto write_line = [&](const std::string& line) {
@@ -64,14 +64,14 @@ void Record::record_events() {
     if (log_events_to_console) log_writer.push("");
   };
 
-  evdev::Event events[64];
+  Event events[64];
   bool ready[32];
   std::vector<keyboard_filter_state> keyboard_states(fds.size());
   std::vector<touch_segment_state> touch_states(fds.size());
   while (!sigint.stop_requested()) {
     int ret = fs_.poll_fds(fds.data(), static_cast<int>(fds.size()), -1, ready);
     if (ret < 0) {
-      if (evdev::errno_is_eintr() && sigint.stop_requested()) break;
+      if (errno_is_eintr() && sigint.stop_requested()) break;
       std::perror("poll");
       break;
     }
@@ -79,7 +79,7 @@ void Record::record_events() {
     for (size_t i = 0; i < fds.size(); ++i) {
       if (!ready[i]) continue;
 
-      int count = evdev::read_events(fds[i], events, 64);
+      int count = read_events(fds[i], events, 64);
       if (count < 0) {
         std::perror("read");
         break;
@@ -91,7 +91,7 @@ void Record::record_events() {
         if (ev.type == EV_SYN) continue;
 
         if (targets_[i].label == "keyboard") {
-          std::vector<evdev::Event> emitted_events;
+          std::vector<Event> emitted_events;
           process_keyboard_event_with_ctrl_filter(ev, &keyboard_states[i],
                                                   &emitted_events);
           for (const auto& out_ev : emitted_events) {

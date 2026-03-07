@@ -12,4 +12,4 @@ bool parse_event_line(const std::string& line, long long* out_timestamp_us,
 
 std::string event_type_name(unsigned short type);
 std::string event_code_name(unsigned short type, unsigned short code);
-std::string format_event_line(const std::string& label, const evdev::Event& ev);
+std::string format_event_line(const std::string& label, const Event& ev);

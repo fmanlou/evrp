@@ -33,7 +33,7 @@ int Playback::run() {
 
   std::cout << "Playing back to input devices (Ctrl+C to stop)..." << std::endl;
   if (!options_.quiet) log_writer_.start();
-  evdev::SigintGuard sigint;
+  SigintGuard sigint;
 
   auto cleanup = make_scope_guard([this]() {
     for (const auto& p : label_to_fd_) {

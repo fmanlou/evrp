@@ -116,8 +116,7 @@ std::string event_code_name(unsigned short type, unsigned short code) {
   return "";
 }
 
-std::string format_event_line(const std::string& label,
-                              const evdev::Event& ev) {
+std::string format_event_line(const std::string& label, const Event& ev) {
   std::ostringstream oss;
   std::string code_name = event_code_name(ev.type, ev.code);
   oss << "[" << label << "] " << ev.sec << "." << ev.usec

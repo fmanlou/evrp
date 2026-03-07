@@ -3,8 +3,6 @@
 #include <csignal>
 #include <string>
 
-namespace evdev {
-
 struct Capabilities {
   std::string name;
   bool ev_key;
@@ -57,6 +55,4 @@ class SigintGuard {
   static volatile sig_atomic_t stop_;
   static void handler(int);
 };
-
-}  // namespace evdev
 

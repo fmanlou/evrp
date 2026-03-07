@@ -17,35 +17,35 @@ static bool name_like_mouse(const std::string& name) {
 }
 
 bool is_touchpad(const char* dev_path) {
-  evdev::Capabilities caps;
-  if (!evdev::open_and_get_capabilities(dev_path, &caps)) return false;
+  Capabilities caps;
+  if (!open_and_get_capabilities(dev_path, &caps)) return false;
 
   return is_touchpad_from_capabilities(caps);
 }
 
 bool is_mouse(const char* dev_path) {
-  evdev::Capabilities caps;
-  if (!evdev::open_and_get_capabilities(dev_path, &caps)) return false;
+  Capabilities caps;
+  if (!open_and_get_capabilities(dev_path, &caps)) return false;
 
   return is_mouse_from_capabilities(caps);
 }
 
 bool is_keyboard(const char* dev_path) {
-  evdev::Capabilities caps;
-  if (!evdev::open_and_get_capabilities(dev_path, &caps)) return false;
+  Capabilities caps;
+  if (!open_and_get_capabilities(dev_path, &caps)) return false;
 
   return is_keyboard_from_capabilities(caps);
 }
 
-bool is_mouse_from_capabilities(const evdev::Capabilities& caps) {
+bool is_mouse_from_capabilities(const Capabilities& caps) {
   bool has_rel = caps.ev_rel && caps.rel_x && caps.rel_y;
   bool has_buttons = caps.btn_left || caps.btn_right || caps.btn_middle;
 
   return has_rel && has_buttons && name_like_mouse(caps.name);
 }
 
-evdev::Event make_event(unsigned short type, unsigned short code, int value) {
-  evdev::Event ev = {};
+Event make_event(unsigned short type, unsigned short code, int value) {
+  Event ev = {};
   ev.type = type;
   ev.code = code;
   ev.value = value;
