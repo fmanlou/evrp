@@ -123,36 +123,30 @@ void close_targets(FileSystem* fs, const std::vector<RecordTarget>& targets) {
 
 void record_events_multi(const std::vector<RecordTarget>& targets,
                          std::ostream& event_out,
-                         std::ostream* console_out) {
+                         bool log_events_to_console) {
   if (targets.empty()) return;
   FileSystem fs;
 
   AsyncLogWriter log_writer;
-  if (console_out) {
-    log_writer.start();
-  }
+  log_writer.start();
 
   evdev::signal_install_sigint();
 
   std::vector<int> fds;
   fds.reserve(targets.size());
   for (const auto& t : targets) {
-    if (console_out) {
-      log_writer.push("Recording " + t.label + " from " + t.path);
-    }
+    log_writer.push("Recording " + t.label + " from " + t.path);
     fds.push_back(t.fd);
   }
-  if (console_out) {
-    log_writer.push("(Ctrl+C to stop)");
-  }
+  log_writer.push("(Ctrl+C to stop)");
 
   auto write_line = [&](const std::string& line) {
     event_out << line << "\n";
-    if (console_out) log_writer.push(line);
+    if (log_events_to_console) log_writer.push(line);
   };
   auto write_newline = [&]() {
     event_out << "\n";
-    if (console_out) log_writer.push("");
+    if (log_events_to_console) log_writer.push("");
   };
 
   evdev::Event events[64];
@@ -238,8 +232,7 @@ int run_recording(const run_options& options) {
     return 1;
   }
 
-  record_events_multi(targets, fs.output_stream(),
-                      options.quiet ? nullptr : &std::cout);
+  record_events_multi(targets, fs.output_stream(), !options.quiet);
   close_targets(&fs, targets);
   return 0;
 }

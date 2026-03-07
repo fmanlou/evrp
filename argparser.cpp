@@ -11,7 +11,7 @@ void print_usage(const char* prog) {
                "keyboard.\n"
             << "  -p FILE: playback events from FILE into input subsystem.\n"
             << "  -o FILE: write recording to FILE (default: stdout).\n"
-            << "  -q: quiet, no console output.\n";
+            << "  -q: quiet, suppress event log only (status/errors still shown).\n";
 }
 
 bool parse_kind(const std::string& s, std::string* out_label) {

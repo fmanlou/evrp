@@ -128,35 +128,29 @@ int playback_file_to_uinput(const std::string& path, bool quiet) {
 
     std::string dev_path = find_device_path(label);
     if (dev_path.empty()) {
-      if (!quiet) {
-        std::cerr << "No " << label << " device found, skipping events."
-                  << std::endl;
-      }
+      std::cerr << "No " << label << " device found, skipping events."
+                << std::endl;
       label_to_fd[label] = -1;
       return -1;
     }
 
     int fd = fs.open_read_write(dev_path.c_str());
     if (fd < 0) {
-      if (!quiet) {
-        std::cerr << "Failed to open " << dev_path << " for write (try: sudo): ";
-        std::perror(dev_path.c_str());
-      }
+      std::cerr << "Failed to open " << dev_path << " for write (try: sudo): ";
+      std::perror(dev_path.c_str());
       label_to_fd[label] = -1;
       return -1;
     }
 
     label_to_path[label] = dev_path;
     label_to_fd[label] = fd;
-    if (!quiet) {
-      std::cout << "Playing back " << label << " to " << dev_path << std::endl;
-    }
+    std::cout << "Playing back " << label << " to " << dev_path << std::endl;
     return fd;
   };
 
+  std::cout << "Playing back to input devices (Ctrl+C to stop)..." << std::endl;
   AsyncLogWriter log_writer;
   if (!quiet) {
-    std::cout << "Playing back to input devices (Ctrl+C to stop)..." << std::endl;
     log_writer.start();
   }
   evdev::signal_install_sigint();
