@@ -1,4 +1,4 @@
-#include "evdev/evdev.h"
+#include "evdev.h"
 #include "filesystem/filesystem.h"
 
 #include <linux/input.h>
@@ -103,4 +103,3 @@ SigintGuard::~SigintGuard() { sigaction(SIGINT, &old_sa_, nullptr); }
 bool SigintGuard::stop_requested() const { return stop_ != 0; }
 
 bool errno_is_eintr() { return errno == EINTR; }
-

@@ -8,7 +8,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 add_subdirectory(third_party/googletest)
 enable_testing()
 
-add_library(evdev STATIC evdev/evdevlinux.cpp)
+add_library(evdev STATIC evdev.cpp)
 target_include_directories(evdev PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_library(filesystem STATIC filesystem/filesystem.cpp)

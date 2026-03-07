@@ -1,6 +1,6 @@
 #pragma once
 
-#include "evdev/evdev.h"
+#include "evdev.h"
 
 #include <vector>
 

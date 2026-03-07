@@ -55,4 +55,3 @@ class SigintGuard {
   static volatile sig_atomic_t stop_;
   static void handler(int);
 };
-

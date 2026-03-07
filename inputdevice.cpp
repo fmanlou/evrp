@@ -1,6 +1,6 @@
 #include "inputdevice.h"
 
-#include "evdev/evdev.h"
+#include "evdev.h"
 #include "filesystem/filesystem.h"
 #include "keyboarddevice.h"
 #include "touchdevice.h"
