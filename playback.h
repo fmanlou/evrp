@@ -1,6 +1,5 @@
 #pragma once
 
-#include "argparser.h"
 #include "asynclogwriter.h"
 #include "filesystem/filesystem.h"
 
@@ -24,5 +23,3 @@ class Playback {
   std::map<std::string, int> label_to_fd_;
   AsyncLogWriter log_writer_;
 };
-
-int run_playback(const run_options& options);

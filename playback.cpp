@@ -211,11 +211,3 @@ bool Playback::write_event(int fd, unsigned short type, unsigned short code,
   long n = fs_.write_fd(fd, &ev, sizeof(ev));
   return n == static_cast<long>(sizeof(ev));
 }
-
-int run_playback(const run_options& options) {
-  if (options.playback_path.empty()) {
-    std::cerr << "Playback mode requires a file path after -p." << std::endl;
-    return 1;
-  }
-  return Playback(options.playback_path, options.quiet).run();
-}

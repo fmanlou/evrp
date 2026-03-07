@@ -224,7 +224,3 @@ int Record::run() {
   close_targets();
   return 0;
 }
-
-int run_recording(const run_options& options) {
-  return Record(options).run();
-}

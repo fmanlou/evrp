@@ -28,5 +28,3 @@ class Record {
   FileSystem fs_;
   std::vector<RecordTarget> targets_;
 };
-
-int run_recording(const run_options& options);

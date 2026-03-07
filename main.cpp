@@ -19,8 +19,12 @@ int main(int argc, char* argv[]) {
   }
 
   if (options.playback) {
-    return run_playback(options);
+    if (options.playback_path.empty()) {
+      std::cerr << "Playback mode requires a file path after -p." << std::endl;
+      return 1;
+    }
+    return Playback(options.playback_path, options.quiet).run();
   }
 
-  return run_recording(options);
+  return Record(options).run();
 }
