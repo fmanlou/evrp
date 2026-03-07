@@ -8,7 +8,7 @@
 #include <fstream>
 #include <iostream>
 
-FileSystem::FileSystem() : out_(&std::cout) {}
+FileSystem::FileSystem() : out_(&std::cout), in_(nullptr) {}
 
 int FileSystem::open_read_only(const char* path, bool nonblocking) const {
   int flags = O_RDONLY;
@@ -31,6 +31,11 @@ void FileSystem::close_fd(int fd) const {
 long FileSystem::read_fd(int fd, void* buffer, unsigned long size) const {
   if (fd < 0 || !buffer || size == 0) return -1;
   return static_cast<long>(::read(fd, buffer, size));
+}
+
+long FileSystem::write_fd(int fd, const void* buffer, unsigned long size) const {
+  if (fd < 0 || !buffer || size == 0) return -1;
+  return static_cast<long>(::write(fd, buffer, size));
 }
 
 int FileSystem::poll_fds(int* fds, int nfds, int timeout_ms, bool* ready) const {
@@ -84,4 +89,20 @@ bool FileSystem::open_output(const std::string& path) {
 std::ostream& FileSystem::output_stream() { return *out_; }
 
 const std::string& FileSystem::error_message() const { return error_message_; }
+
+bool FileSystem::open_input(const std::string& path) {
+  error_message_.clear();
+  std::unique_ptr<std::ifstream> file(new std::ifstream(path));
+  if (!file->is_open()) {
+    error_message_ = "Failed to open input file: " + path;
+    owned_in_.reset();
+    in_ = nullptr;
+    return false;
+  }
+  in_ = file.get();
+  owned_in_ = std::move(file);
+  return true;
+}
+
+std::istream& FileSystem::input_stream() { return *in_; }
 

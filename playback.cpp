@@ -9,7 +9,6 @@
 #include <chrono>
 #include <condition_variable>
 #include <cstdio>
-#include <fstream>
 #include <iostream>
 #include <map>
 #include <mutex>
@@ -101,27 +100,27 @@ static std::string find_device_path(const std::string& label) {
   return "";
 }
 
-static bool write_event(int fd, unsigned short type, unsigned short code,
-                        int value) {
+static bool write_event(const FileSystem* fs, int fd, unsigned short type,
+                        unsigned short code, int value) {
   struct input_event ev = {};
   gettimeofday(&ev.time, nullptr);
   ev.type = type;
   ev.code = code;
   ev.value = value;
-  ssize_t n = ::write(fd, &ev, sizeof(ev));
-  return n == static_cast<ssize_t>(sizeof(ev));
+  long n = fs->write_fd(fd, &ev, sizeof(ev));
+  return n == static_cast<long>(sizeof(ev));
 }
 
 }  // namespace
 
 int playback_file_to_uinput(const std::string& path, bool quiet) {
-  std::ifstream input(path.c_str());
-  if (!input.is_open()) {
-    std::cerr << "Failed to open playback file: " << path << std::endl;
+  FileSystem fs;
+  if (!fs.open_input(path)) {
+    std::cerr << fs.error_message() << std::endl;
     return 1;
   }
 
-  FileSystem fs;
+  std::istream& input = fs.input_stream();
   std::map<std::string, int> label_to_fd;
   std::map<std::string, std::string> label_to_path;
 
@@ -211,8 +210,8 @@ int playback_file_to_uinput(const std::string& path, bool quiet) {
     prev_timestamp_us = timestamp_us;
     has_prev = true;
 
-    if (!write_event(fd, type, code, value)) {
-      std::perror("Failed to write event");
+    if (!write_event(&fs, fd, type, code, value)) {
+      fs.print_error("Failed to write event");
       for (const auto& p : label_to_fd) {
         if (p.second >= 0) fs.close_fd(p.second);
       }
@@ -225,8 +224,8 @@ int playback_file_to_uinput(const std::string& path, bool quiet) {
           (type == EV_ABS && (code == ABS_MT_POSITION_Y ||
                               (code == ABS_MT_TRACKING_ID && value == -1)));
       if (needs_mt_report) {
-        if (!write_event(fd, EV_SYN, SYN_MT_REPORT, 0)) {
-          std::perror("Failed to write SYN_MT_REPORT");
+        if (!write_event(&fs, fd, EV_SYN, SYN_MT_REPORT, 0)) {
+          fs.print_error("Failed to write SYN_MT_REPORT");
           for (const auto& p : label_to_fd) {
             if (p.second >= 0) fs.close_fd(p.second);
           }
@@ -234,8 +233,8 @@ int playback_file_to_uinput(const std::string& path, bool quiet) {
           return 1;
         }
       }
-      if (!write_event(fd, EV_SYN, SYN_REPORT, 0)) {
-        std::perror("Failed to write SYN_REPORT");
+      if (!write_event(&fs, fd, EV_SYN, SYN_REPORT, 0)) {
+        fs.print_error("Failed to write SYN_REPORT");
         for (const auto& p : label_to_fd) {
           if (p.second >= 0) fs.close_fd(p.second);
         }
