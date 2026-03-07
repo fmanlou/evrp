@@ -32,13 +32,13 @@ struct Event {
   int value;
 };
 
-bool get_capabilities(int fd, Capabilities* out);
+bool get_capabilities(int fd, Capabilities *out);
 
 // Convenience: open nonblocking, get caps, close. Returns true on success.
-bool open_and_get_capabilities(const char* path, Capabilities* out);
+bool open_and_get_capabilities(const char *path, Capabilities *out);
 
 // Returns number of events read, or -1 on error
-int read_events(int fd, Event* events, int max_count);
+int read_events(int fd, Event *events, int max_count);
 
 // After poll returns -1, check if errno was EINTR
 bool errno_is_eintr();

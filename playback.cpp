@@ -8,12 +8,12 @@
 
 #include "asynclogwriter.h"
 #include "deviceid.h"
-#include "eventformat.h"
 #include "evdev.h"
+#include "eventformat.h"
 #include "filesystem.h"
 #include "scopeguard.h"
 
-Playback::Playback(const run_options& options)
+Playback::Playback(const run_options &options)
     : options_(options), event_writer_(&fs_) {}
 
 int Playback::run() {
@@ -30,7 +30,7 @@ int Playback::run() {
   if (!options_.quiet) log_writer_.start();
   SigintGuard sigint;
 
-  std::istream& input = fs_.input_stream();
+  std::istream &input = fs_.input_stream();
   std::string line;
   long long prev_timestamp_us = 0;
   bool has_prev = false;
@@ -45,8 +45,7 @@ int Playback::run() {
     long long timestamp_us = 0;
     unsigned short type = 0, code = 0;
     int value = 0;
-    if (!parse_event_line(line, &timestamp_us, &type, &code, &value))
-      continue;
+    if (!parse_event_line(line, &timestamp_us, &type, &code, &value)) continue;
 
     if (has_prev && timestamp_us > prev_timestamp_us) {
       std::this_thread::sleep_for(

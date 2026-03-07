@@ -1,6 +1,4 @@
 #include "inputeventwriter.h"
-#include "filesystem.h"
-#include "inputdevice.h"
 
 #include <linux/input-event-codes.h>
 #include <linux/input.h>
@@ -9,10 +7,13 @@
 #include <cstdio>
 #include <iostream>
 
-InputEventWriter::InputEventWriter(FileSystem* fs) : fs_(fs) {}
+#include "filesystem.h"
+#include "inputdevice.h"
+
+InputEventWriter::InputEventWriter(FileSystem *fs) : fs_(fs) {}
 
 InputEventWriter::~InputEventWriter() {
-  for (const auto& p : id_to_fd_) {
+  for (const auto &p : id_to_fd_) {
     if (p.second >= 0) fs_->close_fd(p.second);
   }
 }
@@ -52,7 +53,7 @@ bool InputEventWriter::write(DeviceId id, unsigned short type,
 }
 
 bool InputEventWriter::write_event(int fd, unsigned short type,
-                                  unsigned short code, int value) {
+                                   unsigned short code, int value) {
   struct input_event ev = {};
   gettimeofday(&ev.time, nullptr);
   ev.type = type;
@@ -70,9 +71,8 @@ bool InputEventWriter::write_event_with_sync(int fd, unsigned short type,
   }
   if (type != EV_SYN) {
     bool needs_mt =
-        (type == EV_ABS &&
-         (code == ABS_MT_POSITION_Y ||
-          (code == ABS_MT_TRACKING_ID && value == -1)));
+        (type == EV_ABS && (code == ABS_MT_POSITION_Y ||
+                            (code == ABS_MT_TRACKING_ID && value == -1)));
     if (needs_mt && !write_event(fd, EV_SYN, SYN_MT_REPORT, 0)) {
       std::perror("Failed to write SYN_MT_REPORT");
       return false;
@@ -84,4 +84,3 @@ bool InputEventWriter::write_event_with_sync(int fd, unsigned short type,
   }
   return true;
 }
-

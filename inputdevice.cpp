@@ -1,43 +1,43 @@
 #include "inputdevice.h"
 
+#include <cctype>
+#include <string>
+
 #include "evdev.h"
 #include "filesystem.h"
 #include "keyboarddevice.h"
 #include "touchdevice.h"
 
-#include <cctype>
-#include <string>
-
-static bool name_like_mouse(const std::string& name) {
+static bool name_like_mouse(const std::string &name) {
   std::string n = name;
-  for (auto& c : n) c = static_cast<char>(std::tolower(c));
+  for (auto &c : n) c = static_cast<char>(std::tolower(c));
   return n.find("mouse") != std::string::npos ||
          n.find("trackball") != std::string::npos ||
          n.find("pointer") != std::string::npos;
 }
 
-bool is_touchpad(const char* dev_path) {
+bool is_touchpad(const char *dev_path) {
   Capabilities caps;
   if (!open_and_get_capabilities(dev_path, &caps)) return false;
 
   return is_touchpad_from_capabilities(caps);
 }
 
-bool is_mouse(const char* dev_path) {
+bool is_mouse(const char *dev_path) {
   Capabilities caps;
   if (!open_and_get_capabilities(dev_path, &caps)) return false;
 
   return is_mouse_from_capabilities(caps);
 }
 
-bool is_keyboard(const char* dev_path) {
+bool is_keyboard(const char *dev_path) {
   Capabilities caps;
   if (!open_and_get_capabilities(dev_path, &caps)) return false;
 
   return is_keyboard_from_capabilities(caps);
 }
 
-bool is_mouse_from_capabilities(const Capabilities& caps) {
+bool is_mouse_from_capabilities(const Capabilities &caps) {
   bool has_rel = caps.ev_rel && caps.rel_x && caps.rel_y;
   bool has_buttons = caps.btn_left || caps.btn_right || caps.btn_middle;
 

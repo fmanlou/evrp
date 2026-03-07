@@ -13,7 +13,7 @@ class AsyncLogWriter {
   ~AsyncLogWriter();
 
   void start();
-  void push(const std::string& line);
+  void push(const std::string &line);
   void stop();
 
  private:

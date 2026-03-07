@@ -2,7 +2,7 @@
 
 #include <string>
 
-DeviceId device_id_from_label(const std::string& label) {
+DeviceId device_id_from_label(const std::string &label) {
   if (label == "keyboard") return DeviceId::Keyboard;
   if (label == "mouse") return DeviceId::Mouse;
   if (label == "touchpad") return DeviceId::Touchpad;

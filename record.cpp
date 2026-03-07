@@ -1,27 +1,28 @@
 #include "record.h"
 
+#include <linux/input-event-codes.h>
+
+#include <cstdio>
+#include <iostream>
+
 #include "asynclogwriter.h"
 #include "deviceid.h"
-#include "eventformat.h"
 #include "evdev.h"
+#include "eventformat.h"
 #include "filesystem.h"
 #include "inputdevice.h"
 #include "keyboarddevice.h"
 #include "touchdevice.h"
 
-#include <cstdio>
-#include <iostream>
-#include <linux/input-event-codes.h>
-
-Record::Record(const run_options& options) : options_(options) {}
+Record::Record(const run_options &options) : options_(options) {}
 
 std::vector<RecordTarget> Record::collect_targets() {
   std::vector<RecordTarget> result;
-  for (const auto& kind : options_.kinds) {
+  for (const auto &kind : options_.kinds) {
     std::string path = find_device_path(kind);
     if (path.empty()) {
-      std::cout << "No " << device_label(kind) << " detected. Try running with sudo."
-                << std::endl;
+      std::cout << "No " << device_label(kind)
+                << " detected. Try running with sudo." << std::endl;
       continue;
     }
 
@@ -36,7 +37,7 @@ std::vector<RecordTarget> Record::collect_targets() {
 }
 
 void Record::close_targets() {
-  for (const auto& t : targets_) fs_.close_fd(t.fd);
+  for (const auto &t : targets_) fs_.close_fd(t.fd);
 }
 
 void Record::record_events() {
@@ -47,16 +48,16 @@ void Record::record_events() {
 
   std::vector<int> fds;
   fds.reserve(targets_.size());
-  for (const auto& t : targets_) {
+  for (const auto &t : targets_) {
     log_writer.push("Recording " + device_label(t.id) + " from " + t.path);
     fds.push_back(t.fd);
   }
   log_writer.push("(Ctrl+C to stop)");
 
   SigintGuard sigint;
-  std::ostream& event_out = fs_.output_stream();
+  std::ostream &event_out = fs_.output_stream();
   bool log_events_to_console = !options_.quiet;
-  auto write_line = [&](const std::string& line) {
+  auto write_line = [&](const std::string &line) {
     event_out << line << "\n";
     if (log_events_to_console) log_writer.push(line);
   };
@@ -88,21 +89,21 @@ void Record::record_events() {
       if (count == 0) continue;
 
       for (int j = 0; j < count; ++j) {
-        const auto& ev = events[j];
+        const auto &ev = events[j];
         if (ev.type == EV_SYN) continue;
 
         if (targets_[i].id == DeviceId::Keyboard) {
           std::vector<Event> emitted_events;
           process_keyboard_event_with_ctrl_filter(ev, &keyboard_states[i],
                                                   &emitted_events);
-          for (const auto& out_ev : emitted_events) {
+          for (const auto &out_ev : emitted_events) {
             write_line(format_event_line(targets_[i].id, out_ev));
           }
           continue;
         }
 
         if (targets_[i].id == DeviceId::Touchpad) {
-          touch_segment_state& touch_state = touch_states[i];
+          touch_segment_state &touch_state = touch_states[i];
           touch_segment_decision decision =
               process_touch_event_for_segment(ev, &touch_state);
           if (decision.emit_break_before_event) {

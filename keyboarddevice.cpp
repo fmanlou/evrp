@@ -1,17 +1,18 @@
 #include "keyboarddevice.h"
 
-#include <cctype>
 #include <linux/input-event-codes.h>
+
+#include <cctype>
 #include <string>
 
-static bool name_like_keyboard(const std::string& name) {
+static bool name_like_keyboard(const std::string &name) {
   std::string n = name;
-  for (auto& c : n) c = static_cast<char>(std::tolower(c));
+  for (auto &c : n) c = static_cast<char>(std::tolower(c));
   return n.find("keyboard") != std::string::npos ||
          n.find("keypad") != std::string::npos;
 }
 
-bool is_keyboard_from_capabilities(const Capabilities& caps) {
+bool is_keyboard_from_capabilities(const Capabilities &caps) {
   bool has_keyboard_keys =
       caps.key_enter || caps.key_space || caps.key_esc || caps.key_a;
 
@@ -73,8 +74,8 @@ std::string keyboard_key_action_from_value(int value) {
 }
 
 void process_keyboard_event_with_ctrl_filter(
-    const Event& ev, keyboard_filter_state* state,
-    std::vector<Event>* emitted_events) {
+    const Event &ev, keyboard_filter_state *state,
+    std::vector<Event> *emitted_events) {
   if (!state || !emitted_events) return;
 
   if (ev.type == EV_KEY) {
@@ -93,7 +94,8 @@ void process_keyboard_event_with_ctrl_filter(
       }
       if (is_release && state->ctrl_down_count == 0) {
         if (!state->saw_ctrl_c) {
-          emitted_events->insert(emitted_events->end(), state->pending_events.begin(),
+          emitted_events->insert(emitted_events->end(),
+                                 state->pending_events.begin(),
                                  state->pending_events.end());
         }
         state->saw_ctrl_c = false;
@@ -116,7 +118,8 @@ void process_keyboard_event_with_ctrl_filter(
 
   if (!state->pending_events.empty() && state->ctrl_down_count == 0) {
     if (!state->saw_ctrl_c) {
-      emitted_events->insert(emitted_events->end(), state->pending_events.begin(),
+      emitted_events->insert(emitted_events->end(),
+                             state->pending_events.begin(),
                              state->pending_events.end());
     }
     state->saw_ctrl_c = false;
@@ -126,8 +129,8 @@ void process_keyboard_event_with_ctrl_filter(
   emitted_events->push_back(ev);
 }
 
-void flush_keyboard_event_filter(keyboard_filter_state* state,
-                                 std::vector<Event>* emitted_events) {
+void flush_keyboard_event_filter(keyboard_filter_state *state,
+                                 std::vector<Event> *emitted_events) {
   if (!state || !emitted_events) return;
   if (state->ctrl_down_count != 0) return;
   if (!state->saw_ctrl_c && !state->pending_events.empty()) {
@@ -137,4 +140,3 @@ void flush_keyboard_event_filter(keyboard_filter_state* state,
   state->saw_ctrl_c = false;
   state->pending_events.clear();
 }
-

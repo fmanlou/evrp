@@ -1,15 +1,15 @@
 #pragma once
 
+#include <string>
+
 #include "argparser.h"
 #include "asynclogwriter.h"
 #include "filesystem.h"
 #include "inputeventwriter.h"
 
-#include <string>
-
 class Playback {
  public:
-  explicit Playback(const run_options& options);
+  explicit Playback(const run_options &options);
   int run();
 
  private:

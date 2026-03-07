@@ -1,10 +1,10 @@
+#include <iostream>
+
 #include "argparser.h"
 #include "playback.h"
 #include "record.h"
 
-#include <iostream>
-
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
   run_options options = parse_options(argc, argv);
 
   if (options.recording && options.playback) {

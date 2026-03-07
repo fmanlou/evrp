@@ -10,7 +10,7 @@ void AsyncLogWriter::start() {
   thread_ = std::thread(&AsyncLogWriter::run, this);
 }
 
-void AsyncLogWriter::push(const std::string& line) {
+void AsyncLogWriter::push(const std::string &line) {
   std::lock_guard<std::mutex> lock(mutex_);
   queue_.push(line);
   cv_.notify_one();

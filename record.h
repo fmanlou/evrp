@@ -1,13 +1,13 @@
 #pragma once
 
+#include <ostream>
+#include <string>
+#include <vector>
+
 #include "argparser.h"
 #include "asynclogwriter.h"
 #include "deviceid.h"
 #include "filesystem.h"
-
-#include <ostream>
-#include <string>
-#include <vector>
 
 struct RecordTarget {
   int fd;
@@ -17,7 +17,7 @@ struct RecordTarget {
 
 class Record {
  public:
-  explicit Record(const run_options& options);
+  explicit Record(const run_options &options);
   int run();
 
  private:

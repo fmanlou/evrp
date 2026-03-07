@@ -1,8 +1,8 @@
 #pragma once
 
-#include "evdev.h"
-
 #include <vector>
+
+#include "evdev.h"
 
 struct touch_segment_state {
   int current_slot;
@@ -22,6 +22,5 @@ struct touch_segment_decision {
 };
 
 touch_segment_decision process_touch_event_for_segment(
-    const Event& ev, touch_segment_state* state);
-bool is_touchpad_from_capabilities(const Capabilities& caps);
-
+    const Event &ev, touch_segment_state *state);
+bool is_touchpad_from_capabilities(const Capabilities &caps);

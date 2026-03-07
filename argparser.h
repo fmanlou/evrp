@@ -1,9 +1,9 @@
 #pragma once
 
-#include "deviceid.h"
-
 #include <string>
 #include <vector>
+
+#include "deviceid.h"
 
 struct run_options {
   bool recording;
@@ -14,7 +14,6 @@ struct run_options {
   std::vector<DeviceId> kinds;
 };
 
-void print_usage(const char* prog);
-bool parse_kind(const std::string& s, DeviceId* out_id);
-run_options parse_options(int argc, char* argv[]);
-
+void print_usage(const char *prog);
+bool parse_kind(const std::string &s, DeviceId *out_id);
+run_options parse_options(int argc, char *argv[]);
