@@ -7,6 +7,7 @@
 #include "touchdevice.h"
 
 #include <cctype>
+#include <cstdio>
 #include <iostream>
 #include <linux/input-event-codes.h>
 #include <sstream>
@@ -106,7 +107,7 @@ std::vector<RecordTarget> collect_targets(FileSystem* fs,
 
     int fd = fs->open_read_only(path.c_str(), false);
     if (fd < 0) {
-      fs->print_error(path.c_str());
+      std::perror(path.c_str());
       continue;
     }
     targets.push_back({fd, kind, path});
@@ -156,7 +157,7 @@ void record_events_multi(const std::vector<RecordTarget>& targets,
     int ret = fs.poll_fds(fds.data(), static_cast<int>(fds.size()), -1, ready);
     if (ret < 0) {
       if (evdev::errno_is_eintr() && evdev::signal_stop_requested()) break;
-      fs.print_error("poll");
+      std::perror("poll");
       break;
     }
 
@@ -165,7 +166,7 @@ void record_events_multi(const std::vector<RecordTarget>& targets,
 
       int count = evdev::read_events(fds[i], events, 64);
       if (count < 0) {
-        fs.print_error("read");
+        std::perror("read");
         break;
       }
       if (count == 0) continue;

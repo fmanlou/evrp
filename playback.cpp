@@ -143,7 +143,7 @@ int playback_file_to_uinput(const std::string& path, bool quiet) {
     if (fd < 0) {
       if (!quiet) {
         std::cerr << "Failed to open " << dev_path << " for write (try: sudo): ";
-        fs.print_error(dev_path.c_str());
+        std::perror(dev_path.c_str());
       }
       label_to_fd[label] = -1;
       return -1;
@@ -211,7 +211,7 @@ int playback_file_to_uinput(const std::string& path, bool quiet) {
     has_prev = true;
 
     if (!write_event(&fs, fd, type, code, value)) {
-      fs.print_error("Failed to write event");
+      std::perror("Failed to write event");
       for (const auto& p : label_to_fd) {
         if (p.second >= 0) fs.close_fd(p.second);
       }
@@ -225,7 +225,7 @@ int playback_file_to_uinput(const std::string& path, bool quiet) {
                               (code == ABS_MT_TRACKING_ID && value == -1)));
       if (needs_mt_report) {
         if (!write_event(&fs, fd, EV_SYN, SYN_MT_REPORT, 0)) {
-          fs.print_error("Failed to write SYN_MT_REPORT");
+          std::perror("Failed to write SYN_MT_REPORT");
           for (const auto& p : label_to_fd) {
             if (p.second >= 0) fs.close_fd(p.second);
           }
@@ -234,7 +234,7 @@ int playback_file_to_uinput(const std::string& path, bool quiet) {
         }
       }
       if (!write_event(&fs, fd, EV_SYN, SYN_REPORT, 0)) {
-        fs.print_error("Failed to write SYN_REPORT");
+        std::perror("Failed to write SYN_REPORT");
         for (const auto& p : label_to_fd) {
           if (p.second >= 0) fs.close_fd(p.second);
         }

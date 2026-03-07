@@ -62,8 +62,6 @@ int FileSystem::poll_fds(int* fds, int nfds, int timeout_ms, bool* ready) const 
   return count;
 }
 
-void FileSystem::print_error(const char* message) const { std::perror(message); }
-
 bool FileSystem::open_output(const std::string& path) {
   error_message_.clear();
 
