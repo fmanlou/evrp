@@ -1,5 +1,6 @@
 #pragma once
 
+#include "argparser.h"
 #include "asynclogwriter.h"
 #include "filesystem/filesystem.h"
 
@@ -8,7 +9,7 @@
 
 class Playback {
  public:
-  Playback(const std::string& path, bool quiet);
+  explicit Playback(const run_options& options);
   int run();
 
  private:
@@ -17,8 +18,7 @@ class Playback {
   bool write_event_with_sync(int fd, unsigned short type, unsigned short code,
                              int value);
 
-  std::string path_;
-  bool quiet_;
+  run_options options_;
   FileSystem fs_;
   std::map<std::string, int> label_to_fd_;
   AsyncLogWriter log_writer_;

@@ -100,17 +100,20 @@ static std::string find_device_path(const std::string& label) {
 
 }  // namespace
 
-Playback::Playback(const std::string& path, bool quiet)
-    : path_(path), quiet_(quiet) {}
+Playback::Playback(const run_options& options) : options_(options) {}
 
 int Playback::run() {
-  if (!fs_.open_input(path_)) {
+  if (options_.playback_path.empty()) {
+    std::cerr << "Playback mode requires a file path after -p." << std::endl;
+    return 1;
+  }
+  if (!fs_.open_input(options_.playback_path)) {
     std::cerr << fs_.error_message() << std::endl;
     return 1;
   }
 
   std::cout << "Playing back to input devices (Ctrl+C to stop)..." << std::endl;
-  if (!quiet_) log_writer_.start();
+  if (!options_.quiet) log_writer_.start();
   evdev::signal_install_sigint();
 
   auto cleanup = make_scope_guard([this]() {
@@ -145,7 +148,7 @@ int Playback::run() {
     has_prev = true;
 
     if (!write_event_with_sync(fd, type, code, value)) return 1;
-    if (!quiet_) log_writer_.push(line);
+    if (!options_.quiet) log_writer_.push(line);
   }
 
   log_writer_.stop();
