@@ -78,10 +78,57 @@ static std::string key_action_from_value(int value) {
   return "unknown(" + std::to_string(value) + ")";
 }
 
+static std::string event_type_name(unsigned short type) {
+  switch (type) {
+    case EV_SYN:
+      return "EV_SYN";
+    case EV_KEY:
+      return "EV_KEY";
+    case EV_REL:
+      return "EV_REL";
+    case EV_ABS:
+      return "EV_ABS";
+    case EV_MSC:
+      return "EV_MSC";
+    default:
+      return "EV_UNKNOWN";
+  }
+}
+
+static std::string event_code_name(unsigned short type, unsigned short code) {
+  if (type == EV_MSC) {
+    switch (code) {
+      case MSC_SCAN:
+        return "MSC_SCAN";
+      case MSC_TIMESTAMP:
+        return "MSC_TIMESTAMP";
+      default:
+        return "";
+    }
+  }
+  if (type == EV_SYN) {
+    switch (code) {
+      case SYN_REPORT:
+        return "SYN_REPORT";
+      case SYN_MT_REPORT:
+        return "SYN_MT_REPORT";
+      default:
+        return "";
+    }
+  }
+  return "";
+}
+
 static std::string format_event_line(const std::string& label, const evdev::Event& ev) {
   std::ostringstream oss;
+  std::string code_name = event_code_name(ev.type, ev.code);
   oss << "[" << label << "] " << ev.sec << "." << ev.usec << " type=" << ev.type
-      << " code=" << ev.code << " value=" << ev.value;
+      << "(" << event_type_name(ev.type) << ")"
+      << " code=" << ev.code;
+  if (!code_name.empty()) {
+    oss << "(" << code_name << ")";
+  }
+  oss << " value=" << ev.value;
   if (label == "keyboard") {
     if (ev.type == EV_KEY) {
       oss << " // key=" << key_name_from_code(ev.code)
@@ -91,6 +138,67 @@ static std::string format_event_line(const std::string& label, const evdev::Even
     }
   }
   return oss.str();
+}
+
+struct touch_segment_state {
+  int current_slot;
+  std::vector<char> slot_active;
+  int active_mt_count;
+  bool btn_touch_active;
+  bool tool_finger_active;
+  bool tool_doubletap_active;
+  bool tool_tripletap_active;
+  bool tool_quadtap_active;
+  bool pending_segment_break;
+};
+
+static bool is_touching_now(const touch_segment_state& state) {
+  bool any_tool_active = state.tool_finger_active || state.tool_doubletap_active ||
+                         state.tool_tripletap_active || state.tool_quadtap_active;
+  return state.active_mt_count > 0 || state.btn_touch_active || any_tool_active;
+}
+
+static bool update_touch_segment_state(const evdev::Event& ev, touch_segment_state* state) {
+  if (!state) return false;
+
+  bool was_touching = is_touching_now(*state);
+
+  if (ev.type == EV_ABS) {
+    if (ev.code == ABS_MT_SLOT) {
+      state->current_slot = ev.value;
+      if (state->current_slot >= 0 &&
+          static_cast<size_t>(state->current_slot) >= state->slot_active.size()) {
+        state->slot_active.resize(static_cast<size_t>(state->current_slot + 1), 0);
+      }
+    } else if (ev.code == ABS_MT_TRACKING_ID && state->current_slot >= 0) {
+      if (static_cast<size_t>(state->current_slot) >= state->slot_active.size()) {
+        state->slot_active.resize(static_cast<size_t>(state->current_slot + 1), 0);
+      }
+      char& current_active = state->slot_active[static_cast<size_t>(state->current_slot)];
+      if (ev.value == -1) {
+        if (current_active) {
+          current_active = 0;
+          state->active_mt_count -= 1;
+        }
+      } else {
+        if (!current_active) {
+          current_active = 1;
+          state->active_mt_count += 1;
+        }
+      }
+    }
+  } else if (ev.type == EV_KEY) {
+    if (ev.code == BTN_TOUCH) state->btn_touch_active = (ev.value != 0);
+    if (ev.code == BTN_TOOL_FINGER) state->tool_finger_active = (ev.value != 0);
+    if (ev.code == BTN_TOOL_DOUBLETAP) state->tool_doubletap_active = (ev.value != 0);
+    if (ev.code == BTN_TOOL_TRIPLETAP) state->tool_tripletap_active = (ev.value != 0);
+#ifdef BTN_TOOL_QUADTAP
+    if (ev.code == BTN_TOOL_QUADTAP) state->tool_quadtap_active = (ev.value != 0);
+#endif
+  }
+
+  bool is_touching = is_touching_now(*state);
+  return was_touching && !is_touching;
 }
 
 bool is_touchpad(const char* dev_path) {
@@ -252,6 +360,7 @@ void record_events_multi(const std::vector<RecordTarget>& targets,
   evdev::Event events[64];
   bool ready[32];
   std::vector<keyboard_filter_state> keyboard_states(fds.size());
+  std::vector<touch_segment_state> touch_states(fds.size());
   while (!evdev::signal_stop_requested()) {
     int ret = fs.poll_fds(fds.data(), static_cast<int>(fds.size()), -1, ready);
     if (ret < 0) {
@@ -284,8 +393,37 @@ void record_events_multi(const std::vector<RecordTarget>& targets,
           continue;
         }
 
+        if (targets[i].label == "touchpad") {
+          touch_segment_state& touch_state = touch_states[i];
+          bool is_msc_timestamp = (ev.type == EV_MSC && ev.code == MSC_TIMESTAMP);
+
+          if (touch_state.pending_segment_break && !is_msc_timestamp) {
+            event_out << "\n";
+            touch_state.pending_segment_break = false;
+          }
+
+          event_out << format_event_line(targets[i].label, ev) << "\n";
+          bool segment_ended = update_touch_segment_state(ev, &touch_state);
+          if (segment_ended) {
+            touch_state.pending_segment_break = true;
+          }
+
+          if (touch_state.pending_segment_break && is_msc_timestamp) {
+            event_out << "\n";
+            touch_state.pending_segment_break = false;
+          }
+          continue;
+        }
+
         event_out << format_event_line(targets[i].label, ev) << "\n";
       }
+    }
+  }
+
+  for (size_t i = 0; i < touch_states.size(); ++i) {
+    if (touch_states[i].pending_segment_break) {
+      event_out << "\n";
+      touch_states[i].pending_segment_break = false;
     }
   }
 
