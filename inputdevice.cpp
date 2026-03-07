@@ -75,3 +75,10 @@ std::string find_first_keyboard() {
   }
   return {};
 }
+
+std::string find_device_path(const std::string& label) {
+  if (label == "touchpad") return find_first_touchpad();
+  if (label == "mouse") return find_first_mouse();
+  if (label == "keyboard") return find_first_keyboard();
+  return "";
+}

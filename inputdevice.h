@@ -15,3 +15,5 @@ std::string find_first_touchpad();
 std::string find_first_mouse();
 std::string find_first_keyboard();
 
+std::string find_device_path(const std::string& label);
+

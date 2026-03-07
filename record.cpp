@@ -78,12 +78,6 @@ static std::string format_event_line(const std::string& label,
   return oss.str();
 }
 
-static std::string find_device_path(const std::string& kind) {
-  if (kind == "touchpad") return find_first_touchpad();
-  if (kind == "mouse") return find_first_mouse();
-  return find_first_keyboard();
-}
-
 }  // namespace
 
 Record::Record(const run_options& options) : options_(options) {}
