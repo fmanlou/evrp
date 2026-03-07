@@ -1,5 +1,7 @@
 #pragma once
 
+#include "argparser.h"
+
 #include <ostream>
 #include <string>
 #include <vector>
@@ -18,3 +20,5 @@ void close_targets(FileSystem* fs, const std::vector<RecordTarget>& targets);
 void record_events_multi(const std::vector<RecordTarget>& targets,
                          std::ostream& event_out,
                          std::ostream* console_out = nullptr);
+
+int run_recording(const run_options& options);

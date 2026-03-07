@@ -222,3 +222,24 @@ void record_events_multi(const std::vector<RecordTarget>& targets,
   log_writer.stop();
   evdev::signal_restore_sigint();
 }
+
+int run_recording(const run_options& options) {
+  FileSystem fs;
+  std::vector<RecordTarget> targets = collect_targets(&fs, options.kinds);
+
+  if (targets.empty()) {
+    std::cout << "No devices to record." << std::endl;
+    return 1;
+  }
+
+  if (!fs.open_output(options.output_path)) {
+    std::cerr << fs.error_message() << std::endl;
+    close_targets(&fs, targets);
+    return 1;
+  }
+
+  record_events_multi(targets, fs.output_stream(),
+                      options.quiet ? nullptr : &std::cout);
+  close_targets(&fs, targets);
+  return 0;
+}

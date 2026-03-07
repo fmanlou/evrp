@@ -234,3 +234,11 @@ int playback_file_to_uinput(const std::string& path, bool quiet) {
   evdev::signal_restore_sigint();
   return 0;
 }
+
+int run_playback(const run_options& options) {
+  if (options.playback_path.empty()) {
+    std::cerr << "Playback mode requires a file path after -p." << std::endl;
+    return 1;
+  }
+  return playback_file_to_uinput(options.playback_path, options.quiet);
+}
