@@ -26,9 +26,12 @@ add_library(record STATIC record.cpp)
 target_include_directories(record PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(record PRIVATE evdev filesystem inputdevice)
 
+add_library(asynclogwriter STATIC asynclogwriter.cpp)
+target_include_directories(asynclogwriter PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
 add_library(playback STATIC playback.cpp)
 target_include_directories(playback PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(playback PRIVATE evdev inputdevice filesystem)
+target_link_libraries(playback PUBLIC asynclogwriter PRIVATE evdev inputdevice filesystem)
 
 add_executable(evrp main.cpp)
 target_link_libraries(evrp PRIVATE inputdevice evdev filesystem argparser playback record)

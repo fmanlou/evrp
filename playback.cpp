@@ -5,17 +5,14 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-#include <atomic>
 #include <chrono>
-#include <condition_variable>
 #include <cstdio>
 #include <iostream>
 #include <map>
-#include <mutex>
-#include <queue>
 #include <string>
 #include <thread>
 
+#include "asynclogwriter.h"
 #include "evdev/evdev.h"
 #include "filesystem/filesystem.h"
 #include "inputdevice.h"
@@ -110,52 +107,6 @@ static bool write_event(const FileSystem* fs, int fd, unsigned short type,
   long n = fs->write_fd(fd, &ev, sizeof(ev));
   return n == static_cast<long>(sizeof(ev));
 }
-
-class AsyncLogWriter {
- public:
-  AsyncLogWriter() : done_(false) {}
-
-  void start() {
-    thread_ = std::thread(&AsyncLogWriter::run, this);
-  }
-
-  void push(const std::string& line) {
-    std::lock_guard<std::mutex> lock(mutex_);
-    queue_.push(line);
-    cv_.notify_one();
-  }
-
-  void stop() {
-    done_ = true;
-    if (thread_.joinable()) {
-      cv_.notify_one();
-      thread_.join();
-    }
-  }
-
-  ~AsyncLogWriter() { stop(); }
-
- private:
-  void run() {
-    std::unique_lock<std::mutex> lock(mutex_);
-    while (!done_ || !queue_.empty()) {
-      cv_.wait(lock, [this]() { return done_ || !queue_.empty(); });
-      while (!queue_.empty()) {
-        std::string s = std::move(queue_.front());
-        queue_.pop();
-        lock.unlock();
-        std::cout << s << std::endl;
-        lock.lock();
-      }
-    }
-  }
-
-  std::queue<std::string> queue_;
-  std::mutex mutex_;
-  std::condition_variable cv_;
-  std::atomic<bool> done_;
-  std::thread thread_;
-};
 
 }  // namespace
 
