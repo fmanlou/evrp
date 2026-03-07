@@ -1,84 +1,16 @@
 #include "record.h"
 
 #include "asynclogwriter.h"
+#include "eventformat.h"
 #include "evdev/evdev.h"
 #include "filesystem/filesystem.h"
 #include "inputdevice.h"
 #include "keyboarddevice.h"
 #include "touchdevice.h"
 
-#include <cctype>
 #include <cstdio>
 #include <iostream>
 #include <linux/input-event-codes.h>
-#include <sstream>
-
-namespace {
-
-static std::string event_type_name(unsigned short type) {
-  switch (type) {
-    case EV_SYN:
-      return "EV_SYN";
-    case EV_KEY:
-      return "EV_KEY";
-    case EV_REL:
-      return "EV_REL";
-    case EV_ABS:
-      return "EV_ABS";
-    case EV_MSC:
-      return "EV_MSC";
-    default:
-      return "EV_UNKNOWN";
-  }
-}
-
-static std::string event_code_name(unsigned short type, unsigned short code) {
-  if (type == EV_MSC) {
-    switch (code) {
-      case MSC_SCAN:
-        return "MSC_SCAN";
-      case MSC_TIMESTAMP:
-        return "MSC_TIMESTAMP";
-      default:
-        return "";
-    }
-  }
-  if (type == EV_SYN) {
-    switch (code) {
-      case SYN_REPORT:
-        return "SYN_REPORT";
-      case SYN_MT_REPORT:
-        return "SYN_MT_REPORT";
-      default:
-        return "";
-    }
-  }
-  return "";
-}
-
-static std::string format_event_line(const std::string& label,
-                                     const evdev::Event& ev) {
-  std::ostringstream oss;
-  std::string code_name = event_code_name(ev.type, ev.code);
-  oss << "[" << label << "] " << ev.sec << "." << ev.usec << " type=" << ev.type
-      << "(" << event_type_name(ev.type) << ")"
-      << " code=" << ev.code;
-  if (!code_name.empty()) {
-    oss << "(" << code_name << ")";
-  }
-  oss << " value=" << ev.value;
-  if (label == "keyboard") {
-    if (ev.type == EV_KEY) {
-      oss << " // key=" << keyboard_key_name_from_code(ev.code)
-          << " action=" << keyboard_key_action_from_value(ev.value);
-    } else {
-      oss << " // key=N/A action=non-key-event";
-    }
-  }
-  return oss.str();
-}
-
-}  // namespace
 
 Record::Record(const run_options& options) : options_(options) {}
 
