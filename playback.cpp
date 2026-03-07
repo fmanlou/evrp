@@ -108,6 +108,40 @@ static bool write_event(const FileSystem* fs, int fd, unsigned short type,
   return n == static_cast<long>(sizeof(ev));
 }
 
+static bool write_event_with_sync(FileSystem* fs, int fd, unsigned short type,
+                                  unsigned short code, int value) {
+  if (!write_event(fs, fd, type, code, value)) {
+    std::perror("Failed to write event");
+    return false;
+  }
+  if (type != EV_SYN) {
+    bool needs_mt =
+        (type == EV_ABS &&
+         (code == ABS_MT_POSITION_Y ||
+          (code == ABS_MT_TRACKING_ID && value == -1)));
+    if (needs_mt && !write_event(fs, fd, EV_SYN, SYN_MT_REPORT, 0)) {
+      std::perror("Failed to write SYN_MT_REPORT");
+      return false;
+    }
+    if (!write_event(fs, fd, EV_SYN, SYN_REPORT, 0)) {
+      std::perror("Failed to write SYN_REPORT");
+      return false;
+    }
+  }
+  return true;
+}
+
+struct PlaybackCleanup {
+  std::map<std::string, int>* fds;
+  FileSystem* fs;
+  ~PlaybackCleanup() {
+    for (const auto& p : *fds) {
+      if (p.second >= 0) fs->close_fd(p.second);
+    }
+    evdev::signal_restore_sigint();
+  }
+};
+
 }  // namespace
 
 int playback_file_to_uinput(const std::string& path, bool quiet) {
@@ -117,10 +151,7 @@ int playback_file_to_uinput(const std::string& path, bool quiet) {
     return 1;
   }
 
-  std::istream& input = fs.input_stream();
   std::map<std::string, int> label_to_fd;
-  std::map<std::string, std::string> label_to_path;
-
   auto get_fd = [&](const std::string& label) -> int {
     if (label.empty()) return -1;
     auto it = label_to_fd.find(label);
@@ -142,7 +173,6 @@ int playback_file_to_uinput(const std::string& path, bool quiet) {
       return -1;
     }
 
-    label_to_path[label] = dev_path;
     label_to_fd[label] = fd;
     std::cout << "Playing back " << label << " to " << dev_path << std::endl;
     return fd;
@@ -150,82 +180,39 @@ int playback_file_to_uinput(const std::string& path, bool quiet) {
 
   std::cout << "Playing back to input devices (Ctrl+C to stop)..." << std::endl;
   AsyncLogWriter log_writer;
-  if (!quiet) {
-    log_writer.start();
-  }
+  if (!quiet) log_writer.start();
   evdev::signal_install_sigint();
 
+  PlaybackCleanup cleanup{&label_to_fd, &fs};
+  std::istream& input = fs.input_stream();
   std::string line;
-  bool has_prev = false;
   long long prev_timestamp_us = 0;
+  bool has_prev = false;
 
   while (!evdev::signal_stop_requested() && std::getline(input, line)) {
     if (line.empty()) continue;
 
     std::string label = parse_label(line);
     long long timestamp_us = 0;
-    unsigned short type = 0;
-    unsigned short code = 0;
+    unsigned short type = 0, code = 0;
     int value = 0;
-
-    if (!parse_event_line(line, &timestamp_us, &type, &code, &value)) {
-      continue;
-    }
+    if (!parse_event_line(line, &timestamp_us, &type, &code, &value)) continue;
 
     int fd = get_fd(label);
     if (fd < 0) continue;
 
     if (has_prev && timestamp_us > prev_timestamp_us) {
-      long long delta_us = timestamp_us - prev_timestamp_us;
-      std::this_thread::sleep_for(std::chrono::microseconds(delta_us));
+      std::this_thread::sleep_for(
+          std::chrono::microseconds(timestamp_us - prev_timestamp_us));
     }
     prev_timestamp_us = timestamp_us;
     has_prev = true;
 
-    if (!write_event(&fs, fd, type, code, value)) {
-      std::perror("Failed to write event");
-      for (const auto& p : label_to_fd) {
-        if (p.second >= 0) fs.close_fd(p.second);
-      }
-      evdev::signal_restore_sigint();
-      return 1;
-    }
-
-    if (type != EV_SYN) {
-      bool needs_mt_report =
-          (type == EV_ABS && (code == ABS_MT_POSITION_Y ||
-                              (code == ABS_MT_TRACKING_ID && value == -1)));
-      if (needs_mt_report) {
-        if (!write_event(&fs, fd, EV_SYN, SYN_MT_REPORT, 0)) {
-          std::perror("Failed to write SYN_MT_REPORT");
-          for (const auto& p : label_to_fd) {
-            if (p.second >= 0) fs.close_fd(p.second);
-          }
-          evdev::signal_restore_sigint();
-          return 1;
-        }
-      }
-      if (!write_event(&fs, fd, EV_SYN, SYN_REPORT, 0)) {
-        std::perror("Failed to write SYN_REPORT");
-        for (const auto& p : label_to_fd) {
-          if (p.second >= 0) fs.close_fd(p.second);
-        }
-        evdev::signal_restore_sigint();
-        return 1;
-      }
-    }
-
-    if (!quiet) {
-      log_writer.push(line);
-    }
+    if (!write_event_with_sync(&fs, fd, type, code, value)) return 1;
+    if (!quiet) log_writer.push(line);
   }
 
   log_writer.stop();
-
-  for (const auto& p : label_to_fd) {
-    if (p.second >= 0) fs.close_fd(p.second);
-  }
-  evdev::signal_restore_sigint();
   return 0;
 }
 
