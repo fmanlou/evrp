@@ -1,3 +1,4 @@
+#include "deviceid.h"
 #include "eventformat.h"
 #include "keyboarddevice.h"
 
@@ -116,17 +117,17 @@ std::string event_code_name(unsigned short type, unsigned short code) {
   return "";
 }
 
-std::string format_event_line(const std::string& label, const Event& ev) {
+std::string format_event_line(DeviceId id, const Event& ev) {
   std::ostringstream oss;
   std::string code_name = event_code_name(ev.type, ev.code);
-  oss << "[" << label << "] " << ev.sec << "." << ev.usec
+  oss << "[" << device_label(id) << "] " << ev.sec << "." << ev.usec
       << " type=" << ev.type << "(" << event_type_name(ev.type) << ")"
       << " code=" << ev.code;
   if (!code_name.empty()) {
     oss << "(" << code_name << ")";
   }
   oss << " value=" << ev.value;
-  if (label == "keyboard") {
+  if (id == DeviceId::Keyboard) {
     if (ev.type == EV_KEY) {
       oss << " // key=" << keyboard_key_name_from_code(ev.code)
           << " action=" << keyboard_key_action_from_value(ev.value);

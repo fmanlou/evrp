@@ -14,9 +14,10 @@ void print_usage(const char* prog) {
             << "  -q: quiet, suppress event log only (status/errors still shown).\n";
 }
 
-bool parse_kind(const std::string& s, std::string* out_label) {
-  if (s == "touchpad" || s == "mouse" || s == "keyboard") {
-    *out_label = s;
+bool parse_kind(const std::string& s, DeviceId* out_id) {
+  DeviceId id = device_id_from_label(s);
+  if (id != DeviceId::Unknown) {
+    *out_id = id;
     return true;
   }
   return false;
@@ -57,9 +58,9 @@ run_options parse_options(int argc, char* argv[]) {
           continue;
         }
 
-        std::string label;
-        if (!parse_kind(argv[i], &label)) break;
-        options.kinds.push_back(label);
+        DeviceId id;
+        if (!parse_kind(argv[i], &id)) break;
+        options.kinds.push_back(id);
         ++i;
       }
       break;
@@ -67,7 +68,7 @@ run_options parse_options(int argc, char* argv[]) {
   }
 
   if (options.recording && options.kinds.empty()) {
-    options.kinds = {"touchpad", "mouse", "keyboard"};
+    options.kinds = {DeviceId::Touchpad, DeviceId::Mouse, DeviceId::Keyboard};
   }
   return options;
 }

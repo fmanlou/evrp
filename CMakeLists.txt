@@ -15,20 +15,24 @@ add_library(filesystem STATIC filesystem.cpp)
 target_include_directories(filesystem PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(evdev PRIVATE filesystem)
 
+add_library(deviceid STATIC deviceid.cpp)
+target_include_directories(deviceid PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
 add_library(argparser STATIC argparser.cpp)
 target_include_directories(argparser PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(argparser PRIVATE deviceid)
 
 add_library(inputeventwriter STATIC inputeventwriter.cpp)
 target_include_directories(inputeventwriter PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(inputeventwriter PRIVATE filesystem inputdevice)
+target_link_libraries(inputeventwriter PRIVATE deviceid filesystem inputdevice)
 
 add_library(eventformat STATIC eventformat.cpp)
 target_include_directories(eventformat PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(eventformat PRIVATE evdev inputdevice)
+target_link_libraries(eventformat PRIVATE deviceid evdev inputdevice)
 
 add_library(inputdevice STATIC inputdevice.cpp keyboarddevice.cpp touchdevice.cpp)
 target_include_directories(inputdevice PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(inputdevice PUBLIC evdev filesystem)
+target_link_libraries(inputdevice PUBLIC deviceid evdev filesystem)
 
 add_library(record STATIC record.cpp)
 target_include_directories(record PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

@@ -1,4 +1,5 @@
 #include "argparser.h"
+#include "deviceid.h"
 
 #include <gtest/gtest.h>
 
@@ -14,19 +15,19 @@ static std::vector<char*> build_argv(std::vector<std::string>* storage) {
 }
 
 TEST(ArgParser, ParseKindAcceptsKnownKinds) {
-  std::string label;
-  EXPECT_TRUE(parse_kind("touchpad", &label));
-  EXPECT_EQ(label, "touchpad");
-  EXPECT_TRUE(parse_kind("mouse", &label));
-  EXPECT_EQ(label, "mouse");
-  EXPECT_TRUE(parse_kind("keyboard", &label));
-  EXPECT_EQ(label, "keyboard");
+  DeviceId id;
+  EXPECT_TRUE(parse_kind("touchpad", &id));
+  EXPECT_EQ(id, DeviceId::Touchpad);
+  EXPECT_TRUE(parse_kind("mouse", &id));
+  EXPECT_EQ(id, DeviceId::Mouse);
+  EXPECT_TRUE(parse_kind("keyboard", &id));
+  EXPECT_EQ(id, DeviceId::Keyboard);
 }
 
 TEST(ArgParser, ParseKindRejectsUnknownKind) {
-  std::string label = "init";
-  EXPECT_FALSE(parse_kind("joystick", &label));
-  EXPECT_EQ(label, "init");
+  DeviceId id = DeviceId::Keyboard;
+  EXPECT_FALSE(parse_kind("joystick", &id));
+  EXPECT_EQ(id, DeviceId::Keyboard);
 }
 
 TEST(ArgParser, ParseOptionsWithNoArgsDisablesRecording) {
@@ -46,8 +47,8 @@ TEST(ArgParser, ParseOptionsEnableRecordingAndKinds) {
   run_options options = parse_options(static_cast<int>(argv.size()), argv.data());
   EXPECT_TRUE(options.recording);
   ASSERT_EQ(options.kinds.size(), 2u);
-  EXPECT_EQ(options.kinds[0], "mouse");
-  EXPECT_EQ(options.kinds[1], "keyboard");
+  EXPECT_EQ(options.kinds[0], DeviceId::Mouse);
+  EXPECT_EQ(options.kinds[1], DeviceId::Keyboard);
 }
 
 TEST(ArgParser, ParseOptionsReadsOutputPath) {
@@ -59,7 +60,7 @@ TEST(ArgParser, ParseOptionsReadsOutputPath) {
   EXPECT_FALSE(options.playback);
   EXPECT_EQ(options.output_path, "events.log");
   ASSERT_EQ(options.kinds.size(), 1u);
-  EXPECT_EQ(options.kinds[0], "touchpad");
+  EXPECT_EQ(options.kinds[0], DeviceId::Touchpad);
 }
 
 TEST(ArgParser, ParseOptionsEnablePlaybackAndPath) {
@@ -80,9 +81,9 @@ TEST(ArgParser, ParseOptionsRecordDefaultsKindsWhenNoTypes) {
   run_options options = parse_options(static_cast<int>(argv.size()), argv.data());
   EXPECT_TRUE(options.recording);
   ASSERT_EQ(options.kinds.size(), 3u);
-  EXPECT_EQ(options.kinds[0], "touchpad");
-  EXPECT_EQ(options.kinds[1], "mouse");
-  EXPECT_EQ(options.kinds[2], "keyboard");
+  EXPECT_EQ(options.kinds[0], DeviceId::Touchpad);
+  EXPECT_EQ(options.kinds[1], DeviceId::Mouse);
+  EXPECT_EQ(options.kinds[2], DeviceId::Keyboard);
 }
 
 TEST(ArgParser, ParseOptionsQuietFlag) {
@@ -93,7 +94,7 @@ TEST(ArgParser, ParseOptionsQuietFlag) {
   EXPECT_TRUE(options.recording);
   EXPECT_TRUE(options.quiet);
   ASSERT_EQ(options.kinds.size(), 1u);
-  EXPECT_EQ(options.kinds[0], "keyboard");
+  EXPECT_EQ(options.kinds[0], DeviceId::Keyboard);
 }
 
 TEST(ArgParser, ParseOptionsPlaybackWithQuiet) {

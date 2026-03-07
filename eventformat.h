@@ -1,5 +1,6 @@
 #pragma once
 
+#include "deviceid.h"
 #include "evdev.h"
 
 #include <string>
@@ -12,4 +13,4 @@ bool parse_event_line(const std::string& line, long long* out_timestamp_us,
 
 std::string event_type_name(unsigned short type);
 std::string event_code_name(unsigned short type, unsigned short code);
-std::string format_event_line(const std::string& label, const Event& ev);
+std::string format_event_line(DeviceId id, const Event& ev);

@@ -1,6 +1,7 @@
 #include "record.h"
 
 #include "asynclogwriter.h"
+#include "deviceid.h"
 #include "eventformat.h"
 #include "evdev.h"
 #include "filesystem.h"
@@ -19,7 +20,7 @@ std::vector<RecordTarget> Record::collect_targets() {
   for (const auto& kind : options_.kinds) {
     std::string path = find_device_path(kind);
     if (path.empty()) {
-      std::cout << "No " << kind << " detected. Try running with sudo."
+      std::cout << "No " << device_label(kind) << " detected. Try running with sudo."
                 << std::endl;
       continue;
     }
@@ -47,7 +48,7 @@ void Record::record_events() {
   std::vector<int> fds;
   fds.reserve(targets_.size());
   for (const auto& t : targets_) {
-    log_writer.push("Recording " + t.label + " from " + t.path);
+    log_writer.push("Recording " + device_label(t.id) + " from " + t.path);
     fds.push_back(t.fd);
   }
   log_writer.push("(Ctrl+C to stop)");
@@ -90,17 +91,17 @@ void Record::record_events() {
         const auto& ev = events[j];
         if (ev.type == EV_SYN) continue;
 
-        if (targets_[i].label == "keyboard") {
+        if (targets_[i].id == DeviceId::Keyboard) {
           std::vector<Event> emitted_events;
           process_keyboard_event_with_ctrl_filter(ev, &keyboard_states[i],
                                                   &emitted_events);
           for (const auto& out_ev : emitted_events) {
-            write_line(format_event_line(targets_[i].label, out_ev));
+            write_line(format_event_line(targets_[i].id, out_ev));
           }
           continue;
         }
 
-        if (targets_[i].label == "touchpad") {
+        if (targets_[i].id == DeviceId::Touchpad) {
           touch_segment_state& touch_state = touch_states[i];
           touch_segment_decision decision =
               process_touch_event_for_segment(ev, &touch_state);
@@ -108,14 +109,14 @@ void Record::record_events() {
             write_newline();
           }
 
-          write_line(format_event_line(targets_[i].label, ev));
+          write_line(format_event_line(targets_[i].id, ev));
           if (decision.emit_break_after_event) {
             write_newline();
           }
           continue;
         }
 
-        write_line(format_event_line(targets_[i].label, ev));
+        write_line(format_event_line(targets_[i].id, ev));
       }
     }
   }

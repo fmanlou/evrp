@@ -7,6 +7,7 @@
 #include <thread>
 
 #include "asynclogwriter.h"
+#include "deviceid.h"
 #include "eventformat.h"
 #include "evdev.h"
 #include "filesystem.h"
@@ -38,13 +39,14 @@ int Playback::run() {
     if (line.empty()) continue;
 
     std::string label = parse_event_label(line);
+    DeviceId device_id = device_id_from_label(label);
+    if (device_id == DeviceId::Unknown) continue;
+
     long long timestamp_us = 0;
     unsigned short type = 0, code = 0;
     int value = 0;
     if (!parse_event_line(line, &timestamp_us, &type, &code, &value))
       continue;
-
-    if (label != "keyboard" && label != "mouse" && label != "touchpad") continue;
 
     if (has_prev && timestamp_us > prev_timestamp_us) {
       std::this_thread::sleep_for(
@@ -53,13 +55,7 @@ int Playback::run() {
     prev_timestamp_us = timestamp_us;
     has_prev = true;
 
-    if (label == "keyboard") {
-      if (!event_writer_.write_keyboard(type, code, value)) return 1;
-    } else if (label == "mouse") {
-      if (!event_writer_.write_mouse(type, code, value)) return 1;
-    } else {
-      if (!event_writer_.write_touchpad(type, code, value)) return 1;
-    }
+    if (!event_writer_.write(device_id, type, code, value)) return 1;
     if (!options_.quiet) log_writer_.push(line);
   }
 

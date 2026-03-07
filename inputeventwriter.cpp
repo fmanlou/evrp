@@ -12,21 +12,21 @@
 InputEventWriter::InputEventWriter(FileSystem* fs) : fs_(fs) {}
 
 InputEventWriter::~InputEventWriter() {
-  for (const auto& p : label_to_fd_) {
+  for (const auto& p : id_to_fd_) {
     if (p.second >= 0) fs_->close_fd(p.second);
   }
 }
 
-int InputEventWriter::get_fd(const std::string& label) {
-  if (label.empty()) return -1;
-  auto it = label_to_fd_.find(label);
-  if (it != label_to_fd_.end()) return it->second;
+int InputEventWriter::get_fd(DeviceId id) {
+  if (id == DeviceId::Unknown) return -1;
+  auto it = id_to_fd_.find(id);
+  if (it != id_to_fd_.end()) return it->second;
 
-  std::string dev_path = find_device_path(label);
+  std::string dev_path = find_device_path(id);
   if (dev_path.empty()) {
-    std::cerr << "No " << label << " device found, skipping events."
+    std::cerr << "No " << device_label(id) << " device found, skipping events."
               << std::endl;
-    label_to_fd_[label] = -1;
+    id_to_fd_[id] = -1;
     return -1;
   }
 
@@ -34,13 +34,21 @@ int InputEventWriter::get_fd(const std::string& label) {
   if (fd < 0) {
     std::cerr << "Failed to open " << dev_path << " for write (try: sudo): ";
     std::perror(dev_path.c_str());
-    label_to_fd_[label] = -1;
+    id_to_fd_[id] = -1;
     return -1;
   }
 
-  label_to_fd_[label] = fd;
-  std::cout << "Playing back " << label << " to " << dev_path << std::endl;
+  id_to_fd_[id] = fd;
+  std::cout << "Playing back " << device_label(id) << " to " << dev_path
+            << std::endl;
   return fd;
+}
+
+bool InputEventWriter::write(DeviceId id, unsigned short type,
+                             unsigned short code, int value) {
+  int fd = get_fd(id);
+  if (fd < 0) return true;  // Skip when device not found
+  return write_event_with_sync(fd, type, code, value);
 }
 
 bool InputEventWriter::write_event(int fd, unsigned short type,
@@ -77,23 +85,3 @@ bool InputEventWriter::write_event_with_sync(int fd, unsigned short type,
   return true;
 }
 
-bool InputEventWriter::write_keyboard(unsigned short type, unsigned short code,
-                                     int value) {
-  int fd = get_fd("keyboard");
-  if (fd < 0) return true;  // Skip when device not found
-  return write_event_with_sync(fd, type, code, value);
-}
-
-bool InputEventWriter::write_mouse(unsigned short type, unsigned short code,
-                                  int value) {
-  int fd = get_fd("mouse");
-  if (fd < 0) return true;  // Skip when device not found
-  return write_event_with_sync(fd, type, code, value);
-}
-
-bool InputEventWriter::write_touchpad(unsigned short type, unsigned short code,
-                                     int value) {
-  int fd = get_fd("touchpad");
-  if (fd < 0) return true;  // Skip when device not found
-  return write_event_with_sync(fd, type, code, value);
-}

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "deviceid.h"
 #include "evdev.h"
 
 #include <string>
@@ -15,5 +16,5 @@ std::string find_first_touchpad();
 std::string find_first_mouse();
 std::string find_first_keyboard();
 
-std::string find_device_path(const std::string& label);
+std::string find_device_path(DeviceId id);
 

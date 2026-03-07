@@ -2,6 +2,7 @@
 
 #include "argparser.h"
 #include "asynclogwriter.h"
+#include "deviceid.h"
 #include "filesystem.h"
 
 #include <ostream>
@@ -10,7 +11,7 @@
 
 struct RecordTarget {
   int fd;
-  std::string label;
+  DeviceId id;
   std::string path;
 };
 
