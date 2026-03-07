@@ -1,4 +1,6 @@
 #include "inputdevice.h"
+#include "keyboarddevice.h"
+#include "touchdevice.h"
 
 #include <gtest/gtest.h>
 #include <linux/input-event-codes.h>
