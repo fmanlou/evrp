@@ -1,4 +1,5 @@
 #include "argparser.h"
+#include "cursorpos.h"
 #include "logger.h"
 #include "lua/lua_bindings.h"
 #include "playback.h"
@@ -7,6 +8,9 @@
 int main(int argc, char *argv[]) {
   Logger logger;
   g_logger = &logger;
+
+  CursorPos cursor;
+  g_cursor = &cursor;
 
   run_options options = parse_options(argc, argv);
   g_logger->set_level(options.log_level);

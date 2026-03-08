@@ -8,6 +8,7 @@
 
 #include "filesystem.h"
 #include "inputeventwriter.h"
+#include "cursorpos.h"
 #include "keyboard/keyboardeventwriter.h"
 #include "logger.h"
 #include "mouse/mouseeventwriter.h"
@@ -91,6 +92,72 @@ int lua_mouse_move(lua_State* L) {
     return luaL_error(L, "evrp mouse not initialized");
   }
   bool ok = g_mouse->move(static_cast<int>(dx), static_cast<int>(dy));
+  lua_pushboolean(L, ok);
+  return 1;
+}
+
+int lua_mouse_move_to_screen(lua_State* L) {
+  lua_Integer x = luaL_checkinteger(L, 1);
+  lua_Integer y = luaL_checkinteger(L, 2);
+  if (get_dry_run(L)) {
+    lua_pushboolean(L, true);
+    return 1;
+  }
+  if (!g_mouse) {
+    return luaL_error(L, "evrp mouse not initialized");
+  }
+  bool ok = g_mouse->move_to_screen(static_cast<int>(x), static_cast<int>(y));
+  lua_pushboolean(L, ok);
+  return 1;
+}
+
+int lua_mouse_get_position(lua_State* L) {
+  int x = 0, y = 0;
+  bool ok = g_cursor && g_cursor->get_position(&x, &y);
+  if (!ok) {
+    lua_pushnil(L);
+    return 1;
+  }
+  lua_pushinteger(L, x);
+  lua_pushinteger(L, y);
+  return 2;
+}
+
+int lua_mouse_is_cursor_available(lua_State* L) {
+  lua_pushboolean(L, g_cursor && g_cursor->is_available());
+  return 1;
+}
+
+int lua_mouse_move_to(lua_State* L) {
+  lua_Integer x = luaL_checkinteger(L, 1);
+  lua_Integer y = luaL_checkinteger(L, 2);
+  if (get_dry_run(L)) {
+    lua_pushboolean(L, true);
+    return 1;
+  }
+  if (!g_mouse) {
+    return luaL_error(L, "evrp mouse not initialized");
+  }
+  bool ok = g_mouse->move_to(static_cast<int>(x), static_cast<int>(y));
+  lua_pushboolean(L, ok);
+  return 1;
+}
+
+int lua_mouse_move_to_scaled(lua_State* L) {
+  lua_Integer x = luaL_checkinteger(L, 1);
+  lua_Integer y = luaL_checkinteger(L, 2);
+  lua_Integer width = luaL_checkinteger(L, 3);
+  lua_Integer height = luaL_checkinteger(L, 4);
+  if (get_dry_run(L)) {
+    lua_pushboolean(L, true);
+    return 1;
+  }
+  if (!g_mouse) {
+    return luaL_error(L, "evrp mouse not initialized");
+  }
+  bool ok = g_mouse->move_to_scaled(static_cast<int>(x), static_cast<int>(y),
+                                   static_cast<int>(width),
+                                   static_cast<int>(height));
   lua_pushboolean(L, ok);
   return 1;
 }
@@ -263,6 +330,16 @@ void register_evrp_table(lua_State* L) {
   lua_newtable(L);
   lua_pushcfunction(L, lua_mouse_move);
   lua_setfield(L, -2, "move");
+  lua_pushcfunction(L, lua_mouse_move_to_screen);
+  lua_setfield(L, -2, "move_to_screen");
+  lua_pushcfunction(L, lua_mouse_move_to);
+  lua_setfield(L, -2, "move_to");
+  lua_pushcfunction(L, lua_mouse_move_to_scaled);
+  lua_setfield(L, -2, "move_to_scaled");
+  lua_pushcfunction(L, lua_mouse_get_position);
+  lua_setfield(L, -2, "get_position");
+  lua_pushcfunction(L, lua_mouse_is_cursor_available);
+  lua_setfield(L, -2, "is_cursor_available");
   lua_pushcfunction(L, lua_mouse_scroll_v);
   lua_setfield(L, -2, "scroll_v");
   lua_pushcfunction(L, lua_mouse_scroll_h);

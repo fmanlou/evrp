@@ -21,6 +21,21 @@ target_link_libraries(evdev PRIVATE filesystem)
 add_library(deviceid STATIC deviceid.cpp)
 target_include_directories(deviceid PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
+option(EVRP_USE_X11_CURSOR "Enable X11 cursor position backend" ON)
+
+set(cursorpos_sources cursorpos.cpp)
+if(EVRP_USE_X11_CURSOR)
+  find_package(X11 REQUIRED)
+  list(APPEND cursorpos_sources cursorposx11.cpp)
+endif()
+
+add_library(cursorpos STATIC ${cursorpos_sources})
+target_include_directories(cursorpos PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+if(EVRP_USE_X11_CURSOR)
+  target_compile_definitions(cursorpos PUBLIC EVRP_USE_X11_CURSOR)
+  target_link_libraries(cursorpos PUBLIC X11::X11)
+endif()
+
 add_library(argparser STATIC argparser.cpp)
 target_include_directories(argparser PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(argparser PRIVATE deviceid logger)
@@ -30,7 +45,7 @@ add_library(inputeventwriter STATIC inputeventwriter.cpp
                                     mouse/mouseeventwriter.cpp)
 target_include_directories(inputeventwriter PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(inputeventwriter PRIVATE deviceid filesystem inputdevice
-                                                logger)
+                                                logger cursorpos)
 
 add_library(eventformat STATIC eventformat.cpp)
 target_include_directories(eventformat PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
@@ -58,13 +73,13 @@ target_link_libraries(
 add_library(lua_bindings STATIC lua/lua_bindings.cpp)
 target_include_directories(lua_bindings PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(lua_bindings PUBLIC lua inputeventwriter filesystem
-                                         logger)
+                                         logger cursorpos)
 
 add_executable(evrp main.cpp)
 target_link_libraries(
   evrp
   PRIVATE inputdevice evdev filesystem argparser playback record lua_bindings
-          logger)
+          logger cursorpos)
 
 add_executable(evrp_tests tests/inputdevice_test.cpp tests/argparser_test.cpp)
 target_link_libraries(evrp_tests PRIVATE inputdevice argparser logger

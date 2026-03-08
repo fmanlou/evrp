@@ -7,6 +7,7 @@
 #include <cstdio>
 #include <sstream>
 
+#include "cursorpos.h"
 #include "filesystem.h"
 #include "inputdevice.h"
 #include "keyboard/keyboardeventwriter.h"
@@ -14,7 +15,7 @@
 #include "mouse/mouseeventwriter.h"
 
 InputEventWriter::InputEventWriter(FileSystem *fs)
-    : fs_(fs), keyboard_writer_(this), mouse_writer_(this) {}
+    : fs_(fs), keyboard_writer_(this), mouse_writer_(this, g_cursor) {}
 
 InputEventWriter::~InputEventWriter() {
   for (const auto &p : id_to_fd_) {
