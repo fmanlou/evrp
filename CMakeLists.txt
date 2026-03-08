@@ -25,7 +25,8 @@ add_library(argparser STATIC argparser.cpp)
 target_include_directories(argparser PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(argparser PRIVATE deviceid)
 
-add_library(inputeventwriter STATIC inputeventwriter.cpp keyboardeventwriter.cpp)
+add_library(inputeventwriter STATIC inputeventwriter.cpp
+                                    keyboardeventwriter.cpp)
 target_include_directories(inputeventwriter PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(inputeventwriter PRIVATE deviceid filesystem inputdevice)
 
@@ -33,29 +34,43 @@ add_library(eventformat STATIC eventformat.cpp)
 target_include_directories(eventformat PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(eventformat PRIVATE deviceid evdev inputdevice)
 
-add_library(inputdevice STATIC inputdevice.cpp keyboarddevice.cpp touchdevice.cpp)
+add_library(inputdevice STATIC inputdevice.cpp keyboarddevice.cpp
+                               touchdevice.cpp)
 target_include_directories(inputdevice PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(inputdevice PUBLIC deviceid evdev filesystem)
 
 add_library(record STATIC record.cpp)
 target_include_directories(record PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(record PRIVATE asynclogwriter evdev eventformat filesystem inputdevice)
+target_link_libraries(record PRIVATE asynclogwriter evdev eventformat
+                                     filesystem inputdevice)
 
 add_library(asynclogwriter STATIC asynclogwriter.cpp)
 target_include_directories(asynclogwriter PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_library(playback STATIC playback.cpp)
 target_include_directories(playback PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(playback PUBLIC asynclogwriter PRIVATE evdev eventformat inputeventwriter inputdevice filesystem)
+target_link_libraries(
+  playback
+  PUBLIC asynclogwriter
+  PRIVATE evdev eventformat inputeventwriter inputdevice filesystem)
 
 add_library(lua_bindings STATIC lua_bindings.cpp)
 target_include_directories(lua_bindings PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(lua_bindings PUBLIC lua inputeventwriter filesystem)
 
 add_executable(evrp main.cpp)
-target_link_libraries(evrp PRIVATE inputdevice evdev filesystem argparser playback record lua_bindings)
+target_link_libraries(
+  evrp
+  PRIVATE inputdevice
+          evdev
+          filesystem
+          argparser
+          playback
+          record
+          lua_bindings)
 
 add_executable(evrp_tests tests/inputdevice_test.cpp tests/argparser_test.cpp)
-target_link_libraries(evrp_tests PRIVATE inputdevice argparser GTest::gtest_main)
+target_link_libraries(evrp_tests PRIVATE inputdevice argparser
+                                         GTest::gtest_main)
 include(GoogleTest)
 gtest_discover_tests(evrp_tests)
