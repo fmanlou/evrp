@@ -43,7 +43,6 @@ void Record::record_events() {
   if (targets_.empty()) return;
 
   g_logger->set_level(options_.log_level);
-  g_logger->start();
 
   std::vector<int> fds;
   fds.reserve(targets_.size());
@@ -129,7 +128,6 @@ void Record::record_events() {
   }
 
   event_out.flush();
-  g_logger->stop();
 }
 
 int Record::run() {

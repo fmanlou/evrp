@@ -45,12 +45,8 @@ target_include_directories(record PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(record PRIVATE evdev eventformat filesystem inputdevice
                                      logger)
 
-add_library(asynclogwriter STATIC asynclogwriter.cpp)
-target_include_directories(asynclogwriter PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-
 add_library(logger STATIC logger.cpp)
 target_include_directories(logger PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(logger PRIVATE asynclogwriter)
 
 add_library(playback STATIC playback.cpp)
 target_include_directories(playback PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

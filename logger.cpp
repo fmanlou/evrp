@@ -6,8 +6,6 @@
 #include <iostream>
 #include <sstream>
 
-#include "asynclogwriter.h"
-
 LogLevel log_level_from_string(const std::string &s) {
   std::string lower = s;
   std::transform(lower.begin(), lower.end(), lower.begin(),
@@ -36,31 +34,11 @@ const char *log_level_name(LogLevel level) {
   return "INFO";
 }
 
-class Logger::Impl {
- public:
-  AsyncLogWriter writer;
-};
+Logger::Logger() : level_(LogLevel::Info) {}
 
-Logger::Logger() : level_(LogLevel::Info), async_started_(false), impl_(new Impl) {}
-
-Logger::~Logger() {
-  stop();
-  delete impl_;
-}
+Logger::~Logger() {}
 
 Logger *g_logger = nullptr;
-
-void Logger::start() {
-  async_started_ = true;
-  impl_->writer.start();
-}
-
-void Logger::stop() {
-  if (async_started_) {
-    impl_->writer.stop();
-    async_started_ = false;
-  }
-}
 
 bool Logger::should_log(LogLevel level) const {
   return static_cast<int>(level) <= static_cast<int>(level_);
@@ -71,14 +49,10 @@ void Logger::log(LogLevel level, const std::string &msg) {
   std::ostringstream oss;
   oss << "[" << log_level_name(level) << "] " << msg;
   std::string line = oss.str();
-  if (async_started_) {
-    impl_->writer.push(line);
+  if (level == LogLevel::Error || level == LogLevel::Warn) {
+    std::cerr << line << std::endl;
   } else {
-    if (level == LogLevel::Error || level == LogLevel::Warn) {
-      std::cerr << line << std::endl;
-    } else {
-      std::cout << line << std::endl;
-    }
+    std::cout << line << std::endl;
   }
 }
 
@@ -94,9 +68,5 @@ void Logger::trace(const std::string &msg) { log(LogLevel::Trace, msg); }
 
 void Logger::push(const std::string &line) {
   if (!should_log(LogLevel::Debug)) return;
-  if (async_started_) {
-    impl_->writer.push(line);
-  } else {
-    std::cout << line << std::endl;
-  }
+  std::cout << line << std::endl;
 }

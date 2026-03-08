@@ -18,9 +18,6 @@ class Logger {
   void set_level(LogLevel level) { level_ = level; }
   LogLevel level() const { return level_; }
 
-  void start();
-  void stop();
-
   void error(const std::string &msg);
   void warn(const std::string &msg);
   void info(const std::string &msg);
@@ -41,9 +38,6 @@ class Logger {
   bool should_log(LogLevel level) const;
 
   LogLevel level_;
-  bool async_started_;
-  class Impl;
-  Impl *impl_;
 };
 
 extern Logger *g_logger;

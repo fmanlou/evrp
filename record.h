@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "argparser.h"
-#include "asynclogwriter.h"
 #include "deviceid.h"
 #include "filesystem.h"
 

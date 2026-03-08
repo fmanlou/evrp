@@ -27,7 +27,6 @@ int Playback::run() {
 
   g_logger->set_level(options_.log_level);
   g_logger->info("Playing back to input devices (Ctrl+C to stop)...");
-  g_logger->start();
   SigintGuard sigint;
 
   std::istream &input = fs_.input_stream();
@@ -58,6 +57,5 @@ int Playback::run() {
     log_push(line);
   }
 
-  g_logger->stop();
   return 0;
 }
