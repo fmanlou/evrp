@@ -1,6 +1,6 @@
 #include "argparser.h"
 #include "logger.h"
-#include "lua_bindings.h"
+#include "lua/lua_bindings.h"
 #include "playback.h"
 #include "record.h"
 

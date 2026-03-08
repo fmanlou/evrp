@@ -54,7 +54,7 @@ target_link_libraries(
   playback
   PRIVATE evdev eventformat inputeventwriter inputdevice filesystem logger)
 
-add_library(lua_bindings STATIC lua_bindings.cpp)
+add_library(lua_bindings STATIC lua/lua_bindings.cpp)
 target_include_directories(lua_bindings PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(lua_bindings PUBLIC lua inputeventwriter filesystem
                                          logger)
