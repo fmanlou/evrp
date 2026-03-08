@@ -9,8 +9,10 @@
 
 #include "filesystem.h"
 #include "inputdevice.h"
+#include "keyboardeventwriter.h"
 
-InputEventWriter::InputEventWriter(FileSystem *fs) : fs_(fs) {}
+InputEventWriter::InputEventWriter(FileSystem *fs)
+    : fs_(fs), keyboard_writer_(this) {}
 
 InputEventWriter::~InputEventWriter() {
   for (const auto &p : id_to_fd_) {
@@ -47,6 +49,14 @@ int InputEventWriter::get_fd(DeviceId id) {
 
 bool InputEventWriter::write(DeviceId id, unsigned short type,
                              unsigned short code, int value) {
+  if (id == DeviceId::Keyboard && keyboard_writer_.dispatch(type, code, value)) {
+    return true;  // EV_KEY handled by dispatch
+  }
+  return write_raw(id, type, code, value);
+}
+
+bool InputEventWriter::write_raw(DeviceId id, unsigned short type,
+                                 unsigned short code, int value) {
   int fd = get_fd(id);
   if (fd < 0) return true;  // Skip when device not found
   return write_event_with_sync(fd, type, code, value);
