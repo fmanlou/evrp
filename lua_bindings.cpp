@@ -9,6 +9,7 @@
 #include "filesystem.h"
 #include "inputeventwriter.h"
 #include "keyboardeventwriter.h"
+#include "logger.h"
 
 namespace evrp {
 namespace lua {
@@ -181,7 +182,8 @@ int run_script(const char* path) {
   g_keyboard = nullptr;
 
   if (err != LUA_OK) {
-    std::fprintf(stderr, "Lua error: %s\n", lua_tostring(L, -1));
+    log_error(std::string("Lua error: ") +
+                             lua_tostring(L, -1));
     lua_pop(L, 1);
   }
   lua_close(L);

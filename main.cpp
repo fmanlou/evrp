@@ -1,17 +1,20 @@
-#include <iostream>
-
 #include "argparser.h"
+#include "logger.h"
 #include "lua_bindings.h"
 #include "playback.h"
 #include "record.h"
 
 int main(int argc, char *argv[]) {
+  Logger logger;
+  g_logger = &logger;
+
   run_options options = parse_options(argc, argv);
+  g_logger->set_level(options.log_level);
 
   int mode_count = (options.recording ? 1 : 0) + (options.playback ? 1 : 0) +
                    (options.lua_script ? 1 : 0);
   if (mode_count > 1) {
-    std::cerr << "Cannot use -r, -p, and -l at the same time." << std::endl;
+    log_error("Cannot use -r, -p, and -l at the same time.");
     print_usage(argv[0]);
     return 1;
   }
@@ -23,7 +26,7 @@ int main(int argc, char *argv[]) {
 
   if (options.lua_script) {
     if (options.lua_script_path.empty()) {
-      std::cerr << "Lua mode (-l) requires a script path." << std::endl;
+      log_error("Lua mode (-l) requires a script path.");
       print_usage(argv[0]);
       return 1;
     }

@@ -3,7 +3,6 @@
 #include <string>
 
 #include "argparser.h"
-#include "asynclogwriter.h"
 #include "filesystem.h"
 #include "inputeventwriter.h"
 
@@ -16,5 +15,4 @@ class Playback {
   run_options options_;
   FileSystem fs_;
   InputEventWriter event_writer_;
-  AsyncLogWriter log_writer_;
 };

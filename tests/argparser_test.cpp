@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "deviceid.h"
+#include "logger.h"
 
 static std::vector<char *> build_argv(std::vector<std::string> *storage) {
   std::vector<char *> argv;
@@ -93,25 +94,42 @@ TEST(ArgParser, ParseOptionsRecordDefaultsKindsWhenNoTypes) {
   EXPECT_EQ(options.kinds[2], DeviceId::Keyboard);
 }
 
-TEST(ArgParser, ParseOptionsQuietFlag) {
-  std::vector<std::string> storage = {"evrp", "-r", "-q", "keyboard"};
-  std::vector<char *> argv = build_argv(&storage);
-
-  run_options options =
-      parse_options(static_cast<int>(argv.size()), argv.data());
-  EXPECT_TRUE(options.recording);
-  EXPECT_TRUE(options.quiet);
-  ASSERT_EQ(options.kinds.size(), 1u);
-  EXPECT_EQ(options.kinds[0], DeviceId::Keyboard);
+TEST(ArgParser, LogLevelFromString) {
+  EXPECT_EQ(log_level_from_string("error"), LogLevel::Error);
+  EXPECT_EQ(log_level_from_string("warn"), LogLevel::Warn);
+  EXPECT_EQ(log_level_from_string("info"), LogLevel::Info);
+  EXPECT_EQ(log_level_from_string("debug"), LogLevel::Debug);
+  EXPECT_EQ(log_level_from_string("trace"), LogLevel::Trace);
 }
 
-TEST(ArgParser, ParseOptionsPlaybackWithQuiet) {
-  std::vector<std::string> storage = {"evrp", "-p", "events.log", "-q"};
+TEST(ArgParser, ParseOptionsLogLevel) {
+  // Standalone --log-level
+  std::vector<std::string> storage0 = {"evrp", "--log-level=debug"};
+  std::vector<char *> argv0 = build_argv(&storage0);
+  run_options opt0 =
+      parse_options(static_cast<int>(argv0.size()), argv0.data());
+  EXPECT_EQ(opt0.log_level, LogLevel::Debug);
+
+  // --log-level in -r block
+  std::vector<std::string> storage1 = {"evrp", "-r", "--log-level=debug",
+                                       "keyboard"};
+  std::vector<char *> argv1 = build_argv(&storage1);
+  run_options opt1 =
+      parse_options(static_cast<int>(argv1.size()), argv1.data());
+  EXPECT_TRUE(opt1.recording);
+  EXPECT_EQ(opt1.log_level, LogLevel::Debug);
+  ASSERT_EQ(opt1.kinds.size(), 1u);
+  EXPECT_EQ(opt1.kinds[0], DeviceId::Keyboard);
+}
+
+TEST(ArgParser, ParseOptionsPlaybackWithLogLevel) {
+  std::vector<std::string> storage = {"evrp", "-p", "events.log",
+                                      "--log-level=error"};
   std::vector<char *> argv = build_argv(&storage);
 
   run_options options =
       parse_options(static_cast<int>(argv.size()), argv.data());
   EXPECT_TRUE(options.playback);
-  EXPECT_TRUE(options.quiet);
+  EXPECT_EQ(options.log_level, LogLevel::Error);
   EXPECT_EQ(options.playback_path, "events.log");
 }

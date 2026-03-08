@@ -5,11 +5,12 @@
 #include <sys/time.h>
 
 #include <cstdio>
-#include <iostream>
+#include <sstream>
 
 #include "filesystem.h"
 #include "inputdevice.h"
 #include "keyboardeventwriter.h"
+#include "logger.h"
 
 InputEventWriter::InputEventWriter(FileSystem *fs)
     : fs_(fs), keyboard_writer_(this) {}
@@ -27,23 +28,25 @@ int InputEventWriter::get_fd(DeviceId id) {
 
   std::string dev_path = find_device_path(id);
   if (dev_path.empty()) {
-    std::cerr << "No " << device_label(id) << " device found, skipping events."
-              << std::endl;
+    log_warn(std::string("No ") + device_label(id) +
+                           " device found, skipping events.");
     id_to_fd_[id] = -1;
     return -1;
   }
 
   int fd = fs_->open_read_write(dev_path.c_str());
   if (fd < 0) {
-    std::cerr << "Failed to open " << dev_path << " for write (try: sudo): ";
+    std::ostringstream oss;
+    oss << "Failed to open " << dev_path << " for write (try: sudo)";
+    log_warn(oss.str());
     std::perror(dev_path.c_str());
     id_to_fd_[id] = -1;
     return -1;
   }
 
   id_to_fd_[id] = fd;
-  std::cout << "Playing back " << device_label(id) << " to " << dev_path
-            << std::endl;
+  log_info(std::string("Playing back ") + device_label(id) +
+                          " to " + dev_path);
   return fd;
 }
 

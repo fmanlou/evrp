@@ -2,15 +2,14 @@
 
 #include <chrono>
 #include <cstdio>
-#include <iostream>
 #include <string>
 #include <thread>
 
-#include "asynclogwriter.h"
 #include "deviceid.h"
 #include "evdev.h"
 #include "eventformat.h"
 #include "filesystem.h"
+#include "logger.h"
 #include "scopeguard.h"
 
 Playback::Playback(const run_options &options)
@@ -18,16 +17,17 @@ Playback::Playback(const run_options &options)
 
 int Playback::run() {
   if (options_.playback_path.empty()) {
-    std::cerr << "Playback mode requires a file path after -p." << std::endl;
+    log_error("Playback mode requires a file path after -p.");
     return 1;
   }
   if (!fs_.open_input(options_.playback_path)) {
-    std::cerr << fs_.error_message() << std::endl;
+    log_error(fs_.error_message());
     return 1;
   }
 
-  std::cout << "Playing back to input devices (Ctrl+C to stop)..." << std::endl;
-  if (!options_.quiet) log_writer_.start();
+  g_logger->set_level(options_.log_level);
+  g_logger->info("Playing back to input devices (Ctrl+C to stop)...");
+  g_logger->start();
   SigintGuard sigint;
 
   std::istream &input = fs_.input_stream();
@@ -55,9 +55,9 @@ int Playback::run() {
     has_prev = true;
 
     if (!event_writer_.write(device_id, type, code, value)) return 1;
-    if (!options_.quiet) log_writer_.push(line);
+    log_push(line);
   }
 
-  log_writer_.stop();
+  g_logger->stop();
   return 0;
 }

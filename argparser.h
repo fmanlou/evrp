@@ -4,12 +4,13 @@
 #include <vector>
 
 #include "deviceid.h"
+#include "logger.h"
 
 struct run_options {
   bool recording;
   bool playback;
   bool lua_script;
-  bool quiet;
+  LogLevel log_level;
   std::string playback_path;
   std::string output_path;
   std::string lua_script_path;

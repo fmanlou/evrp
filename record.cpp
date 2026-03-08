@@ -3,15 +3,14 @@
 #include <linux/input-event-codes.h>
 
 #include <cstdio>
-#include <iostream>
 
-#include "asynclogwriter.h"
 #include "deviceid.h"
 #include "evdev.h"
 #include "eventformat.h"
 #include "filesystem.h"
 #include "inputdevice.h"
 #include "keyboarddevice.h"
+#include "logger.h"
 #include "touchdevice.h"
 
 Record::Record(const run_options &options) : options_(options) {}
@@ -21,8 +20,8 @@ std::vector<RecordTarget> Record::collect_targets() {
   for (const auto &kind : options_.kinds) {
     std::string path = find_device_path(kind);
     if (path.empty()) {
-      std::cout << "No " << device_label(kind)
-                << " detected. Try running with sudo." << std::endl;
+      log_warn("No " + std::string(device_label(kind)) +
+                              " detected. Try running with sudo.");
       continue;
     }
 
@@ -43,27 +42,27 @@ void Record::close_targets() {
 void Record::record_events() {
   if (targets_.empty()) return;
 
-  AsyncLogWriter log_writer;
-  log_writer.start();
+  g_logger->set_level(options_.log_level);
+  g_logger->start();
 
   std::vector<int> fds;
   fds.reserve(targets_.size());
   for (const auto &t : targets_) {
-    log_writer.push("Recording " + device_label(t.id) + " from " + t.path);
+    log_info("Recording " + std::string(device_label(t.id)) +
+                           " from " + t.path);
     fds.push_back(t.fd);
   }
-  log_writer.push("(Ctrl+C to stop)");
+  log_info("(Ctrl+C to stop)");
 
   SigintGuard sigint;
   std::ostream &event_out = fs_.output_stream();
-  bool log_events_to_console = !options_.quiet;
   auto write_line = [&](const std::string &line) {
     event_out << line << "\n";
-    if (log_events_to_console) log_writer.push(line);
+    log_push(line);
   };
   auto write_newline = [&]() {
     event_out << "\n";
-    if (log_events_to_console) log_writer.push("");
+    log_push("");
   };
 
   Event events[64];
@@ -130,19 +129,20 @@ void Record::record_events() {
   }
 
   event_out.flush();
-  log_writer.stop();
+  g_logger->stop();
 }
 
 int Record::run() {
+  g_logger->set_level(options_.log_level);
   targets_ = collect_targets();
 
   if (targets_.empty()) {
-    std::cout << "No devices to record." << std::endl;
+    log_error("No devices to record.");
     return 1;
   }
 
   if (!fs_.open_output(options_.output_path)) {
-    std::cerr << fs_.error_message() << std::endl;
+    log_error(fs_.error_message());
     close_targets();
     return 1;
   }
