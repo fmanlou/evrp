@@ -54,11 +54,7 @@ int Playback::run() {
     prev_timestamp_us = timestamp_us;
     has_prev = true;
 
-    if (device_id == DeviceId::Keyboard) {
-      if (!keyboard_writer_.dispatch(type, code, value)) return 1;
-    } else {
-      if (!event_writer_.write(device_id, type, code, value)) return 1;
-    }
+    if (!event_writer_.write(device_id, type, code, value)) return 1;
     if (!options_.quiet) log_writer_.push(line);
   }
 

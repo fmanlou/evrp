@@ -50,7 +50,7 @@ target_link_libraries(playback PUBLIC asynclogwriter PRIVATE evdev eventformat i
 
 add_library(lua_bindings STATIC lua_bindings.cpp)
 target_include_directories(lua_bindings PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(lua_bindings PUBLIC lua)
+target_link_libraries(lua_bindings PUBLIC lua inputeventwriter filesystem)
 
 add_executable(evrp main.cpp)
 target_link_libraries(evrp PRIVATE inputdevice evdev filesystem argparser playback record lua_bindings)
