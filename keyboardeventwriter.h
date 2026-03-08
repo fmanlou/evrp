@@ -12,9 +12,8 @@ class KeyboardEventWriter {
   bool release(unsigned short key_code);
   bool repeat(unsigned short key_code);
 
-  // Dispatches raw event: if EV_KEY, converts to press/release/repeat.
-  // Returns true if event was handled (keyboard) and written successfully.
-  bool dispatch(unsigned short type, unsigned short code, int value);
+  // Writes any keyboard event. EV_KEY -> press/release/repeat; others -> raw.
+  bool write(unsigned short type, unsigned short code, int value);
 
  private:
   InputEventWriter *writer_;

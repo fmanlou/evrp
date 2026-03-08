@@ -21,11 +21,13 @@ bool KeyboardEventWriter::repeat(unsigned short key_code) {
   return writer_->write_raw(DeviceId::Keyboard, EV_KEY, key_code, 2);
 }
 
-bool KeyboardEventWriter::dispatch(unsigned short type, unsigned short code,
-                                   int value) {
-  if (type != EV_KEY) return false;
-  if (value == 0) return release(code);
-  if (value == 1) return press(code);
-  if (value == 2) return repeat(code);
-  return true;  // Unknown value, skip
+bool KeyboardEventWriter::write(unsigned short type, unsigned short code,
+                               int value) {
+  if (type == EV_KEY) {
+    if (value == 0) return release(code);
+    if (value == 1) return press(code);
+    if (value == 2) return repeat(code);
+    return true;  // Unknown value, skip
+  }
+  return writer_->write_raw(DeviceId::Keyboard, type, code, value);
 }

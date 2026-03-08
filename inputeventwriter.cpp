@@ -49,8 +49,8 @@ int InputEventWriter::get_fd(DeviceId id) {
 
 bool InputEventWriter::write(DeviceId id, unsigned short type,
                              unsigned short code, int value) {
-  if (id == DeviceId::Keyboard && keyboard_writer_.dispatch(type, code, value)) {
-    return true;  // EV_KEY handled by dispatch
+  if (id == DeviceId::Keyboard) {
+    return keyboard_writer_.write(type, code, value);
   }
   return write_raw(id, type, code, value);
 }
