@@ -1,9 +1,12 @@
 cmake_minimum_required(VERSION 3.14)
-project(evrp LANGUAGES CXX)
+project(evrp LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+# Lua 5.4 (git submodule at third_party/lua)
+add_subdirectory(third_party/lua)
 
 add_subdirectory(third_party/googletest)
 enable_testing()
@@ -45,8 +48,17 @@ add_library(playback STATIC playback.cpp)
 target_include_directories(playback PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(playback PUBLIC asynclogwriter PRIVATE evdev eventformat inputeventwriter inputdevice filesystem)
 
+add_library(lua_bindings STATIC lua_bindings.cpp)
+target_include_directories(lua_bindings PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(lua_bindings PUBLIC lua)
+
 add_executable(evrp main.cpp)
 target_link_libraries(evrp PRIVATE inputdevice evdev filesystem argparser playback record)
+
+# Optional: evrp_lua - run Lua script (e.g. ./evrp_lua script.lua)
+add_executable(evrp_lua tools/evrp_lua.cpp)
+target_include_directories(evrp_lua PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(evrp_lua PRIVATE lua_bindings)
 
 add_executable(evrp_tests tests/inputdevice_test.cpp tests/argparser_test.cpp)
 target_link_libraries(evrp_tests PRIVATE inputdevice argparser GTest::gtest_main)
