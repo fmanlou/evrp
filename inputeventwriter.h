@@ -14,6 +14,8 @@ class InputEventWriter {
 
   bool write(DeviceId id, unsigned short type, unsigned short code, int value);
 
+  KeyboardEventWriter* keyboard_writer() { return &keyboard_writer_; }
+
  private:
   friend class KeyboardEventWriter;
   bool write_raw(DeviceId id, unsigned short type, unsigned short code,

@@ -6,16 +6,16 @@
 #include <cstdio>
 #include <cstdlib>
 
-#include "deviceid.h"
 #include "filesystem.h"
 #include "inputeventwriter.h"
+#include "keyboardeventwriter.h"
 
 namespace evrp {
 namespace lua {
 
 namespace {
 
-InputEventWriter* g_writer = nullptr;
+KeyboardEventWriter* g_keyboard = nullptr;
 
 static bool get_dry_run(lua_State* L) {
   lua_getglobal(L, "evrp");
@@ -34,12 +34,10 @@ int lua_press(lua_State* L) {
     lua_pushboolean(L, true);
     return 1;
   }
-  if (!g_writer) {
+  if (!g_keyboard) {
     return luaL_error(L, "evrp keyboard not initialized");
   }
-  bool ok =
-      g_writer->write(DeviceId::Keyboard, EV_KEY,
-                     static_cast<unsigned short>(code), 1);
+  bool ok = g_keyboard->press(static_cast<unsigned short>(code));
   lua_pushboolean(L, ok);
   return 1;
 }
@@ -53,12 +51,10 @@ int lua_release(lua_State* L) {
     lua_pushboolean(L, true);
     return 1;
   }
-  if (!g_writer) {
+  if (!g_keyboard) {
     return luaL_error(L, "evrp keyboard not initialized");
   }
-  bool ok =
-      g_writer->write(DeviceId::Keyboard, EV_KEY,
-                     static_cast<unsigned short>(code), 0);
+  bool ok = g_keyboard->release(static_cast<unsigned short>(code));
   lua_pushboolean(L, ok);
   return 1;
 }
@@ -72,12 +68,11 @@ int lua_click(lua_State* L) {
     lua_pushboolean(L, true);
     return 1;
   }
-  if (!g_writer) {
+  if (!g_keyboard) {
     return luaL_error(L, "evrp keyboard not initialized");
   }
   unsigned short c = static_cast<unsigned short>(code);
-  bool ok = g_writer->write(DeviceId::Keyboard, EV_KEY, c, 1) &&
-            g_writer->write(DeviceId::Keyboard, EV_KEY, c, 0);
+  bool ok = g_keyboard->press(c) && g_keyboard->release(c);
   lua_pushboolean(L, ok);
   return 1;
 }
@@ -175,11 +170,11 @@ int run_script(const char* path) {
 
   FileSystem fs;
   InputEventWriter writer(&fs);
-  g_writer = &writer;
+  g_keyboard = writer.keyboard_writer();
   register_evrp_table(L);
 
   int err = luaL_dofile(L, path);
-  g_writer = nullptr;
+  g_keyboard = nullptr;
 
   if (err != LUA_OK) {
     std::fprintf(stderr, "Lua error: %s\n", lua_tostring(L, -1));
