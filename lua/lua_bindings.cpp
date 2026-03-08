@@ -10,6 +10,7 @@
 #include "inputeventwriter.h"
 #include "keyboard/keyboardeventwriter.h"
 #include "logger.h"
+#include "mouse/mouseeventwriter.h"
 
 namespace evrp {
 namespace lua {
@@ -17,6 +18,7 @@ namespace lua {
 namespace {
 
 KeyboardEventWriter* g_keyboard = nullptr;
+MouseEventWriter* g_mouse = nullptr;
 
 static bool get_dry_run(lua_State* L) {
   lua_getglobal(L, "evrp");
@@ -74,6 +76,100 @@ int lua_click(lua_State* L) {
   }
   unsigned short c = static_cast<unsigned short>(code);
   bool ok = g_keyboard->press(c) && g_keyboard->release(c);
+  lua_pushboolean(L, ok);
+  return 1;
+}
+
+int lua_mouse_move(lua_State* L) {
+  lua_Integer dx = luaL_checkinteger(L, 1);
+  lua_Integer dy = luaL_checkinteger(L, 2);
+  if (get_dry_run(L)) {
+    lua_pushboolean(L, true);
+    return 1;
+  }
+  if (!g_mouse) {
+    return luaL_error(L, "evrp mouse not initialized");
+  }
+  bool ok = g_mouse->move(static_cast<int>(dx), static_cast<int>(dy));
+  lua_pushboolean(L, ok);
+  return 1;
+}
+
+int lua_mouse_scroll_v(lua_State* L) {
+  lua_Integer value = luaL_checkinteger(L, 1);
+  if (get_dry_run(L)) {
+    lua_pushboolean(L, true);
+    return 1;
+  }
+  if (!g_mouse) {
+    return luaL_error(L, "evrp mouse not initialized");
+  }
+  bool ok = g_mouse->scroll_v(static_cast<int>(value));
+  lua_pushboolean(L, ok);
+  return 1;
+}
+
+int lua_mouse_scroll_h(lua_State* L) {
+  lua_Integer value = luaL_checkinteger(L, 1);
+  if (get_dry_run(L)) {
+    lua_pushboolean(L, true);
+    return 1;
+  }
+  if (!g_mouse) {
+    return luaL_error(L, "evrp mouse not initialized");
+  }
+  bool ok = g_mouse->scroll_h(static_cast<int>(value));
+  lua_pushboolean(L, ok);
+  return 1;
+}
+
+int lua_mouse_button_down(lua_State* L) {
+  lua_Integer btn = luaL_checkinteger(L, 1);
+  if (btn < 0 || btn > 0xFFFF) {
+    return luaL_error(L, "invalid button code: %lld", (long long)btn);
+  }
+  if (get_dry_run(L)) {
+    lua_pushboolean(L, true);
+    return 1;
+  }
+  if (!g_mouse) {
+    return luaL_error(L, "evrp mouse not initialized");
+  }
+  bool ok = g_mouse->button_down(static_cast<unsigned short>(btn));
+  lua_pushboolean(L, ok);
+  return 1;
+}
+
+int lua_mouse_button_up(lua_State* L) {
+  lua_Integer btn = luaL_checkinteger(L, 1);
+  if (btn < 0 || btn > 0xFFFF) {
+    return luaL_error(L, "invalid button code: %lld", (long long)btn);
+  }
+  if (get_dry_run(L)) {
+    lua_pushboolean(L, true);
+    return 1;
+  }
+  if (!g_mouse) {
+    return luaL_error(L, "evrp mouse not initialized");
+  }
+  bool ok = g_mouse->button_up(static_cast<unsigned short>(btn));
+  lua_pushboolean(L, ok);
+  return 1;
+}
+
+int lua_mouse_button_click(lua_State* L) {
+  lua_Integer btn = luaL_checkinteger(L, 1);
+  if (btn < 0 || btn > 0xFFFF) {
+    return luaL_error(L, "invalid button code: %lld", (long long)btn);
+  }
+  if (get_dry_run(L)) {
+    lua_pushboolean(L, true);
+    return 1;
+  }
+  if (!g_mouse) {
+    return luaL_error(L, "evrp mouse not initialized");
+  }
+  bool ok = g_mouse->button_click(static_cast<unsigned short>(btn));
   lua_pushboolean(L, ok);
   return 1;
 }
@@ -163,6 +259,28 @@ void register_evrp_table(lua_State* L) {
 
   lua_setglobal(L, "keyboard");
 
+  // mouse table
+  lua_newtable(L);
+  lua_pushcfunction(L, lua_mouse_move);
+  lua_setfield(L, -2, "move");
+  lua_pushcfunction(L, lua_mouse_scroll_v);
+  lua_setfield(L, -2, "scroll_v");
+  lua_pushcfunction(L, lua_mouse_scroll_h);
+  lua_setfield(L, -2, "scroll_h");
+  lua_pushcfunction(L, lua_mouse_button_down);
+  lua_setfield(L, -2, "button_down");
+  lua_pushcfunction(L, lua_mouse_button_up);
+  lua_setfield(L, -2, "button_up");
+  lua_pushcfunction(L, lua_mouse_button_click);
+  lua_setfield(L, -2, "button_click");
+  lua_pushinteger(L, BTN_LEFT);
+  lua_setfield(L, -2, "BTN_LEFT");
+  lua_pushinteger(L, BTN_RIGHT);
+  lua_setfield(L, -2, "BTN_RIGHT");
+  lua_pushinteger(L, BTN_MIDDLE);
+  lua_setfield(L, -2, "BTN_MIDDLE");
+  lua_setglobal(L, "mouse");
+
   lua_setglobal(L, "evrp");
 }
 
@@ -176,10 +294,12 @@ int run_script(const char* path) {
   FileSystem fs;
   InputEventWriter writer(&fs);
   g_keyboard = writer.keyboard_writer();
+  g_mouse = writer.mouse_writer();
   register_evrp_table(L);
 
   int err = luaL_dofile(L, path);
   g_keyboard = nullptr;
+  g_mouse = nullptr;
 
   if (err != LUA_OK) {
     log_error(std::string("Lua error: ") +

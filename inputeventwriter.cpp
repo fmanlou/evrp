@@ -11,9 +11,10 @@
 #include "inputdevice.h"
 #include "keyboard/keyboardeventwriter.h"
 #include "logger.h"
+#include "mouse/mouseeventwriter.h"
 
 InputEventWriter::InputEventWriter(FileSystem *fs)
-    : fs_(fs), keyboard_writer_(this) {}
+    : fs_(fs), keyboard_writer_(this), mouse_writer_(this) {}
 
 InputEventWriter::~InputEventWriter() {
   for (const auto &p : id_to_fd_) {
@@ -54,6 +55,9 @@ bool InputEventWriter::write(DeviceId id, unsigned short type,
                              unsigned short code, int value) {
   if (id == DeviceId::Keyboard) {
     return keyboard_writer_.write(type, code, value);
+  }
+  if (id == DeviceId::Mouse) {
+    return mouse_writer_.write(type, code, value);
   }
   return write_raw(id, type, code, value);
 }
