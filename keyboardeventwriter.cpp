@@ -22,7 +22,7 @@ bool KeyboardEventWriter::repeat(unsigned short key_code) {
 }
 
 bool KeyboardEventWriter::write(unsigned short type, unsigned short code,
-                               int value) {
+                                int value) {
   if (type == EV_KEY) {
     if (value == 0) return release(code);
     if (value == 1) return press(code);

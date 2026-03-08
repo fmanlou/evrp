@@ -4,9 +4,9 @@
 // Include this when embedding Lua. Link with target 'lua'.
 
 extern "C" {
+#include "lauxlib.h"
 #include "lua.h"
 #include "lualib.h"
-#include "lauxlib.h"
 }
 
 namespace evrp {

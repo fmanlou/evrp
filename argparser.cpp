@@ -8,9 +8,11 @@ void print_usage(const char *prog) {
       << "Usage: " << prog
       << " -r [-o FILE] [-q] [touchpad] [mouse] [keyboard] ...\n"
       << "       " << prog << " -p FILE [-q]\n"
+      << "       " << prog << " -l FILE [-q]\n"
       << "  -r: start recording. With no types, record touchpad, mouse, "
          "keyboard.\n"
       << "  -p FILE: playback events from FILE into input subsystem.\n"
+      << "  -l FILE: execute Lua script.\n"
       << "  -o FILE: write recording to FILE (default: stdout).\n"
       << "  -q: quiet, suppress event log only (status/errors still shown).\n";
 }
@@ -28,6 +30,7 @@ run_options parse_options(int argc, char *argv[]) {
   run_options options;
   options.recording = false;
   options.playback = false;
+  options.lua_script = false;
   options.quiet = false;
 
   for (int i = 1; i < argc; ++i) {
@@ -38,6 +41,9 @@ run_options parse_options(int argc, char *argv[]) {
     } else if (std::string(argv[i]) == "-p") {
       options.playback = true;
       if (i + 1 < argc) options.playback_path = argv[++i];
+    } else if (std::string(argv[i]) == "-l") {
+      options.lua_script = true;
+      if (i + 1 < argc) options.lua_script_path = argv[++i];
     } else if (std::string(argv[i]) == "-r") {
       options.recording = true;
       ++i;
@@ -55,6 +61,12 @@ run_options parse_options(int argc, char *argv[]) {
         if (std::string(argv[i]) == "-p") {
           options.playback = true;
           if (i + 1 < argc) options.playback_path = argv[++i];
+          ++i;
+          continue;
+        }
+        if (std::string(argv[i]) == "-l") {
+          options.lua_script = true;
+          if (i + 1 < argc) options.lua_script_path = argv[++i];
           ++i;
           continue;
         }

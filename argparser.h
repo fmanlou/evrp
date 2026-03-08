@@ -8,9 +8,11 @@
 struct run_options {
   bool recording;
   bool playback;
+  bool lua_script;
   bool quiet;
   std::string playback_path;
   std::string output_path;
+  std::string lua_script_path;
   std::vector<DeviceId> kinds;
 };
 
