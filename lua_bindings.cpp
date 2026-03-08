@@ -8,7 +8,7 @@
 
 #include "filesystem.h"
 #include "inputeventwriter.h"
-#include "keyboardeventwriter.h"
+#include "keyboard/keyboardeventwriter.h"
 #include "logger.h"
 
 namespace evrp {

@@ -26,7 +26,7 @@ target_include_directories(argparser PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(argparser PRIVATE deviceid logger)
 
 add_library(inputeventwriter STATIC inputeventwriter.cpp
-                                    keyboardeventwriter.cpp)
+                                    keyboard/keyboardeventwriter.cpp)
 target_include_directories(inputeventwriter PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(inputeventwriter PRIVATE deviceid filesystem inputdevice
                                                 logger)
@@ -35,7 +35,7 @@ add_library(eventformat STATIC eventformat.cpp)
 target_include_directories(eventformat PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(eventformat PRIVATE deviceid evdev inputdevice)
 
-add_library(inputdevice STATIC inputdevice.cpp keyboarddevice.cpp
+add_library(inputdevice STATIC inputdevice.cpp keyboard/keyboarddevice.cpp
                                touchdevice.cpp)
 target_include_directories(inputdevice PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(inputdevice PUBLIC deviceid evdev filesystem)

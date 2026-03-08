@@ -5,7 +5,7 @@
 
 #include "evdev.h"
 #include "filesystem.h"
-#include "keyboarddevice.h"
+#include "keyboard/keyboarddevice.h"
 #include "touchdevice.h"
 
 static bool name_like_mouse(const std::string &name) {

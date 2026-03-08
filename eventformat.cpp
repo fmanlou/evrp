@@ -6,7 +6,7 @@
 #include <string>
 
 #include "deviceid.h"
-#include "keyboarddevice.h"
+#include "keyboard/keyboarddevice.h"
 
 std::string parse_event_label(const std::string &line) {
   std::size_t lb = line.find('[');

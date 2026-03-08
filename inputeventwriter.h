@@ -3,7 +3,7 @@
 #include <map>
 
 #include "deviceid.h"
-#include "keyboardeventwriter.h"
+#include "keyboard/keyboardeventwriter.h"
 
 class FileSystem;
 

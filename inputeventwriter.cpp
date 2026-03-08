@@ -9,7 +9,7 @@
 
 #include "filesystem.h"
 #include "inputdevice.h"
-#include "keyboardeventwriter.h"
+#include "keyboard/keyboardeventwriter.h"
 #include "logger.h"
 
 InputEventWriter::InputEventWriter(FileSystem *fs)

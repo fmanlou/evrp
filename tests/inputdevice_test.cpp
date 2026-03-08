@@ -3,7 +3,7 @@
 #include <gtest/gtest.h>
 #include <linux/input-event-codes.h>
 
-#include "keyboarddevice.h"
+#include "keyboard/keyboarddevice.h"
 #include "touchdevice.h"
 
 static Capabilities make_base_caps(const std::string &name) {

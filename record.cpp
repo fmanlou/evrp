@@ -9,7 +9,7 @@
 #include "eventformat.h"
 #include "filesystem.h"
 #include "inputdevice.h"
-#include "keyboarddevice.h"
+#include "keyboard/keyboarddevice.h"
 #include "logger.h"
 #include "touchdevice.h"
 
