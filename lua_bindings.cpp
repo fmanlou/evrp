@@ -78,11 +78,13 @@ int lua_click(lua_State* L) {
 }
 
 void register_evrp_table(lua_State* L) {
-  lua_newtable(L);
+  lua_newtable(L);  // evrp
 
   lua_pushboolean(L, false);
   lua_setfield(L, -2, "dry_run");
 
+  // evrp.keyboard
+  lua_newtable(L);
   lua_pushcfunction(L, lua_press);
   lua_setfield(L, -2, "press");
   lua_pushcfunction(L, lua_release);
@@ -157,6 +159,8 @@ void register_evrp_table(lua_State* L) {
   lua_setfield(L, -2, "KEY_LEFTSHIFT");
   lua_pushinteger(L, KEY_RIGHTSHIFT);
   lua_setfield(L, -2, "KEY_RIGHTSHIFT");
+
+  lua_setglobal(L, "keyboard");
 
   lua_setglobal(L, "evrp");
 }
