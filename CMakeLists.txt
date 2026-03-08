@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Lua 5.4 (git submodule at third_party/lua)
+# Lua 5.4 (git subtree at third_party/lua)
 add_subdirectory(third_party/lua)
 
 add_subdirectory(third_party/googletest)
