@@ -6,7 +6,7 @@
 #include <cstdio>
 #include <cstdlib>
 
-#include "cursorpos.h"
+#include "cursor/cursorpos.h"
 #include "filesystem.h"
 #include "inputeventwriter.h"
 #include "keyboard/keyboardeventwriter.h"

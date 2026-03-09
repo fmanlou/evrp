@@ -3,7 +3,7 @@
 #include <linux/input-event-codes.h>
 #include <linux/input.h>
 
-#include "cursorpos.h"
+#include "cursor/cursorpos.h"
 #include "deviceid.h"
 #include "inputeventwriter.h"
 

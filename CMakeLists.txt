@@ -23,14 +23,15 @@ target_include_directories(deviceid PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 option(EVRP_USE_X11_CURSOR "Enable X11 cursor position backend" ON)
 
-set(cursorpos_sources cursorpos.cpp)
+set(cursorpos_sources cursor/cursorpos.cpp)
 if(EVRP_USE_X11_CURSOR)
   find_package(X11 REQUIRED)
-  list(APPEND cursorpos_sources cursorposx11.cpp)
+  list(APPEND cursorpos_sources cursor/cursorposx11.cpp)
 endif()
 
 add_library(cursorpos STATIC ${cursorpos_sources})
-target_include_directories(cursorpos PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(cursorpos PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+                                               ${CMAKE_CURRENT_SOURCE_DIR}/cursor)
 if(EVRP_USE_X11_CURSOR)
   target_compile_definitions(cursorpos PUBLIC EVRP_USE_X11_CURSOR)
   target_link_libraries(cursorpos PUBLIC X11::X11)
