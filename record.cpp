@@ -57,11 +57,11 @@ void Record::record_events() {
   std::ostream &event_out = fs_.output_stream();
   auto write_line = [&](const std::string &line) {
     event_out << line << "\n";
-    log_push(line);
+    log_debug(line);
   };
   auto write_newline = [&]() {
     event_out << "\n";
-    log_push("");
+    log_debug("");
   };
 
   Event events[64];

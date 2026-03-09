@@ -1,6 +1,10 @@
 #pragma once
 
+#include <condition_variable>
+#include <mutex>
+#include <queue>
 #include <string>
+#include <thread>
 
 enum class LogLevel {
   Error = 0,
@@ -24,9 +28,6 @@ class Logger {
   void debug(const std::string &msg);
   void trace(const std::string &msg);
 
-  // Push raw line at DEBUG level (for event logs, no prefix).
-  void push(const std::string &line);
-
   void log(LogLevel level, const std::string &msg);
 
   Logger();
@@ -35,9 +36,17 @@ class Logger {
   Logger &operator=(const Logger &) = delete;
 
  private:
+  void enqueue(bool use_stderr, const std::string &line);
+  void worker_loop();
+
   bool should_log(LogLevel level) const;
 
   LogLevel level_;
+  std::thread worker_;
+  std::mutex mutex_;
+  std::condition_variable cv_;
+  std::queue<std::pair<bool, std::string>> queue_;
+  bool shutdown_ = false;
 };
 
 extern Logger *g_logger;
@@ -56,7 +65,4 @@ inline void log_debug(const std::string &msg) {
 }
 inline void log_trace(const std::string &msg) {
   if (g_logger) g_logger->trace(msg);
-}
-inline void log_push(const std::string &line) {
-  if (g_logger) g_logger->push(line);
 }
