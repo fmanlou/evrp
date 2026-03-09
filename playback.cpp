@@ -54,7 +54,6 @@ int Playback::run() {
     has_prev = true;
 
     if (!event_writer_.write(device_id, type, code, value)) return 1;
-    log_push(line);
   }
 
   return 0;

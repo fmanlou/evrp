@@ -45,8 +45,9 @@ add_library(
   inputeventwriter STATIC inputeventwriter.cpp keyboard/keyboardeventwriter.cpp
                           mouse/mouseeventwriter.cpp)
 target_include_directories(inputeventwriter PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(inputeventwriter PRIVATE deviceid filesystem inputdevice
-                                               logger cursorpos)
+target_link_libraries(inputeventwriter PRIVATE deviceid evdev eventformat
+                                               filesystem inputdevice logger
+                                               cursorpos)
 
 add_library(eventformat STATIC eventformat.cpp)
 target_include_directories(eventformat PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

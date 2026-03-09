@@ -8,6 +8,9 @@
 #include <sstream>
 
 #include "cursor/cursorpos.h"
+#include "deviceid.h"
+#include "evdev.h"
+#include "eventformat.h"
 #include "filesystem.h"
 #include "inputdevice.h"
 #include "keyboard/keyboardeventwriter.h"
@@ -66,6 +69,12 @@ bool InputEventWriter::write_raw(DeviceId id, unsigned short type,
                                  unsigned short code, int value) {
   int fd = get_fd(id);
   if (fd < 0) return true;  // Skip when device not found
+  if (type != EV_SYN) {
+    struct timeval tv;
+    gettimeofday(&tv, nullptr);
+    Event ev = {tv.tv_sec, tv.tv_usec, type, code, value};
+    log_push(format_event_line(id, ev));
+  }
   return write_event_with_sync(fd, type, code, value);
 }
 
