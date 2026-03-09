@@ -40,12 +40,12 @@ add_library(argparser STATIC argparser.cpp)
 target_include_directories(argparser PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(argparser PRIVATE deviceid logger)
 
-add_library(inputeventwriter STATIC inputeventwriter.cpp
-                                    keyboard/keyboardeventwriter.cpp
-                                    mouse/mouseeventwriter.cpp)
+add_library(
+  inputeventwriter STATIC inputeventwriter.cpp keyboard/keyboardeventwriter.cpp
+                          mouse/mouseeventwriter.cpp)
 target_include_directories(inputeventwriter PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(inputeventwriter PRIVATE deviceid filesystem inputdevice
-                                                logger cursorpos)
+                                               logger cursorpos)
 
 add_library(eventformat STATIC eventformat.cpp)
 target_include_directories(eventformat PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
@@ -66,20 +66,26 @@ target_include_directories(logger PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_library(playback STATIC playback.cpp)
 target_include_directories(playback PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(
-  playback
-  PRIVATE evdev eventformat inputeventwriter inputdevice filesystem logger)
+target_link_libraries(playback PRIVATE evdev eventformat inputeventwriter
+                                       inputdevice filesystem logger)
 
 add_library(lua_bindings STATIC lua/lua_bindings.cpp)
 target_include_directories(lua_bindings PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(lua_bindings PUBLIC lua inputeventwriter filesystem
-                                         logger cursorpos)
+                                          logger cursorpos)
 
 add_executable(evrp main.cpp)
 target_link_libraries(
   evrp
-  PRIVATE inputdevice evdev filesystem argparser playback record lua_bindings
-          logger cursorpos)
+  PRIVATE inputdevice
+          evdev
+          filesystem
+          argparser
+          playback
+          record
+          lua_bindings
+          logger
+          cursorpos)
 
 add_executable(evrp_tests tests/inputdevice_test.cpp tests/argparser_test.cpp)
 target_link_libraries(evrp_tests PRIVATE inputdevice argparser logger

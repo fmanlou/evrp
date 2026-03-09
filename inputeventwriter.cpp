@@ -31,7 +31,7 @@ int InputEventWriter::get_fd(DeviceId id) {
   std::string dev_path = find_device_path(id);
   if (dev_path.empty()) {
     log_warn(std::string("No ") + device_label(id) +
-                           " device found, skipping events.");
+             " device found, skipping events.");
     id_to_fd_[id] = -1;
     return -1;
   }
@@ -47,8 +47,7 @@ int InputEventWriter::get_fd(DeviceId id) {
   }
 
   id_to_fd_[id] = fd;
-  log_info(std::string("Playing back ") + device_label(id) +
-                          " to " + dev_path);
+  log_info(std::string("Playing back ") + device_label(id) + " to " + dev_path);
   return fd;
 }
 

@@ -6,9 +6,9 @@
 #include <cstdio>
 #include <cstdlib>
 
+#include "cursorpos.h"
 #include "filesystem.h"
 #include "inputeventwriter.h"
-#include "cursorpos.h"
 #include "keyboard/keyboardeventwriter.h"
 #include "logger.h"
 #include "mouse/mouseeventwriter.h"
@@ -156,8 +156,8 @@ int lua_mouse_move_to_scaled(lua_State* L) {
     return luaL_error(L, "evrp mouse not initialized");
   }
   bool ok = g_mouse->move_to_scaled(static_cast<int>(x), static_cast<int>(y),
-                                   static_cast<int>(width),
-                                   static_cast<int>(height));
+                                    static_cast<int>(width),
+                                    static_cast<int>(height));
   lua_pushboolean(L, ok);
   return 1;
 }
@@ -379,8 +379,7 @@ int run_script(const char* path) {
   g_mouse = nullptr;
 
   if (err != LUA_OK) {
-    log_error(std::string("Lua error: ") +
-                             lua_tostring(L, -1));
+    log_error(std::string("Lua error: ") + lua_tostring(L, -1));
     lua_pop(L, 1);
   }
   lua_close(L);
