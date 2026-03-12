@@ -24,3 +24,4 @@ struct touch_segment_decision {
 touch_segment_decision process_touch_event_for_segment(
     const Event &ev, touch_segment_state *state);
 bool is_touchpad_from_capabilities(const Capabilities &caps);
+bool is_touchscreen_from_capabilities(const Capabilities &caps);

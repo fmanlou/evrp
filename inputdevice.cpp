@@ -23,6 +23,13 @@ bool is_touchpad(const char *dev_path) {
   return is_touchpad_from_capabilities(caps);
 }
 
+bool is_touchscreen(const char *dev_path) {
+  Capabilities caps;
+  if (!open_and_get_capabilities(dev_path, &caps)) return false;
+
+  return is_touchscreen_from_capabilities(caps);
+}
+
 bool is_mouse(const char *dev_path) {
   Capabilities caps;
   if (!open_and_get_capabilities(dev_path, &caps)) return false;
@@ -60,6 +67,14 @@ std::string find_first_touchpad() {
   return {};
 }
 
+std::string find_first_touchscreen() {
+  for (int i = 0; i < 32; ++i) {
+    std::string dev = "/dev/input/event" + std::to_string(i);
+    if (is_touchscreen(dev.c_str())) return dev;
+  }
+  return {};
+}
+
 std::string find_first_mouse() {
   for (int i = 0; i < 32; ++i) {
     std::string dev = "/dev/input/event" + std::to_string(i);
@@ -80,6 +95,8 @@ std::string find_device_path(DeviceId id) {
   switch (id) {
     case DeviceId::Touchpad:
       return find_first_touchpad();
+    case DeviceId::Touchscreen:
+      return find_first_touchscreen();
     case DeviceId::Mouse:
       return find_first_mouse();
     case DeviceId::Keyboard:

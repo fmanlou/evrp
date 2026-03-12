@@ -27,6 +27,21 @@ TEST(InputDevice, RejectTouchpadWithoutFingerTool) {
   EXPECT_FALSE(is_touchpad_from_capabilities(caps));
 }
 
+TEST(InputDevice, DetectTouchscreenFromCapabilities) {
+  Capabilities caps = make_base_caps("Goodix Touchscreen");
+  caps.ev_abs = true;
+  caps.abs_mt_position_x = true;
+  EXPECT_TRUE(is_touchscreen_from_capabilities(caps));
+}
+
+TEST(InputDevice, RejectTouchscreenWhenTouchpad) {
+  Capabilities caps = make_base_caps("Synaptics TouchPad");
+  caps.ev_abs = true;
+  caps.abs_x = true;
+  caps.btn_tool_finger = true;
+  EXPECT_FALSE(is_touchscreen_from_capabilities(caps));
+}
+
 TEST(InputDevice, DetectMouseFromCapabilities) {
   Capabilities caps = make_base_caps("USB Optical Mouse");
   caps.ev_rel = true;

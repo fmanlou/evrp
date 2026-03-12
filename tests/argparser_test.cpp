@@ -20,6 +20,8 @@ TEST(ArgParser, ParseKindAcceptsKnownKinds) {
   DeviceId id;
   EXPECT_TRUE(parse_kind("touchpad", &id));
   EXPECT_EQ(id, DeviceId::Touchpad);
+  EXPECT_TRUE(parse_kind("touchscreen", &id));
+  EXPECT_EQ(id, DeviceId::Touchscreen);
   EXPECT_TRUE(parse_kind("mouse", &id));
   EXPECT_EQ(id, DeviceId::Mouse);
   EXPECT_TRUE(parse_kind("keyboard", &id));
@@ -88,10 +90,11 @@ TEST(ArgParser, ParseOptionsRecordDefaultsKindsWhenNoTypes) {
   run_options options =
       parse_options(static_cast<int>(argv.size()), argv.data());
   EXPECT_TRUE(options.recording);
-  ASSERT_EQ(options.kinds.size(), 3u);
+  ASSERT_EQ(options.kinds.size(), 4u);
   EXPECT_EQ(options.kinds[0], DeviceId::Touchpad);
-  EXPECT_EQ(options.kinds[1], DeviceId::Mouse);
-  EXPECT_EQ(options.kinds[2], DeviceId::Keyboard);
+  EXPECT_EQ(options.kinds[1], DeviceId::Touchscreen);
+  EXPECT_EQ(options.kinds[2], DeviceId::Mouse);
+  EXPECT_EQ(options.kinds[3], DeviceId::Keyboard);
 }
 
 TEST(ArgParser, LogLevelFromString) {

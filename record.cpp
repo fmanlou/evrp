@@ -100,7 +100,8 @@ void Record::record_events() {
           continue;
         }
 
-        if (targets_[i].id == DeviceId::Touchpad) {
+        if (targets_[i].id == DeviceId::Touchpad ||
+            targets_[i].id == DeviceId::Touchscreen) {
           touch_segment_state &touch_state = touch_states[i];
           touch_segment_decision decision =
               process_touch_event_for_segment(ev, &touch_state);

@@ -22,6 +22,18 @@ bool is_touchpad_from_capabilities(const Capabilities &caps) {
   return has_abs && has_finger_tool && name_like_touchpad(caps.name);
 }
 
+static bool name_like_touchscreen(const std::string &name) {
+  std::string n = name;
+  for (auto &c : n) c = static_cast<char>(std::tolower(c));
+  return n.find("touchscreen") != std::string::npos;
+}
+
+bool is_touchscreen_from_capabilities(const Capabilities &caps) {
+  if (is_touchpad_from_capabilities(caps)) return false;
+  bool has_abs = caps.ev_abs && (caps.abs_x || caps.abs_mt_position_x);
+  return has_abs && name_like_touchscreen(caps.name);
+}
+
 static bool is_touching_now(const touch_segment_state &state) {
   bool any_tool_active =
       state.tool_finger_active || state.tool_doubletap_active ||

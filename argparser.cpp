@@ -6,11 +6,12 @@
 void print_usage(const char *prog) {
   std::cout
       << "Usage: " << prog
-      << " -r [-o FILE] [--log-level=LEVEL] [touchpad] [mouse] [keyboard] ...\n"
+      << " -r [-o FILE] [--log-level=LEVEL] [touchpad] [touchscreen] [mouse] "
+         "[keyboard] ...\n"
       << "       " << prog << " -p FILE [--log-level=LEVEL]\n"
       << "       " << prog << " -l FILE [--log-level=LEVEL]\n"
-      << "  -r: start recording. With no types, record touchpad, mouse, "
-         "keyboard.\n"
+      << "  -r: start recording. With no types, record touchpad, touchscreen, "
+         "mouse, keyboard.\n"
       << "  -p FILE: playback events from FILE into input subsystem.\n"
       << "  -l FILE: execute Lua script.\n"
       << "  -o FILE: write recording to FILE (default: stdout).\n"
@@ -89,7 +90,8 @@ run_options parse_options(int argc, char *argv[]) {
   }
 
   if (options.recording && options.kinds.empty()) {
-    options.kinds = {DeviceId::Touchpad, DeviceId::Mouse, DeviceId::Keyboard};
+    options.kinds = {DeviceId::Touchpad, DeviceId::Touchscreen, DeviceId::Mouse,
+                     DeviceId::Keyboard};
   }
   return options;
 }
