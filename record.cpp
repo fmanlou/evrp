@@ -55,9 +55,16 @@ void Record::record_events() {
 
   SigintGuard sigint;
   std::ostream &event_out = fs_.output_stream();
+  long long first_timestamp_us = -1;
   auto write_line = [&](const std::string &line) {
     event_out << line << "\n";
     log_debug(line);
+  };
+  auto write_event_line = [&](DeviceId id, const Event &ev) {
+    long long current_us = ev.sec * 1000000LL + ev.usec;
+    if (first_timestamp_us < 0) first_timestamp_us = current_us;
+    long long delta_us = current_us - first_timestamp_us;
+    write_line(format_event_line(id, ev, delta_us));
   };
   auto write_newline = [&]() {
     event_out << "\n";
@@ -95,7 +102,7 @@ void Record::record_events() {
           process_keyboard_event_with_ctrl_filter(ev, &keyboard_states[i],
                                                   &emitted_events);
           for (const auto &out_ev : emitted_events) {
-            write_line(format_event_line(targets_[i].id, out_ev));
+            write_event_line(targets_[i].id, out_ev);
           }
           continue;
         }
@@ -109,14 +116,14 @@ void Record::record_events() {
             write_newline();
           }
 
-          write_line(format_event_line(targets_[i].id, ev));
+          write_event_line(targets_[i].id, ev);
           if (decision.emit_break_after_event) {
             write_newline();
           }
           continue;
         }
 
-        write_line(format_event_line(targets_[i].id, ev));
+        write_event_line(targets_[i].id, ev);
       }
     }
   }

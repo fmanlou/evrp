@@ -31,8 +31,7 @@ int Playback::run() {
 
   std::istream &input = fs_.input_stream();
   std::string line;
-  long long prev_timestamp_us = 0;
-  bool has_prev = false;
+  long long elapsed_us = 0;
 
   while (!sigint.stop_requested() && std::getline(input, line)) {
     if (line.empty()) continue;
@@ -41,17 +40,16 @@ int Playback::run() {
     DeviceId device_id = device_id_from_label(label);
     if (device_id == DeviceId::Unknown) continue;
 
-    long long timestamp_us = 0;
+    long long delta_us = 0;
     unsigned short type = 0, code = 0;
     int value = 0;
-    if (!parse_event_line(line, &timestamp_us, &type, &code, &value)) continue;
+    if (!parse_event_line(line, &delta_us, &type, &code, &value)) continue;
 
-    if (has_prev && timestamp_us > prev_timestamp_us) {
-      std::this_thread::sleep_for(
-          std::chrono::microseconds(timestamp_us - prev_timestamp_us));
+    long long sleep_us = delta_us - elapsed_us;
+    if (sleep_us > 0) {
+      std::this_thread::sleep_for(std::chrono::microseconds(sleep_us));
     }
-    prev_timestamp_us = timestamp_us;
-    has_prev = true;
+    elapsed_us = delta_us;
 
     if (!event_writer_.write(device_id, type, code, value)) return 1;
   }

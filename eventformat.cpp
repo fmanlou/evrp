@@ -16,7 +16,7 @@ std::string parse_event_label(const std::string &line) {
   return line.substr(lb + 1, rb - lb - 1);
 }
 
-bool parse_event_line(const std::string &line, long long *out_timestamp_us,
+bool parse_event_line(const std::string &line, long long *out_delta_us,
                       unsigned short *out_type, unsigned short *out_code,
                       int *out_value) {
   if (!out_type || !out_code || !out_value) return false;
@@ -39,7 +39,7 @@ bool parse_event_line(const std::string &line, long long *out_timestamp_us,
   } catch (...) {
     return false;
   }
-  if (out_timestamp_us) *out_timestamp_us = sec * 1000000LL + usec;
+  if (out_delta_us) *out_delta_us = sec * 1000000LL + usec;
 
   std::size_t type_pos = line.find("type=", ts_end);
   if (type_pos == std::string::npos) return false;
@@ -119,10 +119,19 @@ std::string event_code_name(unsigned short type, unsigned short code) {
   return "";
 }
 
-std::string format_event_line(DeviceId id, const Event &ev) {
+std::string format_event_line(DeviceId id, const Event &ev, long long delta_us) {
   std::ostringstream oss;
   std::string code_name = event_code_name(ev.type, ev.code);
-  oss << "[" << device_label(id) << "] " << ev.sec << "." << ev.usec
+  long long delta_sec = delta_us / 1000000LL;
+  long long delta_usec = delta_us % 1000000LL;
+  if (delta_usec < 0) {
+    delta_sec -= 1;
+    delta_usec += 1000000LL;
+  }
+  oss << "[" << device_label(id) << "] " << delta_sec << ".";
+  oss.width(6);
+  oss.fill('0');
+  oss << delta_usec
       << " type=" << ev.type << "(" << event_type_name(ev.type) << ")"
       << " code=" << ev.code;
   if (!code_name.empty()) {

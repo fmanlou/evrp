@@ -73,7 +73,7 @@ bool InputEventWriter::write_raw(DeviceId id, unsigned short type,
     struct timeval tv;
     gettimeofday(&tv, nullptr);
     Event ev = {tv.tv_sec, tv.tv_usec, type, code, value};
-    log_debug(format_event_line(id, ev));
+    log_debug(format_event_line(id, ev, 0));
   }
   return write_event_with_sync(fd, type, code, value);
 }
