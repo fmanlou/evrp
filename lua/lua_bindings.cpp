@@ -5,6 +5,7 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 
 #include "cursor/cursorpos.h"
 #include "filesystem.h"
@@ -375,6 +376,31 @@ int run_script(const char* path) {
   register_evrp_table(L);
 
   int err = luaL_dofile(L, path);
+  g_keyboard = nullptr;
+  g_mouse = nullptr;
+
+  if (err != LUA_OK) {
+    log_error(std::string("Lua error: ") + lua_tostring(L, -1));
+    lua_pop(L, 1);
+  }
+  lua_close(L);
+  return err;
+}
+
+int execute_chunk(InputEventWriter* writer, const char* chunk) {
+  if (!writer || !chunk) return LUA_ERRRUN;
+  lua_State* L = luaL_newstate();
+  if (!L) return LUA_ERRMEM;
+  luaL_openlibs(L);
+
+  g_keyboard = writer->keyboard_writer();
+  g_mouse = writer->mouse_writer();
+  register_evrp_table(L);
+
+  int err = luaL_loadbuffer(L, chunk, std::strlen(chunk), "=(playback)");
+  if (err == LUA_OK) {
+    err = lua_pcall(L, 0, 0, 0);
+  }
   g_keyboard = nullptr;
   g_mouse = nullptr;
 

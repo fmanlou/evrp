@@ -1,0 +1,8 @@
+[leading] 0.000001
+keyboard.click(keyboard.KEY_A)
+[keyboard] 0.000000 type=1(EV_KEY) code=30(KEY_A) value=1
+[keyboard] 0.000000 type=1(EV_KEY) code=30(KEY_A) value=0
+keyboard.click(keyboard.KEY_B)
+[keyboard] 0.000000 type=1(EV_KEY) code=48(KEY_B) value=1
+[keyboard] 0.000000 type=1(EV_KEY) code=48(KEY_B) value=0
+[trailing] 0.000001

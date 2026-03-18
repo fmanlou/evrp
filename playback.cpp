@@ -9,6 +9,7 @@
 #include "evdev.h"
 #include "eventformat.h"
 #include "filesystem.h"
+#include "lua/lua_bindings.h"
 #include "logger.h"
 #include "scopeguard.h"
 
@@ -55,12 +56,19 @@ int Playback::run() {
     }
 
     DeviceId device_id = device_id_from_label(label);
-    if (device_id == DeviceId::Unknown) continue;
-
     long long delta_us = 0;
     unsigned short type = 0, code = 0;
     int value = 0;
-    if (!parse_event_line(line, &delta_us, &type, &code, &value)) continue;
+    bool is_event = (device_id != DeviceId::Unknown) &&
+                    parse_event_line(line, &delta_us, &type, &code, &value);
+
+    if (!is_event) {
+      int err = evrp::lua::execute_chunk(&event_writer_, line.c_str());
+      if (err != LUA_OK) {
+        log_error("Lua execution failed, skipping line");
+      }
+      continue;
+    }
 
     if (is_first_event && options_.execute_wait_before_first &&
         leading_delta_us > 0) {

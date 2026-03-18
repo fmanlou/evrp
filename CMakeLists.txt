@@ -69,7 +69,8 @@ target_include_directories(logger PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 add_library(playback STATIC playback.cpp)
 target_include_directories(playback PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(playback PRIVATE evdev eventformat inputeventwriter
-                                       inputdevice filesystem logger)
+                                       inputdevice filesystem logger
+                                       lua_bindings)
 
 add_library(lua_bindings STATIC lua/lua_bindings.cpp)
 target_include_directories(lua_bindings PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
