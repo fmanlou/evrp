@@ -21,7 +21,17 @@ int Playback::run() {
     log_error("Playback mode requires a file path after -p.");
     return 1;
   }
-  if (!fs_.open_input(options_.playback_path)) {
+
+  const std::string &path = options_.playback_path;
+  std::string::size_type dot = path.rfind('.');
+  if (dot != std::string::npos &&
+      path.substr(dot) == ".lua") {
+    g_logger->set_level(options_.log_level);
+    int err = evrp::lua::run_script(path.c_str());
+    return (err == LUA_OK) ? 0 : 1;
+  }
+
+  if (!fs_.open_input(path)) {
     log_error(fs_.error_message());
     return 1;
   }

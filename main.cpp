@@ -15,10 +15,9 @@ int main(int argc, char *argv[]) {
   run_options options = parse_options(argc, argv);
   g_logger->set_level(options.log_level);
 
-  int mode_count = (options.recording ? 1 : 0) + (options.playback ? 1 : 0) +
-                   (options.lua_script ? 1 : 0);
+  int mode_count = (options.recording ? 1 : 0) + (options.playback ? 1 : 0);
   if (mode_count > 1) {
-    log_error("Cannot use -r, -p, and -l at the same time.");
+    log_error("Cannot use -r and -p at the same time.");
     print_usage(argv[0]);
     return 1;
   }
@@ -28,17 +27,12 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  if (options.lua_script) {
-    if (options.lua_script_path.empty()) {
-      log_error("Lua mode (-l) requires a script path.");
+  if (options.playback) {
+    if (options.playback_path.empty()) {
+      log_error("Playback (-p) requires a file path.");
       print_usage(argv[0]);
       return 1;
     }
-    int err = evrp::lua::run_script(options.lua_script_path.c_str());
-    return (err == LUA_OK) ? 0 : 1;
-  }
-
-  if (options.playback) {
     return Playback(options).run();
   }
 

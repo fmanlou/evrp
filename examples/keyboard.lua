@@ -1,5 +1,5 @@
 -- evrp keyboard API example
--- Run: evrp -l examples/keyboard.lua (may require sudo for /dev/input/event*)
+-- Run: evrp -p examples/keyboard.lua (may require sudo for /dev/input/event*)
 --
 -- keyboard.press(code)  - press key
 -- keyboard.release(code) - release key

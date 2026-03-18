@@ -9,11 +9,9 @@
 struct run_options {
   bool recording;
   bool playback;
-  bool lua_script;
   LogLevel log_level;
   std::string playback_path;
   std::string output_path;
-  std::string lua_script_path;
   std::vector<DeviceId> kinds;
   // Playback only: whether to execute [leading]/[trailing] waits (default true).
   bool execute_wait_before_first;
