@@ -22,7 +22,7 @@ std::vector<RecordTarget> Record::collect_targets() {
     std::string path = find_device_path(kind);
     if (path.empty()) {
       log_warn("No " + std::string(device_label(kind)) +
-                              " detected. Try running with sudo.");
+               " detected. Try running with sudo.");
       continue;
     }
 
@@ -48,8 +48,8 @@ void Record::record_events() {
   std::vector<int> fds;
   fds.reserve(targets_.size());
   for (const auto &t : targets_) {
-    log_info("Recording " + std::string(device_label(t.id)) +
-                           " from " + t.path);
+    log_info("Recording " + std::string(device_label(t.id)) + " from " +
+             t.path);
     fds.push_back(t.fd);
   }
   log_info("(Ctrl+C to stop)");
@@ -151,8 +151,7 @@ void Record::record_events() {
   if (last_timestamp_us >= 0) {
     struct timeval t_end = {};
     gettimeofday(&t_end, nullptr);
-    long long end_us =
-        t_end.tv_sec * 1000000LL + t_end.tv_usec;
+    long long end_us = t_end.tv_sec * 1000000LL + t_end.tv_usec;
     long long trailing_us = end_us - last_timestamp_us;
     if (trailing_us > 0) {
       write_line(format_trailing_line(trailing_us));

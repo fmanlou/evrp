@@ -9,8 +9,8 @@
 #include "evdev.h"
 #include "eventformat.h"
 #include "filesystem.h"
-#include "lua/lua_bindings.h"
 #include "logger.h"
+#include "lua/lua_bindings.h"
 #include "scopeguard.h"
 
 Playback::Playback(const run_options &options)
@@ -24,8 +24,7 @@ int Playback::run() {
 
   const std::string &path = options_.playback_path;
   std::string::size_type dot = path.rfind('.');
-  if (dot != std::string::npos &&
-      path.substr(dot) == ".lua") {
+  if (dot != std::string::npos && path.substr(dot) == ".lua") {
     g_logger->set_level(options_.log_level);
     int err = evrp::lua::run_script(path.c_str());
     return (err == LUA_OK) ? 0 : 1;
@@ -82,8 +81,7 @@ int Playback::run() {
 
     if (is_first_event && options_.execute_wait_before_first &&
         leading_delta_us > 0) {
-      std::this_thread::sleep_for(
-          std::chrono::microseconds(leading_delta_us));
+      std::this_thread::sleep_for(std::chrono::microseconds(leading_delta_us));
     }
 
     long long sleep_us = delta_us - elapsed_us;
@@ -97,8 +95,7 @@ int Playback::run() {
   }
 
   if (options_.execute_wait_after_last && trailing_delta_us > 0) {
-    std::this_thread::sleep_for(
-        std::chrono::microseconds(trailing_delta_us));
+    std::this_thread::sleep_for(std::chrono::microseconds(trailing_delta_us));
   }
 
   return 0;

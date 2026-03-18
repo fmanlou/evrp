@@ -31,7 +31,7 @@ endif()
 
 add_library(cursorpos STATIC ${cursorpos_sources})
 target_include_directories(cursorpos PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
-                                               ${CMAKE_CURRENT_SOURCE_DIR}/cursor)
+                                            ${CMAKE_CURRENT_SOURCE_DIR}/cursor)
 if(EVRP_USE_X11_CURSOR)
   target_compile_definitions(cursorpos PUBLIC EVRP_USE_X11_CURSOR)
   target_link_libraries(cursorpos PUBLIC X11::X11)
@@ -45,9 +45,15 @@ add_library(
   inputeventwriter STATIC inputeventwriter.cpp keyboard/keyboardeventwriter.cpp
                           mouse/mouseeventwriter.cpp)
 target_include_directories(inputeventwriter PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(inputeventwriter PRIVATE deviceid evdev eventformat
-                                               filesystem inputdevice logger
-                                               cursorpos)
+target_link_libraries(
+  inputeventwriter
+  PRIVATE deviceid
+          evdev
+          eventformat
+          filesystem
+          inputdevice
+          logger
+          cursorpos)
 
 add_library(eventformat STATIC eventformat.cpp)
 target_include_directories(eventformat PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
@@ -68,9 +74,15 @@ target_include_directories(logger PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_library(playback STATIC playback.cpp)
 target_include_directories(playback PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(playback PRIVATE evdev eventformat inputeventwriter
-                                       inputdevice filesystem logger
-                                       lua_bindings)
+target_link_libraries(
+  playback
+  PRIVATE evdev
+          eventformat
+          inputeventwriter
+          inputdevice
+          filesystem
+          logger
+          lua_bindings)
 
 add_library(lua_bindings STATIC lua/lua_bindings.cpp)
 target_include_directories(lua_bindings PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

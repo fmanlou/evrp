@@ -40,7 +40,7 @@ static bool parse_log_level(const std::string &arg, LogLevel *out) {
 }
 
 static bool parse_yes_no(const std::string &arg, const std::string &prefix,
-                        bool *out) {
+                         bool *out) {
   if (arg.size() < prefix.size() || arg.substr(0, prefix.size()) != prefix) {
     return false;
   }
@@ -98,12 +98,12 @@ run_options parse_options(int argc, char *argv[]) {
           continue;
         }
         if (parse_yes_no(argv[i], "--wait-leading=",
-                        &options.execute_wait_before_first)) {
+                         &options.execute_wait_before_first)) {
           ++i;
           continue;
         }
         if (parse_yes_no(argv[i], "--wait-trailing=",
-                        &options.execute_wait_after_last)) {
+                         &options.execute_wait_after_last)) {
           ++i;
           continue;
         }
