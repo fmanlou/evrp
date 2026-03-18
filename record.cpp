@@ -1,6 +1,7 @@
 #include "record.h"
 
 #include <linux/input-event-codes.h>
+#include <sys/time.h>
 
 #include <cstdio>
 
@@ -55,15 +56,27 @@ void Record::record_events() {
 
   SigintGuard sigint;
   std::ostream &event_out = fs_.output_stream();
-  long long first_timestamp_us = -1;
+  struct timeval session_start = {};
+  gettimeofday(&session_start, nullptr);
+  long long baseline_us = -1;
+  long long last_timestamp_us = -1;
   auto write_line = [&](const std::string &line) {
     event_out << line << "\n";
     log_debug(line);
   };
   auto write_event_line = [&](DeviceId id, const Event &ev) {
     long long current_us = ev.sec * 1000000LL + ev.usec;
-    if (first_timestamp_us < 0) first_timestamp_us = current_us;
-    long long delta_us = current_us - first_timestamp_us;
+    if (baseline_us < 0) {
+      baseline_us = current_us;
+      long long session_start_us =
+          session_start.tv_sec * 1000000LL + session_start.tv_usec;
+      long long leading_us = current_us - session_start_us;
+      if (leading_us > 0) {
+        write_line(format_leading_line(leading_us));
+      }
+    }
+    last_timestamp_us = current_us;
+    long long delta_us = current_us - baseline_us;
     write_line(format_event_line(id, ev, delta_us));
   };
   auto write_newline = [&]() {
@@ -132,6 +145,17 @@ void Record::record_events() {
     if (touch_states[i].pending_segment_break) {
       write_newline();
       touch_states[i].pending_segment_break = false;
+    }
+  }
+
+  if (last_timestamp_us >= 0) {
+    struct timeval t_end = {};
+    gettimeofday(&t_end, nullptr);
+    long long end_us =
+        t_end.tv_sec * 1000000LL + t_end.tv_usec;
+    long long trailing_us = end_us - last_timestamp_us;
+    if (trailing_us > 0) {
+      write_line(format_trailing_line(trailing_us));
     }
   }
 

@@ -78,6 +78,39 @@ bool parse_event_line(const std::string &line, long long *out_delta_us,
   return true;
 }
 
+static bool parse_labeled_duration_line(const std::string &line,
+                                        const std::string &expected_label,
+                                        long long *out_delta_us) {
+  if (!out_delta_us) return false;
+  std::string label = parse_event_label(line);
+  if (label != expected_label) return false;
+  std::size_t bracket = line.find("] ");
+  if (bracket == std::string::npos) return false;
+  std::size_t ts_start = bracket + 2;
+  std::string ts_token = line.substr(ts_start);
+  std::size_t dot = ts_token.find('.');
+  if (dot == std::string::npos || dot == 0 || dot + 1 >= ts_token.size()) {
+    return false;
+  }
+  long long sec = 0, usec = 0;
+  try {
+    sec = std::stoll(ts_token.substr(0, dot));
+    usec = std::stoll(ts_token.substr(dot + 1));
+  } catch (...) {
+    return false;
+  }
+  *out_delta_us = sec * 1000000LL + usec;
+  return true;
+}
+
+bool parse_leading_line(const std::string &line, long long *out_delta_us) {
+  return parse_labeled_duration_line(line, "leading", out_delta_us);
+}
+
+bool parse_trailing_line(const std::string &line, long long *out_delta_us) {
+  return parse_labeled_duration_line(line, "trailing", out_delta_us);
+}
+
 std::string event_type_name(unsigned short type) {
   switch (type) {
     case EV_SYN:
@@ -147,4 +180,28 @@ std::string format_event_line(DeviceId id, const Event &ev, long long delta_us) 
     }
   }
   return oss.str();
+}
+
+static std::string format_duration_line(const std::string &label,
+                                        long long delta_us) {
+  std::ostringstream oss;
+  long long delta_sec = delta_us / 1000000LL;
+  long long delta_usec = delta_us % 1000000LL;
+  if (delta_usec < 0) {
+    delta_sec -= 1;
+    delta_usec += 1000000LL;
+  }
+  oss << "[" << label << "] " << delta_sec << ".";
+  oss.width(6);
+  oss.fill('0');
+  oss << delta_usec;
+  return oss.str();
+}
+
+std::string format_leading_line(long long delta_us) {
+  return format_duration_line("leading", delta_us);
+}
+
+std::string format_trailing_line(long long delta_us) {
+  return format_duration_line("trailing", delta_us);
 }

@@ -32,11 +32,28 @@ int Playback::run() {
   std::istream &input = fs_.input_stream();
   std::string line;
   long long elapsed_us = 0;
+  bool is_first_event = true;
+  long long leading_delta_us = -1;
+  long long trailing_delta_us = -1;
 
   while (!sigint.stop_requested() && std::getline(input, line)) {
     if (line.empty()) continue;
 
     std::string label = parse_event_label(line);
+    long long delta_us_val = 0;
+    if (label == "leading") {
+      if (parse_leading_line(line, &delta_us_val)) {
+        leading_delta_us = delta_us_val;
+      }
+      continue;
+    }
+    if (label == "trailing") {
+      if (parse_trailing_line(line, &delta_us_val)) {
+        trailing_delta_us = delta_us_val;
+      }
+      continue;
+    }
+
     DeviceId device_id = device_id_from_label(label);
     if (device_id == DeviceId::Unknown) continue;
 
@@ -45,13 +62,25 @@ int Playback::run() {
     int value = 0;
     if (!parse_event_line(line, &delta_us, &type, &code, &value)) continue;
 
+    if (is_first_event && options_.execute_wait_before_first &&
+        leading_delta_us > 0) {
+      std::this_thread::sleep_for(
+          std::chrono::microseconds(leading_delta_us));
+    }
+
     long long sleep_us = delta_us - elapsed_us;
     if (sleep_us > 0) {
       std::this_thread::sleep_for(std::chrono::microseconds(sleep_us));
     }
     elapsed_us = delta_us;
+    is_first_event = false;
 
     if (!event_writer_.write(device_id, type, code, value)) return 1;
+  }
+
+  if (options_.execute_wait_after_last && trailing_delta_us > 0) {
+    std::this_thread::sleep_for(
+        std::chrono::microseconds(trailing_delta_us));
   }
 
   return 0;
