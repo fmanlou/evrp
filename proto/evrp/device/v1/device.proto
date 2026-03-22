@@ -1,6 +1,6 @@
 // evrp-device gRPC API (v1)
 //
-// - 读：实时从内核输入设备读出事件，推送给 evrp-app（录制业务在 app）。
+// - 读：`StartReadInput` 指定设备种类并开始采集；`ReadInputEvents` 仅推送事件流；`StopReadInput` 停止。
 // - 回放：evrp-app 将完整录制资源上传到 device；无参请求回放当前已缓存资源（注入）。
 // - 光标：可先 `GetCursorPositionAvailability` 查询读坐标是否可用；再 `ReadCursorPosition` 取屏幕像素坐标。
 //   缓存策略由 evrp-device 实现；本文件不定义查询/列举/删除类 RPC。
@@ -25,7 +25,7 @@ enum DeviceKind {
   DEVICE_KIND_KEYBOARD = 4;
 }
 
-message ReadInputEventsRequest {
+message StartReadInputRequest {
   repeated DeviceKind kinds = 1;
 }
 
@@ -108,7 +108,9 @@ message PingResponse {}
 // ---------------------------------------------------------------------------
 
 service InputDeviceService {
-  rpc ReadInputEvents(ReadInputEventsRequest) returns (stream InputEvent);
+  rpc StartReadInput(StartReadInputRequest) returns (google.protobuf.Empty);
+
+  rpc ReadInputEvents(google.protobuf.Empty) returns (stream InputEvent);
 
   rpc StopReadInput(google.protobuf.Empty) returns (google.protobuf.Empty);
 
@@ -116,7 +118,7 @@ service InputDeviceService {
 
   rpc PlaybackRecording(PlaybackRecordingRequest) returns (PlaybackRecordingResponse);
 
-  rpc StopPlayback(StopPlaybackRequest) returns (google.protobuf.Empty);
+  rpc StopPlayback(google.protobuf.Empty) returns (google.protobuf.Empty);
 
   rpc GetCursorPositionAvailability(GetCursorPositionAvailabilityRequest)
       returns (GetCursorPositionAvailabilityResponse);

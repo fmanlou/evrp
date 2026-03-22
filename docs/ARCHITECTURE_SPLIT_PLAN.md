@@ -16,7 +16,7 @@
 **运行环境**：必须能访问 `/dev/input/*` 的机器（通常为被测设备或测试台）
 
 **职责（仅底层实现）**：通过 `InputDeviceService` 提供 **实时读**、**录制资源缓存**、**回放当前缓存资源注入**与 **光标坐标查询**。
-- **读**（`ReadInputEvents`）：从物理输入设备读出事件，经 gRPC 流式 **推送**给 evrp-app。
+- **读**：**`StartReadInput`** 指定设备种类并开始采集；**`ReadInputEvents`** 仅建立 **事件流**（`stream InputEvent`）；**`StopReadInput`** 停止。
 - **缓存与回放**：接收 app **完整推送**的录制资源（`UploadRecording` 流式上传字节），落盘或内存缓存；**`PlaybackRecording`** 无参，回放 **当前** 已缓存资源（本地解析并 `InputEventWriter` 注入）。**不提供** app 侧业务语义（落盘路径、Lua、编排仍属 app）。
 - **光标**：先 **`GetCursorPositionAvailability`** 查询读坐标是否可用（响应 **`available`**）；再 **`ReadCursorPosition`** 取 **屏幕像素坐标**（响应仅 **`x` / `y`**）。不可用时不将「无显示」作为 **`ReadCursorPosition`** 的 gRPC 错误——由调用方先查可用性。
 
@@ -36,7 +36,7 @@
 **运行环境**：任意环境（本地、服务器、CI、容器等），无需物理输入设备
 
 **职责（含录制与回放控制）**：
-- **录制**：调用 `ReadInputEvents`，将 `InputEvent` 转为 eventformat、本地落盘与策略；需要 device 回放时，将**完整录制文件**经 **`UploadRecording`** 推送到 device
+- **录制**：先 **`StartReadInput`**，再 **`ReadInputEvents`** 消费流，将 `InputEvent` 转为 eventformat、本地落盘与策略；需要 device 回放时，将**完整录制文件**经 **`UploadRecording`** 推送到 device
 - **回放**：调用 **`PlaybackRecording()`**（无参），由 device 使用**当前**已缓存资源注入；**不再**使用流式逐条 `WriteInputBatch`，避免回放与 RPC 时序耦合
 - 事件文件生成、编辑、Lua、解析、存储、分析等
 
@@ -67,7 +67,7 @@
 ┌───────────────────────────▼─────────────────────────────────────┐
 │                    evrp-device (设备端)                           │
 │  - gRPC Server：`InputDeviceService`                              │
-│  - ReadInputEvents: 流式 InputEvent → app                          │
+│  - StartReadInput / ReadInputEvents: 开始采集 + 事件流 → app        │
 │  - UploadRecording: app 推送完整资源 → 缓存                         │
 │  - PlaybackRecording(): 回放当前缓存、本地注入                       │
 │  - GetCursorPositionAvailability / ReadCursorPosition: 可用性 + 坐标 → app │
@@ -78,7 +78,7 @@
 
 | 能力 | 归属 | gRPC 形态 |
 |------|------|-----------|
-| 读实时输入、停止读 | device | `ReadInputEvents` → `stream InputEvent`；`StopReadInput(google.protobuf.Empty)` → `google.protobuf.Empty` |
+| 开始读、事件流、停止读 | device | `StartReadInput(StartReadInputRequest)` → `Empty`；`ReadInputEvents(google.protobuf.Empty)` → `stream InputEvent`；`StopReadInput(Empty)` → `Empty` |
 | 上传完整录制资源 | device | `UploadRecording(stream UploadRecordingFrame)`：开始/中间/结束帧 → `stream UploadRecordingStatus`（`code` / `message`） |
 | 回放当前缓存 | device | `PlaybackRecording` Unary（`PlaybackRecordingRequest` 空） |
 | 停止回放 | device | `StopPlayback(google.protobuf.Empty)` → `google.protobuf.Empty` |
@@ -90,7 +90,7 @@
 
 ### 2.2 载荷说明
 
-- **实时读**：`InputEvent` 流。
+- **实时读**：先 **`StartReadInput`**（`kinds`），再 **`ReadInputEvents`** 拉取 **`InputEvent`** 流；停止用 **`StopReadInput`**。
 - **上传资源**：客户端先发 **开始帧**，再若干 **中间帧（数据帧）**（`middle.data`，每帧 **`middle.checksum`** 校验本帧数据），拼接为完整资源（与现有 eventformat 文本文件一致），最后 **结束帧**；device 持久化或缓存后通过 **`UploadRecordingStatus`** 流回馈，下行最后一帧为 **`code` / `message`**（避免大包 unary 与长时间无下行）。
 - **回放**：device 读取**当前**本地缓存（通常为最近一次成功上传），解析并注入；**回放时序与 RPC 推送解耦**，无逐条 Write 延迟问题。
 - **光标**：**`GetCursorPositionAvailability`** 返回是否可读；**`ReadCursorPosition`** 仅返回坐标。是否可用**不**放在 `ReadCursorPositionResponse` 中。
@@ -123,7 +123,8 @@
 ```
 evrp-app                    evrp-device
     |                            |
-    |--- ReadInputEvents -------->| 打开输入设备，开始读并推送
+    |--- StartReadInput --------->| 按 kinds 打开设备并开始采集
+    |--- ReadInputEvents -------->| 建立事件流（Empty）
     |<--- InputEvent (stream) ---| 输入事件
     |                            |
     |--- StopReadInput ---------->| 停止读（可选）
@@ -165,11 +166,11 @@ evrp-app
 
 ### 阶段二：evrp-device 抽取
 - 将 **InputDevice、evdev、InputEventWriter**、**录制资源存储**（及 gRPC 适配层）打包为独立可执行程序
-- 实现 gRPC **服务端**：`ReadInputEvents`、`UploadRecording`、`PlaybackRecording`、`GetCursorPositionAvailability`、`ReadCursorPosition` 等
+- 实现 gRPC **服务端**：`StartReadInput`、`ReadInputEvents`、`UploadRecording`、`PlaybackRecording`、`GetCursorPositionAvailability`、`ReadCursorPosition` 等
 
 ### 阶段三：evrp-app 抽取
 - 将 **Record/Playback 流程**、eventformat、Lua、存储等打包为独立程序
-- 实现 gRPC **客户端**：订阅输入流、`UploadRecording` 推送完整文件、`PlaybackRecording()` 触发回放、按需 `GetCursorPositionAvailability` / `ReadCursorPosition`
+- 实现 gRPC **客户端**：`StartReadInput` + `ReadInputEvents` 订阅事件流、`UploadRecording` 推送完整文件、`PlaybackRecording()` 触发回放、按需 `GetCursorPositionAvailability` / `ReadCursorPosition`
 
 ### 阶段四：Lua 与资源路径
 - Lua 仅在 app；输出完整资源文件后上传并走 `PlaybackRecording`

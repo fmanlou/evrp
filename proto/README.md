@@ -6,7 +6,9 @@
 
 | RPC | 说明 |
 |-----|------|
-| `ReadInputEvents` | 实时读输入 → stream `InputEvent` |
+| `StartReadInput` | 指定 `DeviceKind` 并开始采集 → `Empty` |
+| `ReadInputEvents` | 仅拉取事件流 → `stream InputEvent`（宜在 `StartReadInput` 之后） |
+| `StopReadInput` | 停止读 → `Empty` |
 | `UploadRecording` | `UploadRecordingFrame`：开始帧 → 中间帧（`data` + `checksum`）→ 结束帧；下行 `UploadRecordingStatus`（`code` / `message`） |
 | `PlaybackRecording` / `StopPlayback` | 回放当前已缓存资源；`StopPlayback` 返回 `Empty` |
 | `GetCursorPositionAvailability` | 查询读光标坐标是否可用（响应仅 `available`） |
