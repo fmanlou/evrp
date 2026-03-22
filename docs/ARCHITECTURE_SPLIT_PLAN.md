@@ -15,22 +15,19 @@
 
 **运行环境**：必须能访问 `/dev/input/*` 的机器（通常为被测设备或测试台）
 
-**职责**：
-- 录制：从 touchpad/touchscreen/mouse/keyboard 采集原始输入事件
-- 回放：将事件注入物理设备
-- 接收来自业务端的指令与事件流
-- 将录制到的事件流上报给业务端
+**职责（仅底层实现）**：通过 `InputDeviceService` 提供 **实时读**、**录制资源缓存**、**回放当前缓存资源注入**与 **光标坐标查询**。
+- **读**（`ReadInputEvents`）：从物理输入设备读出事件，经 gRPC 流式 **推送**给 evrp-app。
+- **缓存与回放**：接收 app **完整推送**的录制资源（`UploadRecording` 流式上传字节），落盘或内存缓存；**`PlaybackRecording`** 无参，回放 **当前** 已缓存资源（本地解析并 `InputEventWriter` 注入）。**不提供** app 侧业务语义（落盘路径、Lua、编排仍属 app）。
+- **光标**：先 **`GetCursorPositionAvailability`** 查询读坐标是否可用（响应 **`available`**）；再 **`ReadCursorPosition`** 取 **屏幕像素坐标**（响应仅 **`x` / `y`**）。不可用时不将「无显示」作为 **`ReadCursorPosition`** 的 gRPC 错误——由调用方先查可用性。
 
 **依赖**：
 - Linux input 子系统 (`/dev/input/event*`)
-- 可选：X11（光标位置，若需 cursorpos）
-- 文件系统（本地临时缓存）
-- gRPC 服务端（对外暴露服务）
+- 可选：X11 / 显示后端（`GetCursorPositionAvailability` / `ReadCursorPosition`、注入时若需 `cursorpos`）
+- gRPC 服务端；录制资源缓存（策略见 evrp-device 实现）
 
-**不适合承担的职责**：
-- 事件格式转换、解析
-- Lua 脚本执行（与业务逻辑相关）
-- 业务决策、流程编排
+**不承担**：
+- 录制、回放流程控制与文件输出
+- 事件格式转换、Lua、业务编排（由 evrp-app 完成）
 
 ---
 
@@ -38,18 +35,16 @@
 
 **运行环境**：任意环境（本地、服务器、CI、容器等），无需物理输入设备
 
-**职责**：
-- 事件文件的生成、编辑、转换
-- Lua 脚本执行（生成事件序列、编排逻辑）
-- 事件序列的解析、校验、裁剪
-- 录制/回放流程编排与调度
-- 存储、版本管理、分析等业务逻辑
+**职责（含录制与回放控制）**：
+- **录制**：调用 `ReadInputEvents`，将 `InputEvent` 转为 eventformat、本地落盘与策略；需要 device 回放时，将**完整录制文件**经 **`UploadRecording`** 推送到 device
+- **回放**：调用 **`PlaybackRecording()`**（无参），由 device 使用**当前**已缓存资源注入；**不再**使用流式逐条 `WriteInputBatch`，避免回放与 RPC 时序耦合
+- 事件文件生成、编辑、Lua、解析、存储、分析等
 
 **依赖**：
 - 文件系统
 - gRPC 客户端（连接 evrp-device）
 - Lua 解释器
-- 不依赖 `/dev/input/*`、X11 等设备接口
+- 不依赖 `/dev/input/*`、X11 等设备接口（坐标类需求可通过协议要求 device 侧处理或返回数据）
 
 ---
 
@@ -57,41 +52,49 @@
 
 **协议与接口统一采用 [gRPC](https://grpc.io/)（C++ 使用 `grpc` / `grpc++` 与 `protobuf`）**：IDL 用 `.proto` 定义服务、RPC 与消息类型；传输层由 gRPC 处理（HTTP/2，本地可用 Unix Domain Socket 或 `localhost` TCP）。
 
+**`.proto` 定义位置**：仓库内 `proto/evrp/device/v1/device.proto`（`InputDeviceService`），详见同目录 `proto/README.md`。
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                      evrp-app (业务端)                            │
-│  - 解析/生成事件文件                                               │
-│  - 执行 Lua 脚本（生成事件序列）                                    │
-│  - 流程编排、存储、分析                                             │
+│  - 录制 / 回放控制与落盘                                          │
+│  - eventformat、Lua、编排、存储                                   │
 │  - gRPC Client                                                    │
 └───────────────────────────┬─────────────────────────────────────┘
                             │
                     gRPC (HTTP/2)
-                    Unary / Client-Streaming / Server-Streaming / Bidi
                             │
 ┌───────────────────────────▼─────────────────────────────────────┐
 │                    evrp-device (设备端)                           │
-│  - gRPC Server                                                    │
-│  - Record: 采集事件 → 流式返回 app                                 │
-│  - Playback: 接收事件流 → 注入设备                                 │
+│  - gRPC Server：`InputDeviceService`                              │
+│  - ReadInputEvents: 流式 InputEvent → app                          │
+│  - UploadRecording: app 推送完整资源 → 缓存                         │
+│  - PlaybackRecording(): 回放当前缓存、本地注入                       │
+│  - GetCursorPositionAvailability / ReadCursorPosition: 可用性 + 坐标 → app │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### 2.1 接口形态（建议，具体以 `.proto` 为准）
+### 2.1 接口形态（以 `proto/evrp/device/v1/device.proto` 为准）
 
-| 能力 | gRPC 形态 | 说明 |
-|------|-----------|------|
-| 开始/停止录制、开始/停止回放、退出等 | Unary RPC | 控制指令，返回简单结果或错误 |
-| 录制事件上报 | Server-streaming | device → app，按行或按块推送事件文本/结构化消息 |
-| 回放事件下发 | Client-streaming 或 Bidi | app → device 推送事件序列；必要时双向确认 |
-| 状态/心跳 | Unary 或 stream | 可选 |
+| 能力 | 归属 | gRPC 形态 |
+|------|------|-----------|
+| 读实时输入、停止读 | device | `ReadInputEvents` → `stream InputEvent`；`StopReadInput(google.protobuf.Empty)` → `google.protobuf.Empty` |
+| 上传完整录制资源 | device | `UploadRecording(stream UploadRecordingFrame)`：开始/中间/结束帧 → `stream UploadRecordingStatus`（`code` / `message`） |
+| 回放当前缓存 | device | `PlaybackRecording` Unary（`PlaybackRecordingRequest` 空） |
+| 停止回放 | device | `StopPlayback(google.protobuf.Empty)` → `google.protobuf.Empty` |
+| 读光标是否可用 | device | `GetCursorPositionAvailability` Unary → `GetCursorPositionAvailabilityResponse`（`available`） |
+| 读光标屏幕坐标 | device | `ReadCursorPosition` Unary → `ReadCursorPositionResponse`（`x` / `y`） |
+| 保活 | device | `Ping` Unary（空消息） |
+| 录制业务、文件主编排 | **evrp-app** | 消费 `InputEvent`、生成完整资源文件、再 `UploadRecording` |
+| 发起回放 | **evrp-app** | `PlaybackRecording()` 无参，**无** WriteBatch 逐条注入 |
 
-事件载荷可内嵌 **现有 `eventformat` 文本行**（`string` 字段），或拆成结构化 `message` 便于校验；流式 RPC 适合长录制与长回放。
+### 2.2 载荷说明
 
-### 2.2 事件载荷与流式传输
-
-- **业务层**仍可与现有 `eventformat` 文本格式对齐，便于解析与落盘。
-- **传输层**由 gRPC 的流式 RPC 承载，无需自研分帧协议；大流量时注意 `max_send_message_size` / 背压与流控配置。
+- **实时读**：`InputEvent` 流。
+- **上传资源**：客户端先发 **开始帧**，再若干 **中间帧（数据帧）**（`middle.data`，每帧 **`middle.checksum`** 校验本帧数据），拼接为完整资源（与现有 eventformat 文本文件一致），最后 **结束帧**；device 持久化或缓存后通过 **`UploadRecordingStatus`** 流回馈，下行最后一帧为 **`code` / `message`**（避免大包 unary 与长时间无下行）。
+- **回放**：device 读取**当前**本地缓存（通常为最近一次成功上传），解析并注入；**回放时序与 RPC 推送解耦**，无逐条 Write 延迟问题。
+- **光标**：**`GetCursorPositionAvailability`** 返回是否可读；**`ReadCursorPosition`** 仅返回坐标。是否可用**不**放在 `ReadCursorPositionResponse` 中。
+- 上传流注意 `max_send_message_size`。
 
 ---
 
@@ -99,51 +102,46 @@
 
 | 模块 | 设备端 (evrp-device) | 业务端 (evrp-app) |
 |------|----------------------|-------------------|
-| Record | ✓ | ✗ |
-| Playback（注入部分） | ✓ | ✗ |
-| InputDevice | ✓ | ✗ |
-| InputEventWriter | ✓ | ✗ |
-| evdev | ✓ | ✗ |
+| Record（流程、落盘、格式） | ✗ | ✓ |
+| Playback（流程、读文件、节奏） | ✗ | ✓ |
+| InputDevice / evdev / 读事件 | ✓ | ✗ |
+| InputEventWriter（注入实现） | ✓ | ✗ |
 | CursorPos (X11) | ✓（若需要） | ✗ |
-| eventformat (解析) | ✓（解析回放文件） | ✓（解析/生成） |
+| eventformat (解析/生成) | ✓（`PlaybackRecording` 读缓存文件并解析注入） | ✓（录制、组装完整文件再 `UploadRecording`） |
 | Lua + lua_bindings | ✗ | ✓ |
 | argparser | 部分 | 部分 |
 | logger, filesystem | ✓ | ✓ |
 
-**Lua 脚本的两种形态**：
-
-1. **设备端 Lua**（可选，未来）：在 device 上直接执行，用于简单本地回放
-2. **业务端 Lua**：在 app 中执行，生成事件序列后通过网络发送给 device 回放
+**Lua**：仅在 **evrp-app** 执行；生成完整资源文件后 **`UploadRecording`**，再 **`PlaybackRecording()`**。
 
 ---
 
 ## 四、典型工作流
 
-### 4.1 录制流程
-
-（经 gRPC：Unary 发起录制 + Server-streaming 回传事件）
+### 4.1 录制流程（业务在 app）
 
 ```
 evrp-app                    evrp-device
     |                            |
-    |--- record (RPC) ----------->| 开始录制
-    |                            | 从设备采集事件
-    |<--- 事件流 (gRPC stream) ---| 实时或结束时推送
+    |--- ReadInputEvents -------->| 打开输入设备，开始读并推送
+    |<--- InputEvent (stream) ---| 输入事件
     |                            |
-    | 存储/处理事件文件            |
+    |--- StopReadInput ---------->| 停止读（可选）
+    |  app 侧：转为 eventformat、写文件、策略控制   |
 ```
 
-### 4.2 回放流程
-
-（经 gRPC：Unary 或 stream 发起回放 + Client-streaming / Bidi 下发事件）
+### 4.2 回放流程（资源缓存 + 无参回放）
 
 ```
-evrp-app                    evrp-device
-    |                            |
-    | 解析事件文件 / 执行 Lua      |
-    | 生成事件序列                 |
-    |--- playback + 事件流 (RPC) ->| 注入设备
-    |                            |
+evrp-app                         evrp-device
+    |                                 |
+    | 准备完整录制文件（本地/eventformat/Lua 导出） |
+    |--- UploadRecording (开始/中间/结束帧 + status stream) --->| 拼接并缓存当前可回放资源
+    |<--- UploadRecordingStatus（最终帧 code/message）--------|
+    |                                 |
+    |--- PlaybackRecording() --------->| 读当前缓存、解析、注入设备
+    |<--- PlaybackRecordingResponse --| 回放结束
+    |                                 |
 ```
 
 ### 4.3 纯业务处理（无设备）
@@ -166,16 +164,15 @@ evrp-app
 - 约定监听地址（如 `unix:///path/evrp.sock` 或 `host:port`）、TLS（若跨机）与消息大小限制
 
 ### 阶段二：evrp-device 抽取
-- 将 Record、Playback、InputDevice、InputEventWriter 等打包为独立可执行程序
-- 实现 gRPC **服务端**：实现 `.proto` 中定义的 service，在 RPC 内驱动录制/回放与流式收发
+- 将 **InputDevice、evdev、InputEventWriter**、**录制资源存储**（及 gRPC 适配层）打包为独立可执行程序
+- 实现 gRPC **服务端**：`ReadInputEvents`、`UploadRecording`、`PlaybackRecording`、`GetCursorPositionAvailability`、`ReadCursorPosition` 等
 
 ### 阶段三：evrp-app 抽取
-- 将 eventformat 解析、Lua 执行、业务逻辑打包为独立程序
-- 实现 gRPC **客户端**：调用 device 上的 RPC，发起控制与流式事件交互
+- 将 **Record/Playback 流程**、eventformat、Lua、存储等打包为独立程序
+- 实现 gRPC **客户端**：订阅输入流、`UploadRecording` 推送完整文件、`PlaybackRecording()` 触发回放、按需 `GetCursorPositionAvailability` / `ReadCursorPosition`
 
-### 阶段四：Lua 解耦
-- 业务端 Lua：生成事件序列，不直接调用 InputEventWriter
-- 通过 gRPC 流式 RPC 将事件序列发往 device 执行注入
+### 阶段四：Lua 与资源路径
+- Lua 仅在 app；输出完整资源文件后上传并走 `PlaybackRecording`
 
 ---
 

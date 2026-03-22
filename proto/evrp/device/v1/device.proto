@@ -1,0 +1,127 @@
+// evrp-device gRPC API (v1)
+//
+// - 读：实时从内核输入设备读出事件，推送给 evrp-app（录制业务在 app）。
+// - 回放：evrp-app 将完整录制资源上传到 device；无参请求回放当前已缓存资源（注入）。
+// - 光标：可先 `GetCursorPositionAvailability` 查询读坐标是否可用；再 `ReadCursorPosition` 取屏幕像素坐标。
+//   缓存策略由 evrp-device 实现；本文件不定义查询/列举/删除类 RPC。
+
+syntax = "proto3";
+
+package evrp.device.v1;
+
+import "google/protobuf/empty.proto";
+
+option cc_enable_arenas = true;
+
+// ---------------------------------------------------------------------------
+// 设备类型（与 deviceid 一致）
+// ---------------------------------------------------------------------------
+
+enum DeviceKind {
+  DEVICE_KIND_UNSPECIFIED = 0;
+  DEVICE_KIND_TOUCHPAD = 1;
+  DEVICE_KIND_TOUCHSCREEN = 2;
+  DEVICE_KIND_MOUSE = 3;
+  DEVICE_KIND_KEYBOARD = 4;
+}
+
+message ReadInputEventsRequest {
+  repeated DeviceKind kinds = 1;
+}
+
+// 单条输入事件（linux input_event 语义 + 来源设备）
+message InputEvent {
+  DeviceKind device = 1;
+  int64 time_sec = 2;
+  int64 time_usec = 3;
+  uint32 type = 4;
+  uint32 code = 5;
+  int32 value = 6;
+}
+
+// ---------------------------------------------------------------------------
+// 录制资源：按「开始帧 → 若干中间帧 → 结束帧」上传（client → device，Client-streaming）。
+// 中间帧（数据帧）承载 payload 分片及本帧校验码，避免单次消息过大并便于逐帧校验。
+// 服务端可流式回馈（server → client，Server-streaming），最后一帧含 code / message。
+// ---------------------------------------------------------------------------
+
+// 开始帧：一次上传会话的第一帧。
+message UploadRecordingStartFrame {}
+
+// 中间帧（数据帧）：payload 分片，可连续多条；每帧携带针对本帧 data 的校验码。
+message UploadRecordingMiddleFrame {
+  bytes data = 1;
+  // 针对本帧 `data` 的校验码（通常为 CRC32；算法由实现约定，收发端须一致）。
+  uint32 checksum = 2;
+}
+
+// 结束帧：一次上传会话的最后一帧（无 payload）。
+message UploadRecordingEndFrame {}
+
+message UploadRecordingFrame {
+  oneof frame {
+    UploadRecordingStartFrame start = 1;
+    UploadRecordingMiddleFrame middle = 2;
+    UploadRecordingEndFrame end = 3;
+  }
+}
+
+message UploadRecordingStatus {
+  int32 code = 1;
+  string message = 2;
+}
+
+// ---------------------------------------------------------------------------
+// 回放：在 device 上注入当前已缓存的录制资源（Unary）；具体缓存策略由实现决定。
+// ---------------------------------------------------------------------------
+
+message PlaybackRecordingRequest {}
+
+message PlaybackRecordingResponse {
+  int32 code = 1;
+  string message = 2;
+}
+
+message GetCursorPositionAvailabilityRequest {}
+
+message GetCursorPositionAvailabilityResponse {
+  bool available = 1;
+}
+
+message ReadCursorPositionRequest {}
+
+message ReadCursorPositionResponse {
+  int32 x = 1;
+  int32 y = 2;
+}
+
+// ---------------------------------------------------------------------------
+// 保活
+// ---------------------------------------------------------------------------
+
+message PingRequest {}
+
+message PingResponse {}
+
+// ---------------------------------------------------------------------------
+// 服务
+// ---------------------------------------------------------------------------
+
+service InputDeviceService {
+  rpc ReadInputEvents(ReadInputEventsRequest) returns (stream InputEvent);
+
+  rpc StopReadInput(google.protobuf.Empty) returns (google.protobuf.Empty);
+
+  rpc UploadRecording(stream UploadRecordingFrame) returns (stream UploadRecordingStatus);
+
+  rpc PlaybackRecording(PlaybackRecordingRequest) returns (PlaybackRecordingResponse);
+
+  rpc StopPlayback(StopPlaybackRequest) returns (google.protobuf.Empty);
+
+  rpc GetCursorPositionAvailability(GetCursorPositionAvailabilityRequest)
+      returns (GetCursorPositionAvailabilityResponse);
+
+  rpc ReadCursorPosition(ReadCursorPositionRequest) returns (ReadCursorPositionResponse);
+
+  rpc Ping(PingRequest) returns (PingResponse);
+}
