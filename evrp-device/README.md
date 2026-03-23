@@ -10,6 +10,8 @@
 - C++11
 - [gRPC](https://grpc.io/) C++、`protobuf`、`protoc`、`grpc_cpp_plugin`  
   例如 Debian/Ubuntu：`libgrpc++-dev` `libprotobuf-dev` `protobuf-compiler-grpc`
+- [gflags](https://github.com/gflags/gflags)（命令行解析）  
+  例如 Debian/Ubuntu：`libgflags-dev`
 
 ## 构建
 
@@ -27,7 +29,8 @@ cmake --build build --target evrp-device
 ## 运行
 
 ```bash
-./build/evrp-device --listen 127.0.0.1:50051
+./build/evrp-device -listen=127.0.0.1:50051
+# 或 --listen=... ；查看帮助：./build/evrp-device -help
 ```
 
 当前首版仅 **`Ping`** 返回成功，其余 RPC 为 **UNIMPLEMENTED**（见 `docs/EVRP_DEVICE_DEVELOPMENT_PLAN.md`）。

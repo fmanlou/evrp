@@ -116,6 +116,7 @@ option(EVRP_BUILD_DEVICE "Build evrp-device gRPC server (needs gRPC C++, protobu
 if(EVRP_BUILD_DEVICE)
   find_package(Protobuf REQUIRED)
   find_package(gRPC CONFIG REQUIRED)
+  find_package(gflags CONFIG REQUIRED)
 
   set(PROTO_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/proto")
   set(DEVICE_PROTO "${PROTO_ROOT}/evrp/device/v1/device.proto")
@@ -156,5 +157,6 @@ if(EVRP_BUILD_DEVICE)
   target_link_libraries(evrp_device_grpc PUBLIC evrp_device_proto)
 
   add_executable(evrp-device evrp-device/main.cpp evrp/device/stub_device_host.cpp)
-  target_link_libraries(evrp-device PRIVATE evrp_device_api evrp_device_grpc gRPC::grpc++)
+  target_link_libraries(evrp-device PRIVATE evrp_device_api evrp_device_grpc gRPC::grpc++
+                        gflags::gflags)
 endif()
