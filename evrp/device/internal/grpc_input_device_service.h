@@ -1,5 +1,7 @@
 #pragma once
 
+// 内部实现：仅由 grpc_server_impl.cpp / 本目录 .cpp 包含，业务代码勿 include。
+
 #include <grpcpp/grpcpp.h>
 
 #include "evrp/device/api/host.h"
@@ -7,8 +9,8 @@
 
 namespace evrp {
 namespace device {
+namespace internal {
 
-// 将 gRPC InputDeviceService 映射为 api::IDeviceHost；业务实现只依赖 IDeviceHost，不依赖本类。
 class GrpcInputDeviceService final
     : public evrp::device::v1::InputDeviceService::Service {
  public:
@@ -61,5 +63,6 @@ class GrpcInputDeviceService final
   api::IDeviceHost& host_;
 };
 
+}  // namespace internal
 }  // namespace device
 }  // namespace evrp

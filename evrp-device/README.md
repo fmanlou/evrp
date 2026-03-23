@@ -1,8 +1,8 @@
 # evrp-device
 
-设备端进程：对外暴露 gRPC `InputDeviceService`，**业务与设备核心逻辑**通过 `evrp/device/api/` 中的 **`IDeviceHost`** 交互，不直接使用 proto 类型（见 [`docs/API_LAYER.md`](../docs/API_LAYER.md)）。
+设备端进程：入口 **`main.cpp` 仅** 包含 `evrp/device/api/server.h` 与 **`IDeviceHost`** 实现（如 `StubDeviceHost`），**不包含** gRPC 头文件。
 
-gRPC 入口：`evrp-device/grpc/grpc_input_device_service.*` 负责 proto ↔ api 转换。
+传输与 proto 全部在 **`evrp/device/internal/*.cpp`** 与 CMake 目标 **`evrp_device_grpc`** 中实现（见 [`docs/API_LAYER.md`](../docs/API_LAYER.md)）。
 
 ## 依赖（构建）
 

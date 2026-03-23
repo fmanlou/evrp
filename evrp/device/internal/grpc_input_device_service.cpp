@@ -1,4 +1,4 @@
-#include "grpc/grpc_input_device_service.h"
+#include "evrp/device/internal/grpc_input_device_service.h"
 
 #include <google/protobuf/empty.pb.h>
 
@@ -6,6 +6,7 @@
 
 namespace evrp {
 namespace device {
+namespace internal {
 namespace {
 
 grpc::Status ToGrpc(const api::ApiError& e) {
@@ -191,5 +192,6 @@ grpc::Status GrpcInputDeviceService::Ping(grpc::ServerContext* /*context*/,
   return ToGrpc(r.error);
 }
 
+}  // namespace internal
 }  // namespace device
 }  // namespace evrp
