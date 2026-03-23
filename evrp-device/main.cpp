@@ -1,4 +1,4 @@
-// evrp-device：设备端进程入口。仅依赖 api 层（server.h / IDeviceHost），不包含传输实现头文件。
+// evrp-device：设备端进程入口。仅依赖 api 层（server.h、IDeviceHost），不包含传输实现头文件。
 
 #include <gflags/gflags.h>
 
@@ -14,5 +14,5 @@ int main(int argc, char** argv) {
   gflags::ParseCommandLineFlags(&argc, &argv, true);
 
   evrp::device::StubDeviceHost host;
-  return evrp::device::api::RunDeviceServer(FLAGS_listen, host);
+  return evrp::device::api::run_device_server(FLAGS_listen, host);
 }

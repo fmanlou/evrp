@@ -13,26 +13,26 @@ class IDeviceClient {
  public:
   virtual ~IDeviceClient() = default;
 
-  virtual ApiResult<void> Ping() = 0;
+  virtual ApiResult<void> ping() = 0;
 
-  virtual ApiResult<void> StartRecording(const std::vector<DeviceKind>& kinds) = 0;
+  virtual ApiResult<void> start_recording(const std::vector<DeviceKind>& kinds) = 0;
 
-  virtual ApiResult<void> ReadInputEvents(
+  virtual ApiResult<void> read_input_events(
       const std::function<void(const InputEvent&)>& on_event) = 0;
 
-  virtual ApiResult<void> StopRecording() = 0;
+  virtual ApiResult<void> stop_recording() = 0;
 
-  virtual ApiResult<void> UploadRecording(
+  virtual ApiResult<void> upload_recording(
       const std::function<bool(UploadFrame* frame)>& next_frame_to_send,
       const std::function<void(const RecordingStatus&)>& on_status) = 0;
 
-  virtual ApiResult<PlaybackResponse> PlaybackRecording() = 0;
+  virtual ApiResult<PlaybackResponse> playback_recording() = 0;
 
-  virtual ApiResult<void> StopPlayback() = 0;
+  virtual ApiResult<void> stop_playback() = 0;
 
-  virtual ApiResult<CursorAvailability> GetCursorPositionAvailability() = 0;
+  virtual ApiResult<CursorAvailability> get_cursor_position_availability() = 0;
 
-  virtual ApiResult<CursorPosition> ReadCursorPosition() = 0;
+  virtual ApiResult<CursorPosition> read_cursor_position() = 0;
 };
 
 }  // namespace evrp::device::api

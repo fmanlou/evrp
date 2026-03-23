@@ -58,18 +58,18 @@ void FromProto(const evrp::device::v1::InputEvent& p, InputEvent* e) {
 }
 
 ApiError FromGrpcStatus(const grpc::Status& s) {
-  if (s.ok()) return ApiError::Ok();
-  return ApiError::Make(static_cast<int>(s.error_code()), s.error_message());
+  if (s.ok()) return ApiError::success();
+  return ApiError::make(static_cast<int>(s.error_code()), s.error_message());
 }
 
 template <typename T>
-ApiResult<T> Fail(const grpc::Status& s) {
+ApiResult<T> fail_result(const grpc::Status& s) {
   ApiResult<T> r;
   r.error = FromGrpcStatus(s);
   return r;
 }
 
-ApiResult<void> FailVoid(const grpc::Status& s) {
+ApiResult<void> fail_result_void(const grpc::Status& s) {
   ApiResult<void> r;
   r.error = FromGrpcStatus(s);
   return r;
@@ -99,16 +99,16 @@ class GrpcDeviceClient final : public IDeviceClient {
       : channel_(std::move(channel)),
         stub_(evrp::device::v1::InputDeviceService::NewStub(channel_)) {}
 
-  ApiResult<void> Ping() override {
+  ApiResult<void> ping() override {
     grpc::ClientContext ctx;
     evrp::device::v1::PingRequest req;
     evrp::device::v1::PingResponse resp;
     grpc::Status s = stub_->Ping(&ctx, req, &resp);
-    if (!s.ok()) return FailVoid(s);
+    if (!s.ok()) return fail_result_void(s);
     return ApiResult<void>{};
   }
 
-  ApiResult<void> StartRecording(const std::vector<DeviceKind>& kinds) override {
+  ApiResult<void> start_recording(const std::vector<DeviceKind>& kinds) override {
     grpc::ClientContext ctx;
     evrp::device::v1::StartRecordingRequest req;
     for (DeviceKind k : kinds) {
@@ -116,11 +116,11 @@ class GrpcDeviceClient final : public IDeviceClient {
     }
     google::protobuf::Empty resp;
     grpc::Status s = stub_->StartRecording(&ctx, req, &resp);
-    if (!s.ok()) return FailVoid(s);
+    if (!s.ok()) return fail_result_void(s);
     return ApiResult<void>{};
   }
 
-  ApiResult<void> ReadInputEvents(
+  ApiResult<void> read_input_events(
       const std::function<void(const InputEvent&)>& on_event) override {
     grpc::ClientContext ctx;
     google::protobuf::Empty req;
@@ -133,20 +133,20 @@ class GrpcDeviceClient final : public IDeviceClient {
       on_event(e);
     }
     grpc::Status s = reader->Finish();
-    if (!s.ok()) return FailVoid(s);
+    if (!s.ok()) return fail_result_void(s);
     return ApiResult<void>{};
   }
 
-  ApiResult<void> StopRecording() override {
+  ApiResult<void> stop_recording() override {
     grpc::ClientContext ctx;
     google::protobuf::Empty req;
     google::protobuf::Empty resp;
     grpc::Status s = stub_->StopRecording(&ctx, req, &resp);
-    if (!s.ok()) return FailVoid(s);
+    if (!s.ok()) return fail_result_void(s);
     return ApiResult<void>{};
   }
 
-  ApiResult<void> UploadRecording(
+  ApiResult<void> upload_recording(
       const std::function<bool(UploadFrame* frame)>& next_frame_to_send,
       const std::function<void(const RecordingStatus&)>& on_status) override {
     grpc::ClientContext ctx;
@@ -166,16 +166,16 @@ class GrpcDeviceClient final : public IDeviceClient {
       on_status(rs);
     }
     grpc::Status s = stream->Finish();
-    if (!s.ok()) return FailVoid(s);
+    if (!s.ok()) return fail_result_void(s);
     return ApiResult<void>{};
   }
 
-  ApiResult<PlaybackResponse> PlaybackRecording() override {
+  ApiResult<PlaybackResponse> playback_recording() override {
     grpc::ClientContext ctx;
     evrp::device::v1::PlaybackRecordingRequest req;
     evrp::device::v1::PlaybackRecordingResponse resp;
     grpc::Status s = stub_->PlaybackRecording(&ctx, req, &resp);
-    if (!s.ok()) return Fail<PlaybackResponse>(s);
+    if (!s.ok()) return fail_result<PlaybackResponse>(s);
     PlaybackResponse out;
     out.code = resp.code();
     out.message = resp.message();
@@ -184,32 +184,32 @@ class GrpcDeviceClient final : public IDeviceClient {
     return r;
   }
 
-  ApiResult<void> StopPlayback() override {
+  ApiResult<void> stop_playback() override {
     grpc::ClientContext ctx;
     google::protobuf::Empty req;
     google::protobuf::Empty resp;
     grpc::Status s = stub_->StopPlayback(&ctx, req, &resp);
-    if (!s.ok()) return FailVoid(s);
+    if (!s.ok()) return fail_result_void(s);
     return ApiResult<void>{};
   }
 
-  ApiResult<CursorAvailability> GetCursorPositionAvailability() override {
+  ApiResult<CursorAvailability> get_cursor_position_availability() override {
     grpc::ClientContext ctx;
     evrp::device::v1::GetCursorPositionAvailabilityRequest req;
     evrp::device::v1::GetCursorPositionAvailabilityResponse resp;
     grpc::Status s = stub_->GetCursorPositionAvailability(&ctx, req, &resp);
-    if (!s.ok()) return Fail<CursorAvailability>(s);
+    if (!s.ok()) return fail_result<CursorAvailability>(s);
     ApiResult<CursorAvailability> r;
     r.value.available = resp.available();
     return r;
   }
 
-  ApiResult<CursorPosition> ReadCursorPosition() override {
+  ApiResult<CursorPosition> read_cursor_position() override {
     grpc::ClientContext ctx;
     evrp::device::v1::ReadCursorPositionRequest req;
     evrp::device::v1::ReadCursorPositionResponse resp;
     grpc::Status s = stub_->ReadCursorPosition(&ctx, req, &resp);
-    if (!s.ok()) return Fail<CursorPosition>(s);
+    if (!s.ok()) return fail_result<CursorPosition>(s);
     ApiResult<CursorPosition> r;
     r.value.x = resp.x();
     r.value.y = resp.y();
@@ -223,7 +223,7 @@ class GrpcDeviceClient final : public IDeviceClient {
 
 }  // namespace
 
-std::unique_ptr<IDeviceClient> ConnectDeviceClient(const std::string& target) {
+std::unique_ptr<IDeviceClient> connect_device_client(const std::string& target) {
   auto channel =
       grpc::CreateChannel(target, grpc::InsecureChannelCredentials());
   return std::make_unique<GrpcDeviceClient>(std::move(channel));

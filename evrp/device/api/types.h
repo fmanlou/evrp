@@ -57,27 +57,27 @@ struct UploadFrame {
 struct ApiError {
   int code = 0;  // 约定 0 表示成功；非 0 为业务/实现自定义。
   std::string message;
-  static ApiError Ok() { return {}; }
-  static ApiError Make(int c, std::string msg) {
+  static ApiError success() { return {}; }
+  static ApiError make(int c, std::string msg) {
     ApiError e;
     e.code = c;
     e.message = std::move(msg);
     return e;
   }
-  bool ok() const { return code == 0; }
+  bool is_ok() const { return code == 0; }
 };
 
 template <typename T>
 struct ApiResult {
   ApiError error;
   T value{};
-  bool ok() const { return error.ok(); }
+  bool is_ok() const { return error.is_ok(); }
 };
 
 template <>
 struct ApiResult<void> {
   ApiError error;
-  bool ok() const { return error.ok(); }
+  bool is_ok() const { return error.is_ok(); }
 };
 
 }  // namespace evrp::device::api

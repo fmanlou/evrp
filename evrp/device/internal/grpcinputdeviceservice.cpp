@@ -8,7 +8,7 @@ namespace evrp::device::internal {
 namespace {
 
 grpc::Status ToGrpc(const api::ApiError& e) {
-  if (e.ok()) return grpc::Status::OK;
+  if (e.is_ok()) return grpc::Status::OK;
   if (e.code == 501) {
     return grpc::Status(grpc::StatusCode::UNIMPLEMENTED, e.message);
   }
@@ -75,7 +75,7 @@ grpc::Status GrpcInputDeviceService::StartRecording(
   for (int i = 0; i < request->kinds_size(); ++i) {
     kinds.push_back(FromProtoEnum(request->kinds(i)));
   }
-  auto r = host_.StartRecording(kinds);
+  auto r = host_.start_recording(kinds);
   return ToGrpc(r.error);
 }
 
@@ -83,7 +83,7 @@ grpc::Status GrpcInputDeviceService::ReadInputEvents(
     grpc::ServerContext* /*context*/,
     const google::protobuf::Empty* /*request*/,
     grpc::ServerWriter<evrp::device::v1::InputEvent>* writer) {
-  auto r = host_.ReadInputEvents([&](const api::InputEvent& e) {
+  auto r = host_.read_input_events([&](const api::InputEvent& e) {
     evrp::device::v1::InputEvent msg;
     ToProto(e, &msg);
     writer->Write(msg);
@@ -94,7 +94,7 @@ grpc::Status GrpcInputDeviceService::ReadInputEvents(
 grpc::Status GrpcInputDeviceService::StopRecording(
     grpc::ServerContext* /*context*/, const google::protobuf::Empty* /*request*/,
     google::protobuf::Empty* /*response*/) {
-  auto r = host_.StopRecording();
+  auto r = host_.stop_recording();
   return ToGrpc(r.error);
 }
 
@@ -137,8 +137,8 @@ grpc::Status GrpcInputDeviceService::UploadRecording(
     return stream->Write(ps);
   };
 
-  auto r = host_.UploadRecording(read_next, emit_status);
-  if (!r.ok()) {
+  auto r = host_.upload_recording(read_next, emit_status);
+  if (!r.is_ok()) {
     DrainUploadStream(stream);
   }
   return ToGrpc(r.error);
@@ -148,8 +148,8 @@ grpc::Status GrpcInputDeviceService::PlaybackRecording(
     grpc::ServerContext* /*context*/,
     const evrp::device::v1::PlaybackRecordingRequest* /*request*/,
     evrp::device::v1::PlaybackRecordingResponse* response) {
-  auto r = host_.PlaybackRecording();
-  if (!r.ok()) return ToGrpc(r.error);
+  auto r = host_.playback_recording();
+  if (!r.is_ok()) return ToGrpc(r.error);
   response->set_code(r.value.code);
   response->set_message(r.value.message);
   return grpc::Status::OK;
@@ -158,7 +158,7 @@ grpc::Status GrpcInputDeviceService::PlaybackRecording(
 grpc::Status GrpcInputDeviceService::StopPlayback(
     grpc::ServerContext* /*context*/, const google::protobuf::Empty* /*request*/,
     google::protobuf::Empty* /*response*/) {
-  auto r = host_.StopPlayback();
+  auto r = host_.stop_playback();
   return ToGrpc(r.error);
 }
 
@@ -166,8 +166,8 @@ grpc::Status GrpcInputDeviceService::GetCursorPositionAvailability(
     grpc::ServerContext* /*context*/,
     const evrp::device::v1::GetCursorPositionAvailabilityRequest* /*request*/,
     evrp::device::v1::GetCursorPositionAvailabilityResponse* response) {
-  auto r = host_.GetCursorPositionAvailability();
-  if (!r.ok()) return ToGrpc(r.error);
+  auto r = host_.get_cursor_position_availability();
+  if (!r.is_ok()) return ToGrpc(r.error);
   response->set_available(r.value.available);
   return grpc::Status::OK;
 }
@@ -176,8 +176,8 @@ grpc::Status GrpcInputDeviceService::ReadCursorPosition(
     grpc::ServerContext* /*context*/,
     const evrp::device::v1::ReadCursorPositionRequest* /*request*/,
     evrp::device::v1::ReadCursorPositionResponse* response) {
-  auto r = host_.ReadCursorPosition();
-  if (!r.ok()) return ToGrpc(r.error);
+  auto r = host_.read_cursor_position();
+  if (!r.is_ok()) return ToGrpc(r.error);
   response->set_x(r.value.x);
   response->set_y(r.value.y);
   return grpc::Status::OK;
@@ -186,7 +186,7 @@ grpc::Status GrpcInputDeviceService::ReadCursorPosition(
 grpc::Status GrpcInputDeviceService::Ping(grpc::ServerContext* /*context*/,
                                           const evrp::device::v1::PingRequest* /*request*/,
                                           evrp::device::v1::PingResponse* /*response*/) {
-  auto r = host_.Ping();
+  auto r = host_.ping();
   return ToGrpc(r.error);
 }
 

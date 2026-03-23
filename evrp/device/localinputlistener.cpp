@@ -4,7 +4,7 @@ namespace evrp::device {
 
 namespace {
 
-api::InputEvent SamplePlaceholderEvent() {
+api::InputEvent sample_placeholder_event() {
   api::InputEvent e;
   e.device = api::DeviceKind::kKeyboard;
   e.time_sec = 0;
@@ -31,7 +31,7 @@ std::vector<api::InputEvent> LocalInputListener::read_input_events() {
     return {};
   }
   std::vector<api::InputEvent> events;
-  events.push_back(SamplePlaceholderEvent());
+  events.push_back(sample_placeholder_event());
   return events;
 }
 

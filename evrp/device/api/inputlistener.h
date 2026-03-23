@@ -7,7 +7,7 @@
 namespace evrp::device::api {
 
 // 进程内输入监听会话（非 gRPC）：start_listening → read_input_events → cancel_listening。
-// 与 IDeviceHost 的「StartRecording / ReadInputEvents(emit) / StopRecording」语义相近但 API 不同。
+// 与 IDeviceHost 的「start_recording / read_input_events(emit) / stop_recording」语义相近但 API 不同。
 class IInputListener {
  public:
   virtual ~IInputListener() = default;
