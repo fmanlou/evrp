@@ -1,24 +1,87 @@
 #include "argparser.h"
 
+#include <gflags/gflags.h>
+
 #include <iostream>
 #include <string>
+#include <vector>
+
+DEFINE_bool(record, false,
+            "Start recording. Remaining args: device kinds (touchpad, touchscreen, "
+            "mouse, keyboard). If none, record all four.");
+DEFINE_string(playback, "",
+              "Playback: read events or run Lua script (.lua) from this file.");
+DEFINE_string(output, "",
+              "Recording: write events to this file (default: stdout).");
+DEFINE_string(log_level, "info",
+              "Log level: error|warn|info|debug|trace.");
+DEFINE_bool(wait_leading, true,
+            "Playback: execute [leading] wait (see --nowait_leading to disable).");
+DEFINE_bool(wait_trailing, true,
+            "Playback: execute [trailing] wait (see --nowait_trailing to disable).");
+
+namespace {
+
+void reset_arg_flags() {
+  FLAGS_record = false;
+  FLAGS_playback = "";
+  FLAGS_output = "";
+  FLAGS_log_level = "info";
+  FLAGS_wait_leading = true;
+  FLAGS_wait_trailing = true;
+}
+
+// Map legacy flags (-r/-p/-o, --log-level, --wait-*) to gflags names.
+void normalize_legacy_args(std::vector<std::string> *args) {
+  auto &a = *args;
+  for (size_t i = 1; i < a.size();) {
+    if (a[i] == "-r") {
+      a[i] = "--record";
+      ++i;
+    } else if (a[i] == "-p" && i + 1 < a.size()) {
+      a[i] = "--playback=" + a[i + 1];
+      a.erase(a.begin() + static_cast<long>(i) + 1);
+    } else if (a[i] == "-o" && i + 1 < a.size()) {
+      a[i] = "--output=" + a[i + 1];
+      a.erase(a.begin() + static_cast<long>(i) + 1);
+    } else if (a[i].rfind("--log-level=", 0) == 0) {
+      a[i] = "--log_level=" + a[i].substr(12);
+      ++i;
+    } else if (a[i].rfind("--wait-leading=", 0) == 0) {
+      std::string v = a[i].substr(15);
+      a[i] = (v == "yes" || v == "true" || v == "1") ? "--wait_leading"
+                                                     : "--nowait_leading";
+      ++i;
+    } else if (a[i].rfind("--wait-trailing=", 0) == 0) {
+      std::string v = a[i].substr(16);
+      a[i] = (v == "yes" || v == "true" || v == "1") ? "--wait_trailing"
+                                                     : "--nowait_trailing";
+      ++i;
+    } else {
+      ++i;
+    }
+  }
+}
+
+} // namespace
 
 void print_usage(const char *prog) {
   std::cout
       << "Usage: " << prog
-      << " -r [-o FILE] [--log-level=LEVEL] [touchpad] [touchscreen] [mouse] "
-         "[keyboard] ...\n"
-      << "       " << prog << " -p FILE [--log-level=LEVEL]\n"
-      << "  -r: start recording. With no types, record touchpad, touchscreen, "
-         "mouse, keyboard.\n"
-      << "  -p FILE: playback events or run Lua script (.lua). Non-event lines "
-         "in event files are executed as Lua.\n"
-      << "  -o FILE: write recording to FILE (default: stdout).\n"
-      << "  --log-level=LEVEL: error|warn|info|debug|trace (default: info).\n"
-      << "  --wait-leading=yes|no: during playback, execute [leading] wait "
-         "(default: yes).\n"
-      << "  --wait-trailing=yes|no: during playback, execute [trailing] wait "
-         "(default: yes).\n";
+      << " --record [--output=FILE] [--log_level=LEVEL] [touchpad] [touchscreen] "
+         "[mouse] [keyboard] ...\n"
+      << "       " << prog << " --playback=FILE [--log_level=LEVEL]\n"
+      << "  --record: start recording. With no device kinds, record touchpad, "
+         "touchscreen, mouse, keyboard.\n"
+      << "  --playback=FILE: playback events or run Lua script (.lua). Non-event "
+         "lines in event files are executed as Lua.\n"
+      << "  --output=FILE: write recording to FILE (default: stdout).\n"
+      << "  --log_level=LEVEL: error|warn|info|debug|trace (default: info).\n"
+      << "  --wait_leading / --nowait_leading: during playback, execute [leading] "
+         "wait (default: wait).\n"
+      << "  --wait_trailing / --nowait_trailing: during playback, execute "
+         "[trailing] wait (default: wait).\n"
+      << "  --help: show gflags help.\n";
 }
 
 bool parse_kind(const std::string &s, DeviceId *out_id) {
@@ -30,90 +93,43 @@ bool parse_kind(const std::string &s, DeviceId *out_id) {
   return false;
 }
 
-static bool parse_log_level(const std::string &arg, LogLevel *out) {
-  const std::string prefix = "--log-level=";
-  if (arg.size() < prefix.size() || arg.substr(0, prefix.size()) != prefix) {
-    return false;
-  }
-  *out = log_level_from_string(arg.substr(prefix.size()));
-  return true;
-}
-
-static bool parse_yes_no(const std::string &arg, const std::string &prefix,
-                         bool *out) {
-  if (arg.size() < prefix.size() || arg.substr(0, prefix.size()) != prefix) {
-    return false;
-  }
-  std::string val = arg.substr(prefix.size());
-  if (val == "yes" || val == "true" || val == "1") {
-    *out = true;
-    return true;
-  }
-  if (val == "no" || val == "false" || val == "0") {
-    *out = false;
-    return true;
-  }
-  return false;
-}
-
 run_options parse_options(int argc, char *argv[]) {
+  reset_arg_flags();
+
+  std::vector<std::string> owned;
+  owned.reserve(static_cast<size_t>(argc));
+  for (int i = 0; i < argc; ++i) {
+    owned.emplace_back(argv[i] ? argv[i] : "");
+  }
+  normalize_legacy_args(&owned);
+  std::vector<char *> argv_ptrs;
+  argv_ptrs.reserve(static_cast<size_t>(argc) + 1);
+  for (auto &s : owned) {
+    argv_ptrs.push_back(s.data());
+  }
+  argv_ptrs.push_back(nullptr);
+
+  // argc may shrink after merging -p/-o with their values.
+  int argc_mut = static_cast<int>(owned.size());
+  char **argv_mut = argv_ptrs.data();
+  google::ParseCommandLineFlags(&argc_mut, &argv_mut, true);
+
   run_options options;
-  options.recording = false;
-  options.playback = false;
-  options.log_level = LogLevel::Info;
-  options.execute_wait_before_first = true;
-  options.execute_wait_after_last = true;
+  options.recording = FLAGS_record;
+  options.playback = !FLAGS_playback.empty();
+  options.playback_path = FLAGS_playback;
+  options.output_path = FLAGS_output;
+  options.log_level = log_level_from_string(FLAGS_log_level);
+  options.execute_wait_before_first = FLAGS_wait_leading;
+  options.execute_wait_after_last = FLAGS_wait_trailing;
 
-  for (int i = 1; i < argc; ++i) {
-    if (std::string(argv[i]) == "-o") {
-      if (i + 1 < argc) options.output_path = argv[++i];
-    } else if (parse_log_level(argv[i], &options.log_level)) {
-      // parsed
-    } else if (parse_yes_no(argv[i], "--wait-leading=",
-                            &options.execute_wait_before_first)) {
-      // parsed
-    } else if (parse_yes_no(argv[i], "--wait-trailing=",
-                            &options.execute_wait_after_last)) {
-      // parsed
-    } else if (std::string(argv[i]) == "-p") {
-      options.playback = true;
-      if (i + 1 < argc) options.playback_path = argv[++i];
-    } else if (std::string(argv[i]) == "-r") {
-      options.recording = true;
-      ++i;
-      while (i < argc) {
-        if (std::string(argv[i]) == "-o") {
-          if (i + 1 < argc) options.output_path = argv[++i];
-          ++i;
-          continue;
-        }
-        if (parse_log_level(argv[i], &options.log_level)) {
-          ++i;
-          continue;
-        }
-        if (std::string(argv[i]) == "-p") {
-          options.playback = true;
-          if (i + 1 < argc) options.playback_path = argv[++i];
-          ++i;
-          continue;
-        }
-        if (parse_yes_no(argv[i], "--wait-leading=",
-                         &options.execute_wait_before_first)) {
-          ++i;
-          continue;
-        }
-        if (parse_yes_no(argv[i], "--wait-trailing=",
-                         &options.execute_wait_after_last)) {
-          ++i;
-          continue;
-        }
-
-        DeviceId id;
-        if (!parse_kind(argv[i], &id)) break;
-        options.kinds.push_back(id);
-        ++i;
-      }
-      break;
+  for (int i = 1; i < argc_mut; ++i) {
+    if (!argv_mut[i]) {
+      continue;
+    }
+    DeviceId id;
+    if (parse_kind(argv_mut[i], &id)) {
+      options.kinds.push_back(id);
     }
   }
 

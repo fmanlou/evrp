@@ -33,6 +33,10 @@ endif()
 
 find_package(GTest CONFIG REQUIRED PATHS "${EVRP_LIBRARY_DIR}/googletest" NO_DEFAULT_PATH)
 
+# gflags（argparser、evrp-device）
+set(GFLAGS_USE_TARGET_NAMESPACE ON)
+find_package(gflags CONFIG REQUIRED PATHS "${EVRP_LIBRARY_DIR}/gflags" NO_DEFAULT_PATH)
+
 # Protobuf 5.x / gRPC 需要 C++17；其余源码与之兼容
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -68,7 +72,7 @@ endif()
 
 add_library(argparser STATIC argparser.cpp)
 target_include_directories(argparser PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(argparser PRIVATE deviceid logger)
+target_link_libraries(argparser PRIVATE deviceid logger gflags::gflags)
 
 add_library(
   inputeventwriter STATIC inputeventwriter.cpp keyboard/keyboardeventwriter.cpp
@@ -143,9 +147,6 @@ gtest_discover_tests(evrp_tests)
 # 勿在此单独先 find_package(Protobuf)：gRPC 的 gRPCConfig.cmake 会 find_dependency(Protobuf)，
 # 若重复加载 protobuf-targets.cmake 会报错「Some targets in this export set were already defined」。
 find_package(gRPC CONFIG REQUIRED)
-# 默认 GFLAGS_USE_TARGET_NAMESPACE=OFF 时仅有 gflags_static；链接 gflags::gflags 需启用命名空间导入
-set(GFLAGS_USE_TARGET_NAMESPACE ON)
-find_package(gflags CONFIG REQUIRED PATHS "${EVRP_LIBRARY_DIR}/gflags" NO_DEFAULT_PATH)
 
 set(PROTO_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/proto")
 set(DEVICE_PROTO "${PROTO_ROOT}/evrp/device/v1/device.proto")
