@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# 在脚本内用 cmake 分别配置、编译、安装 Lua、GoogleTest、Protobuf、gRPC 到 <repo>/library/（不依赖仓库 cmake/ 下模块）。
+# 在脚本内用 cmake 分别配置、编译、安装 Lua、GoogleTest、Protobuf、gRPC、gflags 到 <repo>/library/（不依赖仓库 cmake/ 下模块）。
 # 用法：在仓库根目录执行
 #   ./scripts/install-third-party-to-library.sh
 # 可选：./scripts/install-third-party-to-library.sh -DCMAKE_BUILD_TYPE=Debug（仅作用于各处 cmake -S）
@@ -20,6 +20,7 @@ LUA_BUILD="$BASE/lua"
 GTEST_BUILD="$BASE/googletest"
 PROTOBUF_BUILD="$BASE/protobuf"
 GRPC_BUILD="$BASE/grpc"
+GFLAGS_BUILD="$BASE/gflags"
 
 mkdir -p "$BASE"
 
@@ -58,6 +59,12 @@ grpc_installed() {
   [ -x "$PREFIX/grpc/bin/grpc_cpp_plugin" ] || return 1
   [ -f "$PREFIX/grpc/lib/cmake/grpc/gRPCConfig.cmake" ] || \
     [ -f "$PREFIX/grpc/lib64/cmake/grpc/gRPCConfig.cmake" ]
+}
+
+gflags_installed() {
+  [ -n "$FORCE" ] && return 1
+  [ -f "$PREFIX/gflags/lib/cmake/gflags/gflags-config.cmake" ] || \
+    [ -f "$PREFIX/gflags/lib64/cmake/gflags/gflags-config.cmake" ]
 }
 
 # Lua → library/lua/
@@ -123,5 +130,20 @@ else
   cmake --install "$GRPC_BUILD" --prefix "$PREFIX/grpc"
 fi
 
-echo "Done. Installs under: $PREFIX/lua, $PREFIX/googletest, $PREFIX/protobuf, $PREFIX/grpc"
+# gflags → library/gflags/
+if gflags_installed; then
+  echo "Skip gflags: already present under $PREFIX/gflags"
+else
+  cmake -S "$ROOT/third_party/gflags" -B "$GFLAGS_BUILD" \
+    -DCMAKE_INSTALL_PREFIX="$PREFIX/gflags" \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DBUILD_STATIC_LIBS=ON \
+    -DBUILD_TESTING=OFF \
+    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+    "$@"
+  cmake --build "$GFLAGS_BUILD" --parallel
+  cmake --install "$GFLAGS_BUILD" --prefix "$PREFIX/gflags"
+fi
+
+echo "Done. Installs under: $PREFIX/lua, $PREFIX/googletest, $PREFIX/protobuf, $PREFIX/grpc, $PREFIX/gflags"
 echo "Configure: cmake -B build -DCMAKE_PREFIX_PATH=$PREFIX"

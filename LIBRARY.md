@@ -14,9 +14,10 @@ library/
   googletest/   # GoogleTest：lib/、include/、lib/cmake/GTest/
   protobuf/     # Protobuf：bin/protoc、include/、lib/（含 lib/cmake/protobuf）
   grpc/         # gRPC：bin/grpc_cpp_plugin、include/、lib/（含 lib/cmake/grpc）
+  gflags/       # gflags：include/、lib/（含 lib/cmake/gflags）
 ```
 
-根目录 **`CMakeLists.txt`** 已将 **`library/`**、**`library/protobuf/`**、**`library/grpc/`** 加入 **`CMAKE_PREFIX_PATH`**，**Protobuf**、**gRPC** 可被 **`find_package`** 找到。**gflags** 等可装到 **`library/`** 根下或系统路径。
+根目录 **`CMakeLists.txt`** 已将 **`library/`**、**`library/protobuf/`**、**`library/grpc/`**、**`library/gflags/`** 加入 **`CMAKE_PREFIX_PATH`**；**gflags** 另用 **`find_package(gflags … PATHS library/gflags)`** 仅从本地安装查找。
 
 ## 子模块与安装
 
@@ -34,7 +35,7 @@ git submodule update --init --recursive
 ./scripts/install-third-party-to-library.sh
 ```
 
-（脚本依次安装 Lua、GoogleTest、Protobuf、gRPC；gRPC **使用已安装到 `library/protobuf` 的 Protobuf**。）若 **`library/lua`**、**`library/googletest`**、**`library/protobuf`**、**`library/grpc`** 下已有对应安装结果，会**跳过**该组件的编译与安装。若要**强制全部重装**：
+（脚本依次安装 Lua、GoogleTest、Protobuf、gRPC、gflags；gRPC **使用已安装到 `library/protobuf` 的 Protobuf**。）若 **`library/lua`**、**`library/googletest`**、**`library/protobuf`**、**`library/grpc`**、**`library/gflags`** 下已有对应安装结果，会**跳过**该组件的编译与安装。若要**强制全部重装**：
 
 ```bash
 EVRP_FORCE_THIRD_PARTY_INSTALL=1 ./scripts/install-third-party-to-library.sh
@@ -46,5 +47,5 @@ EVRP_FORCE_THIRD_PARTY_INSTALL=1 ./scripts/install-third-party-to-library.sh
 
 | 路径 | 含义 |
 |------|------|
-| **`third_party/`** | **源码**（Lua、GoogleTest、Protobuf、gRPC 等） |
+| **`third_party/`** | **源码**（Lua、GoogleTest、Protobuf、gRPC、gflags 等） |
 | **`library/`** | **安装前缀**：供主工程查找与链接 |

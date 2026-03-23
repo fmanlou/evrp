@@ -1,12 +1,13 @@
 cmake_minimum_required(VERSION 3.14)
 project(evrp LANGUAGES C CXX)
 
-# --- library/ 与 Lua、GoogleTest、Protobuf、gRPC（安装：scripts/install-third-party-to-library.sh）---
+# --- library/ 与 Lua、GoogleTest、Protobuf、gRPC、gflags（安装：scripts/install-third-party-to-library.sh）---
 set(EVRP_LIBRARY_DIR "${CMAKE_SOURCE_DIR}/library" CACHE PATH
     "Third-party install prefix for this repo")
 list(APPEND CMAKE_PREFIX_PATH "${EVRP_LIBRARY_DIR}")
 list(APPEND CMAKE_PREFIX_PATH "${EVRP_LIBRARY_DIR}/protobuf")
 list(APPEND CMAKE_PREFIX_PATH "${EVRP_LIBRARY_DIR}/grpc")
+list(APPEND CMAKE_PREFIX_PATH "${EVRP_LIBRARY_DIR}/gflags")
 
 find_library(
   EVRP_LUA_LIB
@@ -142,7 +143,9 @@ gtest_discover_tests(evrp_tests)
 # 勿在此单独先 find_package(Protobuf)：gRPC 的 gRPCConfig.cmake 会 find_dependency(Protobuf)，
 # 若重复加载 protobuf-targets.cmake 会报错「Some targets in this export set were already defined」。
 find_package(gRPC CONFIG REQUIRED)
-find_package(gflags CONFIG REQUIRED)
+# 默认 GFLAGS_USE_TARGET_NAMESPACE=OFF 时仅有 gflags_static；链接 gflags::gflags 需启用命名空间导入
+set(GFLAGS_USE_TARGET_NAMESPACE ON)
+find_package(gflags CONFIG REQUIRED PATHS "${EVRP_LIBRARY_DIR}/gflags" NO_DEFAULT_PATH)
 
 set(PROTO_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/proto")
 set(DEVICE_PROTO "${PROTO_ROOT}/evrp/device/v1/device.proto")
