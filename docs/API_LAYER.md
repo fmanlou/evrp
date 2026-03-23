@@ -18,9 +18,9 @@
 
 | 路径 | 说明 |
 |------|------|
-| `evrp/device/internal/grpc_server_impl.cpp` | `RunDeviceServer`：ServerBuilder、监听 |
-| `evrp/device/internal/grpc_input_device_service.*` | `InputDeviceService::Service` ↔ `IDeviceHost` |
-| `evrp/device/internal/grpc_device_client.cpp` | gRPC stub ↔ `IDeviceClient` |
+| `evrp/device/internal/grpcserverimpl.cpp` | `RunDeviceServer`：ServerBuilder、监听 |
+| `evrp/device/internal/grpcinputdeviceservice.*` | `InputDeviceService::Service` ↔ `IDeviceHost` |
+| `evrp/device/internal/grpcdeviceclient.cpp` | gRPC stub ↔ `IDeviceClient` |
 
 CMake 目标 **`evrp_device_grpc`**（静态库）聚合上述实现；可执行文件 **`evrp-device`** 与未来的 **`evrp-app`** 链接该库即可，**无需**再直接链接 proto 目标（除非另有工具链需求）。
 
@@ -28,7 +28,7 @@ CMake 目标 **`evrp_device_grpc`**（静态库）聚合上述实现；可执行
 
 ```
 业务 / main.cpp / 设备核心
-    → 仅 include evrp/device/api/*.h 与 evrp/device/stub_device_host.h（桩）
+    → 仅 include evrp/device/api/*.h 与 evrp/device/stubdevicehost.h（桩）
     → 实现 IDeviceHost 时不包含 grpc
 
 evrp_device_grpc（内部 .cpp）

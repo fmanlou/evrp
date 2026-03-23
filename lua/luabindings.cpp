@@ -1,4 +1,4 @@
-#include "lua/lua_bindings.h"
+#include "lua/luabindings.h"
 
 #include <linux/input-event-codes.h>
 #include <linux/input.h>

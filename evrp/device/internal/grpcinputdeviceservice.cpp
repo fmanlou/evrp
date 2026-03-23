@@ -1,4 +1,4 @@
-#include "evrp/device/internal/grpc_input_device_service.h"
+#include "evrp/device/internal/grpcinputdeviceservice.h"
 
 #include <google/protobuf/empty.pb.h>
 

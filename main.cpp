@@ -1,7 +1,7 @@
 #include "argparser.h"
 #include "cursor/cursorpos.h"
 #include "logger.h"
-#include "lua/lua_bindings.h"
+#include "lua/luabindings.h"
 #include "playback.h"
 #include "record.h"
 

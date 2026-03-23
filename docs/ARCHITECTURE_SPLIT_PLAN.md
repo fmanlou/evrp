@@ -110,7 +110,7 @@
 | InputEventWriter（注入实现） | ✓ | ✗ |
 | CursorPos (X11) | ✓（若需要） | ✗ |
 | eventformat (解析/生成) | ✓（`PlaybackRecording` 读缓存文件并解析注入） | ✓（录制、组装完整文件再 `UploadRecording`） |
-| Lua + lua_bindings | ✗ | ✓ |
+| Lua + luabindings | ✗ | ✓ |
 | argparser | 部分 | 部分 |
 | logger, filesystem | ✓ | ✓ |
 

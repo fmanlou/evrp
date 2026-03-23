@@ -5,7 +5,7 @@
 #include <string>
 
 #include "evrp/device/api/server.h"
-#include "evrp/device/stub_device_host.h"
+#include "evrp/device/stubdevicehost.h"
 
 DEFINE_string(listen, "127.0.0.1:50051", "Listen address for the device service (e.g. host:port)");
 

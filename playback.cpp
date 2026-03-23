@@ -10,7 +10,7 @@
 #include "eventformat.h"
 #include "filesystem.h"
 #include "logger.h"
-#include "lua/lua_bindings.h"
+#include "lua/luabindings.h"
 #include "scopeguard.h"
 
 Playback::Playback(const run_options &options)

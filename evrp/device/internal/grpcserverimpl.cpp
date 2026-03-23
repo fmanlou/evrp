@@ -8,7 +8,7 @@
 #include <grpcpp/grpcpp.h>
 #include <grpcpp/health_check_service_interface.h>
 
-#include "evrp/device/internal/grpc_input_device_service.h"
+#include "evrp/device/internal/grpcinputdeviceservice.h"
 
 namespace evrp::device::api {
 

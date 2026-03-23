@@ -1,4 +1,4 @@
-#include "evrp/device/stub_device_host.h"
+#include "evrp/device/stubdevicehost.h"
 
 namespace evrp::device {
 

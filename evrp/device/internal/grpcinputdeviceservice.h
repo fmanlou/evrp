@@ -1,6 +1,6 @@
 #pragma once
 
-// 内部实现：仅由 grpc_server_impl.cpp / 本目录 .cpp 包含，业务代码勿 include。
+// 内部实现：仅由 grpcserverimpl.cpp / 本目录 .cpp 包含，业务代码勿 include。
 
 #include <grpcpp/grpcpp.h>
 

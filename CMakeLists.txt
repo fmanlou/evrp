@@ -115,11 +115,11 @@ target_link_libraries(
           inputdevice
           filesystem
           logger
-          lua_bindings)
+          luabindings)
 
-add_library(lua_bindings STATIC lua/lua_bindings.cpp)
-target_include_directories(lua_bindings PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(lua_bindings PUBLIC lua inputeventwriter filesystem
+add_library(luabindings STATIC lua/luabindings.cpp)
+target_include_directories(luabindings PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(luabindings PUBLIC lua inputeventwriter filesystem
                                           logger cursorpos)
 
 add_executable(evrp main.cpp)
@@ -131,7 +131,7 @@ target_link_libraries(
           argparser
           playback
           record
-          lua_bindings
+          luabindings
           logger
           cursorpos)
 
@@ -184,14 +184,14 @@ target_include_directories(evrp_device_api
 
 add_library(
   evrp_device_grpc STATIC
-  evrp/device/internal/grpc_server_impl.cpp
-  evrp/device/internal/grpc_input_device_service.cpp
-  evrp/device/internal/grpc_device_client.cpp)
+  evrp/device/internal/grpcserverimpl.cpp
+  evrp/device/internal/grpcinputdeviceservice.cpp
+  evrp/device/internal/grpcdeviceclient.cpp)
 target_include_directories(evrp_device_grpc
                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(evrp_device_grpc PUBLIC evrp_device_proto)
 
 add_executable(evrp-device evrp-device/main.cpp
-                           evrp/device/stub_device_host.cpp)
+                           evrp/device/stubdevicehost.cpp)
 target_link_libraries(evrp-device PRIVATE evrp_device_api evrp_device_grpc
                                           gRPC::grpc++ gflags::gflags)
