@@ -26,12 +26,8 @@ cmake --build "$LUA_BUILD"
 cmake --install "$LUA_BUILD" --prefix "$PREFIX/lua"
 
 # GoogleTest → library/googletest/
-# 前缀目录名含 googletest 时，须固定 GNU 相对路径，否则 INCLUDEDIR 可能被设成 googletest/include，出现 googletest/googletest/
 cmake -S "$ROOT/third_party/googletest" -B "$GTEST_BUILD" \
   -DCMAKE_INSTALL_PREFIX="$PREFIX/googletest" \
-  -DCMAKE_INSTALL_BINDIR=bin \
-  -DCMAKE_INSTALL_LIBDIR=lib \
-  -DCMAKE_INSTALL_INCLUDEDIR=include \
   -DBUILD_GMOCK=OFF \
   -DINSTALL_GTEST=ON \
   "$@"
@@ -39,12 +35,8 @@ cmake --build "$GTEST_BUILD"
 cmake --install "$GTEST_BUILD" --prefix "$PREFIX/googletest"
 
 # Protobuf（含 protoc）→ library/protobuf/
-# 前缀目录名含 protobuf 时，须固定 GNU 相对路径，否则可能出现 protobuf/protobuf/ 等重复目录
 cmake -S "$ROOT/third_party/protobuf" -B "$PROTOBUF_BUILD" \
   -DCMAKE_INSTALL_PREFIX="$PREFIX/protobuf" \
-  -DCMAKE_INSTALL_BINDIR=bin \
-  -DCMAKE_INSTALL_LIBDIR=lib \
-  -DCMAKE_INSTALL_INCLUDEDIR=include \
   -Dprotobuf_BUILD_TESTS=OFF \
   -Dprotobuf_BUILD_SHARED_LIBS=OFF \
   -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
