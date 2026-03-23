@@ -20,7 +20,7 @@ class IDeviceHost {
       const std::vector<DeviceKind>& kinds) = 0;
 
   // 由适配器在 ReadInputEvents RPC 中调用：阻塞直到会话结束；每产生一条事件调用
-  // emit。
+  // emit。约定：emit 中不得再调用本 IDeviceHost 的其它接口。
   virtual ApiResult<void> ReadInputEvents(
       const std::function<void(const InputEvent&)>& emit) = 0;
 

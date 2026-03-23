@@ -8,6 +8,7 @@
 |--------|------|
 | `evrp/device/api/types.h` | 值类型与 `ApiResult` |
 | `evrp/device/api/host.h` | **`IDeviceHost`**：设备端能力 |
+| `evrp/device/api/inputlistener.h` | **`IInputListener`**：进程内输入监听会话（非 gRPC） |
 | `evrp/device/api/client.h` | **`IDeviceClient`**：业务侧调用设备 |
 | `evrp/device/api/server.h` | **`RunDeviceServer(address, IDeviceHost&)`**：启动服务并阻塞 |
 | `evrp/device/api/client_factory.h` | **`ConnectDeviceClient(target)`**：返回 `IDeviceClient` |
@@ -28,7 +29,8 @@ CMake 目标 **`evrp_device_grpc`**（静态库）聚合上述实现；可执行
 
 ```
 业务 / main.cpp / 设备核心
-    → 仅 include evrp/device/api/*.h 与 evrp/device/stubdevicehost.h（桩）
+    → 仅 include evrp/device/api/*.h；gRPC 进程可使用 `stubdevicehost.h`（实现 IDeviceHost 的桩）
+    → 进程内输入监听见 `localinputlistener.h`（`LocalInputListener` 实现 `IInputListener`：`start_listening` / `read_input_events`→`vector<InputEvent>`；`cancel_listening` 结束监听，可在 read 前调用；非 IDeviceHost）
     → 实现 IDeviceHost 时不包含 grpc
 
 evrp_device_grpc（内部 .cpp）

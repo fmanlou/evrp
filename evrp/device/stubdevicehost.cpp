@@ -39,13 +39,23 @@ api::ApiResult<void> StubDeviceHost::StartRecording(
 }
 
 api::ApiResult<void> StubDeviceHost::ReadInputEvents(
-    const std::function<void(const api::InputEvent&)>& /*emit*/) {
+    const std::function<void(const api::InputEvent&)>& emit) {
   std::unique_lock<std::mutex> lock(recording_mu_);
   if (!recording_session_active_) {
     return Fail(api::ApiError::Make(
         400, "StartRecording must be called before ReadInputEvents"));
   }
-  
+  api::InputEvent e;
+  e.device = api::DeviceKind::kKeyboard;
+  e.time_sec = 0;
+  e.time_usec = 0;
+  e.type = 0;
+  e.code = 0;
+  e.value = 0;
+  emit(e);
+  while (!stop_recording_requested_) {
+    recording_cv_.wait(lock);
+  }
   recording_session_active_ = false;
   stop_recording_requested_ = false;
   return api::ApiResult<void>{};
