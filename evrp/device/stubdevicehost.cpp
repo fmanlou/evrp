@@ -45,9 +45,7 @@ api::ApiResult<void> StubDeviceHost::ReadInputEvents(
     return Fail(api::ApiError::Make(
         400, "StartRecording must be called before ReadInputEvents"));
   }
-  while (!stop_recording_requested_) {
-    recording_cv_.wait(lock);
-  }
+  
   recording_session_active_ = false;
   stop_recording_requested_ = false;
   return api::ApiResult<void>{};

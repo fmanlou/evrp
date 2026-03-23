@@ -1,9 +1,11 @@
 cmake_minimum_required(VERSION 3.14)
 project(evrp LANGUAGES C CXX)
 
-# --- library/ 与 Lua、GoogleTest、Protobuf、gRPC、gflags（安装：scripts/install-third-party-to-library.sh）---
-set(EVRP_LIBRARY_DIR "${CMAKE_SOURCE_DIR}/library" CACHE PATH
-    "Third-party install prefix for this repo")
+# --- library/ 与
+# Lua、GoogleTest、Protobuf、gRPC、gflags（安装：scripts/install-third-party-to-library.sh）---
+set(EVRP_LIBRARY_DIR
+    "${CMAKE_SOURCE_DIR}/library"
+    CACHE PATH "Third-party install prefix for this repo")
 list(APPEND CMAKE_PREFIX_PATH "${EVRP_LIBRARY_DIR}")
 list(APPEND CMAKE_PREFIX_PATH "${EVRP_LIBRARY_DIR}/protobuf")
 list(APPEND CMAKE_PREFIX_PATH "${EVRP_LIBRARY_DIR}/grpc")
@@ -22,7 +24,8 @@ find_path(
 if(NOT EVRP_LUA_LIB OR NOT EVRP_LUA_INCLUDE_DIR)
   message(
     FATAL_ERROR
-      "Lua not found under '${EVRP_LIBRARY_DIR}/lua'. Run: ./scripts/install-third-party-to-library.sh")
+      "Lua not found under '${EVRP_LIBRARY_DIR}/lua'. Run: ./scripts/install-third-party-to-library.sh"
+  )
 endif()
 add_library(lua STATIC IMPORTED GLOBAL)
 set_target_properties(lua PROPERTIES IMPORTED_LOCATION "${EVRP_LUA_LIB}")
@@ -31,11 +34,13 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   target_link_libraries(lua INTERFACE m)
 endif()
 
-find_package(GTest CONFIG REQUIRED PATHS "${EVRP_LIBRARY_DIR}/googletest" NO_DEFAULT_PATH)
+find_package(GTest CONFIG REQUIRED PATHS "${EVRP_LIBRARY_DIR}/googletest"
+             NO_DEFAULT_PATH)
 
 # gflags（argparser、evrp-device）
 set(GFLAGS_USE_TARGET_NAMESPACE ON)
-find_package(gflags CONFIG REQUIRED PATHS "${EVRP_LIBRARY_DIR}/gflags" NO_DEFAULT_PATH)
+find_package(gflags CONFIG REQUIRED PATHS "${EVRP_LIBRARY_DIR}/gflags"
+             NO_DEFAULT_PATH)
 
 # Protobuf 5.x / gRPC 需要 C++17；其余源码与之兼容
 set(CMAKE_CXX_STANDARD 17)
@@ -119,8 +124,8 @@ target_link_libraries(
 
 add_library(luabindings STATIC lua/luabindings.cpp)
 target_include_directories(luabindings PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(luabindings PUBLIC lua inputeventwriter filesystem
-                                          logger cursorpos)
+target_link_libraries(luabindings PUBLIC lua inputeventwriter filesystem logger
+                                         cursorpos)
 
 add_executable(evrp main.cpp)
 target_link_libraries(
@@ -144,18 +149,23 @@ gtest_discover_tests(evrp_tests)
 # ---------------------------------------------------------------------------
 # evrp-device：gRPC 服务端（依赖安装到 library/ 或系统 PATH，见 docs/PROJECT_CONVENTIONS.md）
 # ---------------------------------------------------------------------------
-# 勿在此单独先 find_package(Protobuf)：gRPC 的 gRPCConfig.cmake 会 find_dependency(Protobuf)，
-# 若重复加载 protobuf-targets.cmake 会报错「Some targets in this export set were already defined」。
+# 勿在此单独先 find_package(Protobuf)：gRPC 的 gRPCConfig.cmake 会
+# find_dependency(Protobuf)， 若重复加载 protobuf-targets.cmake 会报错「Some targets in
+# this export set were already defined」。
 find_package(gRPC CONFIG REQUIRED)
 
 set(PROTO_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/proto")
 set(DEVICE_PROTO "${PROTO_ROOT}/evrp/device/v1/device.proto")
 set(GEN_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
 
-find_program(GRPC_CPP_PLUGIN_PROGRAM NAMES grpc_cpp_plugin REQUIRED
-             HINTS "${EVRP_LIBRARY_DIR}/grpc/bin" "${EVRP_LIBRARY_DIR}/bin")
-find_program(PROTOC_PROGRAM NAMES protoc REQUIRED
-             HINTS "${EVRP_LIBRARY_DIR}/protobuf/bin" "${EVRP_LIBRARY_DIR}/bin")
+find_program(
+  GRPC_CPP_PLUGIN_PROGRAM
+  NAMES grpc_cpp_plugin REQUIRED
+  HINTS "${EVRP_LIBRARY_DIR}/grpc/bin" "${EVRP_LIBRARY_DIR}/bin")
+find_program(
+  PROTOC_PROGRAM
+  NAMES protoc REQUIRED
+  HINTS "${EVRP_LIBRARY_DIR}/protobuf/bin" "${EVRP_LIBRARY_DIR}/bin")
 
 set(DEVICE_PB_CC "${GEN_DIR}/evrp/device/v1/device.pb.cc")
 set(DEVICE_PB_H "${GEN_DIR}/evrp/device/v1/device.pb.h")
@@ -187,11 +197,9 @@ add_library(
   evrp/device/internal/grpcserverimpl.cpp
   evrp/device/internal/grpcinputdeviceservice.cpp
   evrp/device/internal/grpcdeviceclient.cpp)
-target_include_directories(evrp_device_grpc
-                           PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(evrp_device_grpc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(evrp_device_grpc PUBLIC evrp_device_proto)
 
-add_executable(evrp-device evrp-device/main.cpp
-                           evrp/device/stubdevicehost.cpp)
+add_executable(evrp-device evrp-device/main.cpp evrp/device/stubdevicehost.cpp)
 target_link_libraries(evrp-device PRIVATE evrp_device_api evrp_device_grpc
                                           gRPC::grpc++ gflags::gflags)
