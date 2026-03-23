@@ -6,24 +6,27 @@
 
 ```
 library/
-  bin/          # 例如 grpc_cpp_plugin（若装到根前缀）
+  bin/          # 例如装到根前缀时的工具
   include/      # 装于根前缀时的头文件
   lib/          # 装于根前缀时的库与 CMake 包
   share/
   lua/          # Lua：lib/、include/lua/
   googletest/   # GoogleTest：lib/、include/、lib/cmake/GTest/
   protobuf/     # Protobuf：bin/protoc、include/、lib/（含 lib/cmake/protobuf）
+  grpc/         # gRPC：bin/grpc_cpp_plugin、include/、lib/（含 lib/cmake/grpc）
 ```
 
-根目录 **`CMakeLists.txt`** 已将 **`library/`** 与 **`library/protobuf/`** 加入 **`CMAKE_PREFIX_PATH`**，**Protobuf** 可被 **`find_package(Protobuf)`** 找到。将 **gRPC C++、gflags** 等同样安装到 **`library/`** 后，`find_package(gRPC)` 等即可解析。
+根目录 **`CMakeLists.txt`** 已将 **`library/`**、**`library/protobuf/`**、**`library/grpc/`** 加入 **`CMAKE_PREFIX_PATH`**，**Protobuf**、**gRPC** 可被 **`find_package`** 找到。**gflags** 等可装到 **`library/`** 根下或系统路径。
 
-## Lua / GoogleTest / Protobuf
+## 子模块与安装
 
-请先拉取子模块（含 **`third_party/protobuf`**；Protobuf 目录内嵌套的 abseil 等需在同一命令中一并初始化）：
+在仓库根目录**一次性**拉取并更新所有子模块（含嵌套）：
 
 ```bash
 git submodule update --init --recursive
 ```
+
+安装脚本 **`scripts/install-third-party-to-library.sh`** 开头也会执行上述命令（需在 **git 克隆** 的工作目录下运行）。
 
 再安装到 **`library/`**：
 
@@ -31,11 +34,17 @@ git submodule update --init --recursive
 ./scripts/install-third-party-to-library.sh
 ```
 
-（脚本在 **`scripts/`** 内完成 Lua、GoogleTest、Protobuf 的 `cmake` 配置、编译与安装，不依赖仓库 `cmake/` 目录。）然后再在仓库根目录 `cmake -B build`。详见 [`docs/PROJECT_CONVENTIONS.md`](docs/PROJECT_CONVENTIONS.md)。
+（脚本依次安装 Lua、GoogleTest、Protobuf、gRPC；gRPC **使用已安装到 `library/protobuf` 的 Protobuf**。）若 **`library/lua`**、**`library/googletest`**、**`library/protobuf`**、**`library/grpc`** 下已有对应安装结果，会**跳过**该组件的编译与安装。若要**强制全部重装**：
+
+```bash
+EVRP_FORCE_THIRD_PARTY_INSTALL=1 ./scripts/install-third-party-to-library.sh
+```
+
+然后再在仓库根目录 `cmake -B build`。详见 [`docs/PROJECT_CONVENTIONS.md`](docs/PROJECT_CONVENTIONS.md)。
 
 ## 与 `third_party/` 的区别
 
 | 路径 | 含义 |
 |------|------|
-| **`third_party/`** | **源码**（Lua、GoogleTest 等） |
+| **`third_party/`** | **源码**（Lua、GoogleTest、Protobuf、gRPC 等） |
 | **`library/`** | **安装前缀**：供主工程查找与链接 |

@@ -7,11 +7,11 @@
 ## 依赖（构建）
 
 - CMake ≥ 3.14
-- C++11
-- [gRPC](https://grpc.io/) C++、`protobuf`、`protoc`、`grpc_cpp_plugin`  
+- C++17
+- [gRPC](https://grpc.io/) C++、`protobuf`、`protoc`、`grpc_cpp_plugin`（建议 **`library/grpc/`**、**`library/protobuf/`**）  
 - [gflags](https://github.com/gflags/gflags)（命令行解析）
 
-推荐将上述依赖**编译并安装到仓库根目录 [`library/`](../library/)**（见 [`docs/PROJECT_CONVENTIONS.md`](../docs/PROJECT_CONVENTIONS.md)）；顶层 CMake 会优先从该路径查找。亦可用系统包，例如 Debian/Ubuntu：`libgrpc++-dev` `libprotobuf-dev` `protobuf-compiler-grpc` `libgflags-dev`。
+推荐执行 [`scripts/install-third-party-to-library.sh`](../scripts/install-third-party-to-library.sh) 将 Lua、GoogleTest、Protobuf、gRPC 等安装到 [`library/`](../LIBRARY.md)（见 [`docs/PROJECT_CONVENTIONS.md`](../docs/PROJECT_CONVENTIONS.md)）。亦可用系统包，例如 Debian/Ubuntu：`libgrpc++-dev` `libprotobuf-dev` `protobuf-compiler-grpc` `libgflags-dev`。
 
 ## 构建
 

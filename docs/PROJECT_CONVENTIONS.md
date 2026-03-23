@@ -13,23 +13,20 @@
   | `library/bin` | 可执行工具（如 `grpc_cpp_plugin` 等装于根前缀时） |
   | `library/include` / `library/lib` | 装于根前缀时的头文件与 CMake 包 |
   | `library/protobuf/` | Protobuf：`bin/protoc`、`include/`、`lib/`（含 `lib/cmake/protobuf`） |
+  | `library/grpc/` | gRPC：`bin/grpc_cpp_plugin`、`include/`、`lib/`（含 `lib/cmake/grpc`） |
   | `library/share` | 按需（部分工具链使用） |
 
-- 顶层 **`CMakeLists.txt`** 将 **`EVRP_LIBRARY_DIR`** 与 **`EVRP_LIBRARY_DIR/protobuf`** 加入 **`CMAKE_PREFIX_PATH`**，以便 **`find_package(Protobuf)`** 发现 `library/protobuf/lib/cmake/...`；Lua/GTest 仍用显式路径；**`find_program(protoc …)`** 在 **`library/protobuf/bin`**（及 **`library/bin`**）中查找。
+- 顶层 **`CMakeLists.txt`** 将 **`EVRP_LIBRARY_DIR`**、**`EVRP_LIBRARY_DIR/protobuf`**、**`EVRP_LIBRARY_DIR/grpc`** 加入 **`CMAKE_PREFIX_PATH`**，以便 **`find_package(Protobuf)`** / **`find_package(gRPC)`** 发现对应 `lib/cmake/...`；Lua/GTest 仍用显式路径；**`find_program(protoc …)`**、**`find_program(grpc_cpp_plugin …)`** 在 **`library/protobuf/bin`**、**`library/grpc/bin`**（及 **`library/bin`**）中查找。
 
 - 安装到 `library/` 的**具体文件**不纳入版本控制（见根目录 `.gitignore`）；目录说明见仓库根目录 **`LIBRARY.md`**。
 
-### 2. Lua / GoogleTest / Protobuf：主工程**仅从 `library/` 获取（或 PREFIX 解析）**
+### 2. Lua / GoogleTest / Protobuf / gRPC：主工程**仅从 `library/` 获取（或 PREFIX 解析）**
 
-- 根 **`CMakeLists.txt`** 只在 **`library/`** 下查找 Lua 与 GoogleTest（`NO_DEFAULT_PATH`）；**Protobuf** 通过 **`CMAKE_PREFIX_PATH`**（已包含 **`library/protobuf`**）由 **`find_package(Protobuf)`** 解析，不编译 `third_party` 源码。
-- 配置主工程 **前**，须已把 Lua / GTest 安装到对应子目录，**Protobuf**（含 **`protoc`**）安装到 **`library/protobuf/`**（由安装脚本写入）。
-- **`third_party/lua`、`third_party/googletest`、`third_party/protobuf`** 为子模块源码；**编译与安装**由 **`scripts/install-third-party-to-library.sh`** 完成（脚本内直接 `cmake -S third_party/...`）。**`third_party/protobuf` 内的嵌套子模块（abseil-cpp 等）**需在克隆/维护流程中自行 **`git submodule update --init --recursive`**（或等价方式），安装脚本不负责拉取。
+- 根 **`CMakeLists.txt`** 只在 **`library/`** 下查找 Lua 与 GoogleTest（`NO_DEFAULT_PATH`）；**Protobuf**、**gRPC** 通过 **`CMAKE_PREFIX_PATH`**（已包含 **`library/protobuf`**、**`library/grpc`**）由 **`find_package`** 解析，不编译 `third_party` 源码。
+- 配置主工程 **前**，须已把 Lua / GTest 安装到对应子目录，**Protobuf**（含 **`protoc`**）安装到 **`library/protobuf/`**，**gRPC**（含 **`grpc_cpp_plugin`**）安装到 **`library/grpc/`**（由安装脚本写入）。
+- **`third_party/lua`、`third_party/googletest`、`third_party/protobuf`、`third_party/grpc`** 为子模块源码；**编译与安装**由 **`scripts/install-third-party-to-library.sh`** 完成（脚本内直接 `cmake -S third_party/...`；**gRPC 使用已安装到 `library/protobuf` 的 Protobuf**）。子模块（含各嵌套仓库）通过 **`git submodule update --init --recursive`** 更新；安装脚本开头也会执行该命令。详见 **`LIBRARY.md`**。
 
-**克隆仓库后请先拉取子模块（含 `third_party/protobuf`）：**
-
-```bash
-git submodule update --init --recursive
-```
+**克隆仓库后请先执行：** `git submodule update --init --recursive`（或与安装脚本二选一）。详见 **`LIBRARY.md`**。
 
 **首次或更新第三方源码后：**
 
@@ -39,19 +36,19 @@ cmake -B build
 cmake --build build
 ```
 
-可选向脚本传入额外 CMake 参数（会传给 Lua、GTest、Protobuf 三处 `cmake -S`），例如：
+可选向脚本传入额外 CMake 参数（会传给 Lua、GTest、Protobuf、gRPC 四处 `cmake -S`），例如：
 
 ```bash
 ./scripts/install-third-party-to-library.sh -DCMAKE_BUILD_TYPE=Release
 ```
 
-若 `library/` 中缺少 Lua 或 GTest，主工程 `cmake` 会 **FATAL_ERROR** 并提示运行上述脚本；缺少 **Protobuf** 时 **`find_package(Protobuf REQUIRED)`** 会失败，同样需先运行安装脚本（或自行安装到 **`library/protobuf/`**）。
+若 `library/` 中缺少 Lua 或 GTest，主工程 `cmake` 会 **FATAL_ERROR** 并提示运行上述脚本；缺少 **Protobuf** / **gRPC** 时对应 **`find_package(REQUIRED)`** 会失败，需先运行安装脚本（或自行安装到 **`library/protobuf/`**、**`library/grpc/`**）。
 
 **故障排除**：Lua 路径类错误多为旧缓存：删除 `build/` 后重新 `cmake -B build`。误装到 **`/usr/local/googletest`** 时可：`sudo rm -rf /usr/local/googletest`。
 
 ### 3. 与 evrp-device 相关依赖
 
-- **Protobuf**（含 **`protoc`**）安装到 **`library/protobuf/`**；**gRPC C++、gflags** 及 **`grpc_cpp_plugin`** 等安装到 **`library/`** 约定路径后，再运行本仓库 `cmake` 配置。
+- **Protobuf**（含 **`protoc`**）安装到 **`library/protobuf/`**；**gRPC C++**（含 **`grpc_cpp_plugin`**）安装到 **`library/grpc/`**；**gflags** 等可安装到 **`library/`** 根前缀或系统路径后，再运行本仓库 `cmake` 配置。
 
 - 自行从源码构建时，示例：
 

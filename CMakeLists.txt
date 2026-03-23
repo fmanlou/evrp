@@ -1,11 +1,12 @@
 cmake_minimum_required(VERSION 3.14)
 project(evrp LANGUAGES C CXX)
 
-# --- library/ 与 Lua、GoogleTest、Protobuf（安装：scripts/install-third-party-to-library.sh）---
+# --- library/ 与 Lua、GoogleTest、Protobuf、gRPC（安装：scripts/install-third-party-to-library.sh）---
 set(EVRP_LIBRARY_DIR "${CMAKE_SOURCE_DIR}/library" CACHE PATH
     "Third-party install prefix for this repo")
 list(APPEND CMAKE_PREFIX_PATH "${EVRP_LIBRARY_DIR}")
 list(APPEND CMAKE_PREFIX_PATH "${EVRP_LIBRARY_DIR}/protobuf")
+list(APPEND CMAKE_PREFIX_PATH "${EVRP_LIBRARY_DIR}/grpc")
 
 find_library(
   EVRP_LUA_LIB
@@ -138,7 +139,8 @@ gtest_discover_tests(evrp_tests)
 # ---------------------------------------------------------------------------
 # evrp-device：gRPC 服务端（依赖安装到 library/ 或系统 PATH，见 docs/PROJECT_CONVENTIONS.md）
 # ---------------------------------------------------------------------------
-find_package(Protobuf REQUIRED)
+# 勿在此单独先 find_package(Protobuf)：gRPC 的 gRPCConfig.cmake 会 find_dependency(Protobuf)，
+# 若重复加载 protobuf-targets.cmake 会报错「Some targets in this export set were already defined」。
 find_package(gRPC CONFIG REQUIRED)
 find_package(gflags CONFIG REQUIRED)
 
@@ -147,7 +149,7 @@ set(DEVICE_PROTO "${PROTO_ROOT}/evrp/device/v1/device.proto")
 set(GEN_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
 
 find_program(GRPC_CPP_PLUGIN_PROGRAM NAMES grpc_cpp_plugin REQUIRED
-             HINTS "${EVRP_LIBRARY_DIR}/bin")
+             HINTS "${EVRP_LIBRARY_DIR}/grpc/bin" "${EVRP_LIBRARY_DIR}/bin")
 find_program(PROTOC_PROGRAM NAMES protoc REQUIRED
              HINTS "${EVRP_LIBRARY_DIR}/protobuf/bin" "${EVRP_LIBRARY_DIR}/bin")
 
