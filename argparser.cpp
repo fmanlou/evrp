@@ -68,19 +68,21 @@ void normalize_legacy_args(std::vector<std::string> *args) {
 void print_usage(const char *prog) {
   std::cout
       << "Usage: " << prog
-      << " --record [--output=FILE] [--log_level=LEVEL] [touchpad] [touchscreen] "
-         "[mouse] [keyboard] ...\n"
-      << "       " << prog << " --playback=FILE [--log_level=LEVEL]\n"
-      << "  --record: start recording. With no device kinds, record touchpad, "
+      << " --record|-r [-o FILE|--output=FILE] [--log_level=LEVEL|--log-level=LEVEL] "
+         "[touchpad] [touchscreen] [mouse] [keyboard] ...\n"
+      << "       " << prog
+      << " --playback=FILE|-p FILE [--log_level=LEVEL|--log-level=LEVEL]\n"
+      << "  --record / -r: start recording. With no device kinds, record touchpad, "
          "touchscreen, mouse, keyboard.\n"
-      << "  --playback=FILE: playback events or run Lua script (.lua). Non-event "
-         "lines in event files are executed as Lua.\n"
-      << "  --output=FILE: write recording to FILE (default: stdout).\n"
-      << "  --log_level=LEVEL: error|warn|info|debug|trace (default: info).\n"
-      << "  --wait_leading / --nowait_leading: during playback, execute [leading] "
-         "wait (default: wait).\n"
-      << "  --wait_trailing / --nowait_trailing: during playback, execute "
-         "[trailing] wait (default: wait).\n"
+      << "  --playback=FILE / -p FILE: playback events or run Lua script (.lua). "
+         "Non-event lines in event files are executed as Lua.\n"
+      << "  --output=FILE / -o FILE: write recording to FILE (default: stdout).\n"
+      << "  --log_level=LEVEL / --log-level=LEVEL: error|warn|info|debug|trace "
+         "(default: info).\n"
+      << "  --wait_leading / --nowait_leading (or --wait-leading=yes|no): during "
+         "playback, execute [leading] wait (default: wait).\n"
+      << "  --wait_trailing / --nowait_trailing (or --wait-trailing=yes|no): during "
+         "playback, execute [trailing] wait (default: wait).\n"
       << "  --help: show gflags help.\n";
 }
 
