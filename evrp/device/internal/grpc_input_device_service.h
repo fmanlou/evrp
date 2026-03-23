@@ -7,9 +7,7 @@
 #include "evrp/device/api/host.h"
 #include "evrp/device/v1/device.grpc.pb.h"
 
-namespace evrp {
-namespace device {
-namespace internal {
+namespace evrp::device::internal {
 
 class GrpcInputDeviceService final
     : public evrp::device::v1::InputDeviceService::Service {
@@ -63,6 +61,4 @@ class GrpcInputDeviceService final
   api::IDeviceHost& host_;
 };
 
-}  // namespace internal
-}  // namespace device
-}  // namespace evrp
+}  // namespace evrp::device::internal

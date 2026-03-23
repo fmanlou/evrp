@@ -10,9 +10,7 @@
 
 #include "evrp/device/internal/grpc_input_device_service.h"
 
-namespace evrp {
-namespace device {
-namespace api {
+namespace evrp::device::api {
 
 int RunDeviceServer(const std::string& listen_address, IDeviceHost& host) {
   internal::GrpcInputDeviceService grpc_service(host);
@@ -33,6 +31,4 @@ int RunDeviceServer(const std::string& listen_address, IDeviceHost& host) {
   return 0;
 }
 
-}  // namespace api
-}  // namespace device
-}  // namespace evrp
+}  // namespace evrp::device::api

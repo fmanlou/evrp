@@ -1,7 +1,6 @@
 #include "evrp/device/stub_device_host.h"
 
-namespace evrp {
-namespace device {
+namespace evrp::device {
 
 namespace {
 
@@ -65,5 +64,4 @@ api::ApiResult<api::CursorPosition> StubDeviceHost::ReadCursorPosition() {
   return FailT<api::CursorPosition>(Unimplemented("ReadCursorPosition"));
 }
 
-}  // namespace device
-}  // namespace evrp
+}  // namespace evrp::device

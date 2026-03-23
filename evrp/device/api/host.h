@@ -5,9 +5,7 @@
 
 #include "evrp/device/api/types.h"
 
-namespace evrp {
-namespace device {
-namespace api {
+namespace evrp::device::api {
 
 // 设备端业务能力抽象：与 device.proto 中 RPC 一一对应，但仅使用 api::* 类型。
 // evrp-device 核心逻辑实现本接口；gRPC 层仅作适配，业务代码 include 本头文件即可，无需 protobuf/grpc。
@@ -40,6 +38,4 @@ class IDeviceHost {
   virtual ApiResult<CursorPosition> ReadCursorPosition() = 0;
 };
 
-}  // namespace api
-}  // namespace device
-}  // namespace evrp
+}  // namespace evrp::device::api

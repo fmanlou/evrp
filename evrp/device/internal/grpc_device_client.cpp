@@ -14,9 +14,7 @@
 
 #include "evrp/device/v1/device.grpc.pb.h"
 
-namespace evrp {
-namespace device {
-namespace api {
+namespace evrp::device::api {
 namespace {
 
 evrp::device::v1::DeviceKind ToProtoEnum(DeviceKind k) {
@@ -231,6 +229,4 @@ std::unique_ptr<IDeviceClient> ConnectDeviceClient(const std::string& target) {
   return std::make_unique<GrpcDeviceClient>(std::move(channel));
 }
 
-}  // namespace api
-}  // namespace device
-}  // namespace evrp
+}  // namespace evrp::device::api

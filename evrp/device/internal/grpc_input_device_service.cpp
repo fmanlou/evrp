@@ -4,9 +4,7 @@
 
 #include <vector>
 
-namespace evrp {
-namespace device {
-namespace internal {
+namespace evrp::device::internal {
 namespace {
 
 grpc::Status ToGrpc(const api::ApiError& e) {
@@ -192,6 +190,4 @@ grpc::Status GrpcInputDeviceService::Ping(grpc::ServerContext* /*context*/,
   return ToGrpc(r.error);
 }
 
-}  // namespace internal
-}  // namespace device
-}  // namespace evrp
+}  // namespace evrp::device::internal

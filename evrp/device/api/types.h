@@ -4,9 +4,7 @@
 #include <string>
 #include <vector>
 
-namespace evrp {
-namespace device {
-namespace api {
+namespace evrp::device::api {
 
 // 与 proto DeviceKind 对齐；业务层只使用本枚举，不依赖 protobuf。
 enum class DeviceKind {
@@ -82,6 +80,4 @@ struct ApiResult<void> {
   bool ok() const { return error.ok(); }
 };
 
-}  // namespace api
-}  // namespace device
-}  // namespace evrp
+}  // namespace evrp::device::api

@@ -2,8 +2,7 @@
 
 #include "evrp/device/api/host.h"
 
-namespace evrp {
-namespace device {
+namespace evrp::device {
 
 // 默认桩：仅 Ping 成功，其余返回「未实现」；用于启动 evrp-device 进程。
 class StubDeviceHost final : public api::IDeviceHost {
@@ -33,5 +32,4 @@ class StubDeviceHost final : public api::IDeviceHost {
   static api::ApiError Unimplemented(const char* what);
 };
 
-}  // namespace device
-}  // namespace evrp
+}  // namespace evrp::device
