@@ -1,2 +1,7 @@
 build/
+build-third-party-install/
 .cache
+
+# 第三方安装到仓库内 library/ 的产物（保留 README 说明）
+library/*
+!library/README.md

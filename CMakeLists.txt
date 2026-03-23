@@ -1,14 +1,38 @@
 cmake_minimum_required(VERSION 3.14)
 project(evrp LANGUAGES C CXX)
 
+# --- library/ 与 Lua、GoogleTest（安装：scripts/install-third-party-to-library.sh）---
+set(EVRP_LIBRARY_DIR "${CMAKE_SOURCE_DIR}/library" CACHE PATH
+    "Third-party install prefix for this repo")
+
+find_library(
+  EVRP_LUA_LIB
+  NAMES lua liblua lua_static
+  PATHS "${EVRP_LIBRARY_DIR}/lua/lib" "${EVRP_LIBRARY_DIR}/lua/lib64"
+  NO_DEFAULT_PATH)
+find_path(
+  EVRP_LUA_INCLUDE_DIR
+  NAMES lua.h
+  PATHS "${EVRP_LIBRARY_DIR}/lua/include/lua"
+  NO_DEFAULT_PATH)
+if(NOT EVRP_LUA_LIB OR NOT EVRP_LUA_INCLUDE_DIR)
+  message(
+    FATAL_ERROR
+      "Lua not found under '${EVRP_LIBRARY_DIR}/lua'. Run: ./scripts/install-third-party-to-library.sh")
+endif()
+add_library(lua STATIC IMPORTED GLOBAL)
+set_target_properties(lua PROPERTIES IMPORTED_LOCATION "${EVRP_LUA_LIB}")
+target_include_directories(lua INTERFACE "${EVRP_LUA_INCLUDE_DIR}")
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  target_link_libraries(lua INTERFACE m)
+endif()
+
+find_package(GTest CONFIG REQUIRED PATHS "${EVRP_LIBRARY_DIR}/googletest" NO_DEFAULT_PATH)
+
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Lua 5.4 (git subtree at third_party/lua)
-add_subdirectory(third_party/lua)
-
-add_subdirectory(third_party/googletest)
 enable_testing()
 
 add_library(evdev STATIC evdev.cpp)
@@ -109,9 +133,10 @@ include(GoogleTest)
 gtest_discover_tests(evrp_tests)
 
 # ---------------------------------------------------------------------------
-# evrp-device：gRPC 服务端（可选，需系统安装 gRPC C++ / protobuf / grpc_cpp_plugin）
+# evrp-device：gRPC 服务端（依赖安装到 library/ 或系统 PATH，见 docs/PROJECT_CONVENTIONS.md）
 # ---------------------------------------------------------------------------
-option(EVRP_BUILD_DEVICE "Build evrp-device gRPC server (needs gRPC C++, protobuf)" OFF)
+option(EVRP_BUILD_DEVICE
+       "Build evrp-device gRPC server (needs gRPC C++, protobuf)" OFF)
 
 if(EVRP_BUILD_DEVICE)
   find_package(Protobuf REQUIRED)
@@ -122,8 +147,9 @@ if(EVRP_BUILD_DEVICE)
   set(DEVICE_PROTO "${PROTO_ROOT}/evrp/device/v1/device.proto")
   set(GEN_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
 
-  find_program(GRPC_CPP_PLUGIN_PROGRAM NAMES grpc_cpp_plugin REQUIRED)
-  find_program(PROTOC_PROGRAM NAMES protoc REQUIRED)
+  find_program(GRPC_CPP_PLUGIN_PROGRAM NAMES grpc_cpp_plugin REQUIRED
+               HINTS "${EVRP_LIBRARY_DIR}/bin")
+  find_program(PROTOC_PROGRAM NAMES protoc REQUIRED HINTS "${EVRP_LIBRARY_DIR}/bin")
 
   set(DEVICE_PB_CC "${GEN_DIR}/evrp/device/v1/device.pb.cc")
   set(DEVICE_PB_H "${GEN_DIR}/evrp/device/v1/device.pb.h")
@@ -143,20 +169,24 @@ if(EVRP_BUILD_DEVICE)
 
   add_library(evrp_device_proto STATIC ${DEVICE_PB_CC} ${DEVICE_GRPC_CC})
   target_include_directories(evrp_device_proto PUBLIC ${GEN_DIR})
-  target_link_libraries(evrp_device_proto PUBLIC protobuf::libprotobuf gRPC::grpc++)
+  target_link_libraries(evrp_device_proto PUBLIC protobuf::libprotobuf
+                                                 gRPC::grpc++)
 
   add_library(evrp_device_api INTERFACE)
-  target_include_directories(evrp_device_api INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+  target_include_directories(evrp_device_api
+                             INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 
   add_library(
     evrp_device_grpc STATIC
     evrp/device/internal/grpc_server_impl.cpp
     evrp/device/internal/grpc_input_device_service.cpp
     evrp/device/internal/grpc_device_client.cpp)
-  target_include_directories(evrp_device_grpc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+  target_include_directories(evrp_device_grpc
+                             PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
   target_link_libraries(evrp_device_grpc PUBLIC evrp_device_proto)
 
-  add_executable(evrp-device evrp-device/main.cpp evrp/device/stub_device_host.cpp)
-  target_link_libraries(evrp-device PRIVATE evrp_device_api evrp_device_grpc gRPC::grpc++
-                        gflags::gflags)
+  add_executable(evrp-device evrp-device/main.cpp
+                             evrp/device/stub_device_host.cpp)
+  target_link_libraries(evrp-device PRIVATE evrp_device_api evrp_device_grpc
+                                            gRPC::grpc++ gflags::gflags)
 endif()

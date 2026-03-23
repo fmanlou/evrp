@@ -62,7 +62,7 @@
 | 项 | 建议 |
 |----|------|
 | **生成代码** | `protoc` + `grpc_cpp_plugin` 生成 `evrp/device/v1/*.pb.{h,cc}` 与 `*.grpc.pb.{h,cc}`；纳入 CMake 目标 `evrp_device_proto` |
-| **依赖** | `protobuf`、`grpc++`、`gflags`（`evrp-device` 入口）、pthread；可选链接 X11（与现有 `cursorposx11` 一致） |
+| **依赖** | `protobuf`、`grpc++`、`gflags`（`evrp-device` 入口）、pthread；建议安装到 [`library/`](../library/)（见 [`PROJECT_CONVENTIONS.md`](./PROJECT_CONVENTIONS.md)）；可选链接 X11（与现有 `cursorposx11` 一致） |
 | **产物** | 可执行文件 **`evrp-device`**：`-DEVRP_BUILD_DEVICE=ON` 时构建，详见 [`evrp-device/README.md`](../evrp-device/README.md) |
 | **监听** | 首版 **Unix Domain Socket**（如 `/run/user/.../evrp.sock`）或 `127.0.0.1:端口`；地址通过 **命令行或环境变量** 配置 |
 

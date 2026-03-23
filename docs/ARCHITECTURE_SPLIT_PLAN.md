@@ -54,6 +54,8 @@
 
 **`.proto` 定义位置**：仓库内 `proto/evrp/device/v1/device.proto`（`InputDeviceService`），详见同目录 `proto/README.md`。
 
+**第三方依赖目录约定**（`library/` 与 `third_party/`）：见 [`docs/PROJECT_CONVENTIONS.md`](./PROJECT_CONVENTIONS.md)。
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                      evrp-app (业务端)                            │
