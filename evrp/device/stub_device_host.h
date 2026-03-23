@@ -9,12 +9,12 @@ class StubDeviceHost final : public api::IDeviceHost {
  public:
   api::ApiResult<void> Ping() override;
 
-  api::ApiResult<void> StartReadInput(const std::vector<api::DeviceKind>& kinds) override;
+  api::ApiResult<void> StartRecording(const std::vector<api::DeviceKind>& kinds) override;
 
   api::ApiResult<void> ReadInputEvents(
       const std::function<void(const api::InputEvent&)>& emit) override;
 
-  api::ApiResult<void> StopReadInput() override;
+  api::ApiResult<void> StopRecording() override;
 
   api::ApiResult<void> UploadRecording(
       const std::function<bool(api::UploadFrame* frame)>& read_next_frame,

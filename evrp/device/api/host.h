@@ -15,13 +15,13 @@ class IDeviceHost {
 
   virtual ApiResult<void> Ping() = 0;
 
-  virtual ApiResult<void> StartReadInput(const std::vector<DeviceKind>& kinds) = 0;
+  virtual ApiResult<void> StartRecording(const std::vector<DeviceKind>& kinds) = 0;
 
   // 由适配器在 ReadInputEvents RPC 中调用：阻塞直到会话结束；每产生一条事件调用 emit。
   virtual ApiResult<void> ReadInputEvents(
       const std::function<void(const InputEvent&)>& emit) = 0;
 
-  virtual ApiResult<void> StopReadInput() = 0;
+  virtual ApiResult<void> StopRecording() = 0;
 
   // 上传：适配器从 gRPC 流读出帧并填入 frame（中间帧 data 指针由适配器缓冲，直到下一次 read_next_frame）。
   // emit_status 向客户端写状态；返回 false 表示流已不可写。

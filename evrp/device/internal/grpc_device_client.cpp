@@ -108,14 +108,14 @@ class GrpcDeviceClient final : public IDeviceClient {
     return ApiResult<void>{};
   }
 
-  ApiResult<void> StartReadInput(const std::vector<DeviceKind>& kinds) override {
+  ApiResult<void> StartRecording(const std::vector<DeviceKind>& kinds) override {
     grpc::ClientContext ctx;
-    evrp::device::v1::StartReadInputRequest req;
+    evrp::device::v1::StartRecordingRequest req;
     for (DeviceKind k : kinds) {
       req.add_kinds(ToProtoEnum(k));
     }
     google::protobuf::Empty resp;
-    grpc::Status s = stub_->StartReadInput(&ctx, req, &resp);
+    grpc::Status s = stub_->StartRecording(&ctx, req, &resp);
     if (!s.ok()) return FailVoid(s);
     return ApiResult<void>{};
   }
@@ -137,11 +137,11 @@ class GrpcDeviceClient final : public IDeviceClient {
     return ApiResult<void>{};
   }
 
-  ApiResult<void> StopReadInput() override {
+  ApiResult<void> StopRecording() override {
     grpc::ClientContext ctx;
     google::protobuf::Empty req;
     google::protobuf::Empty resp;
-    grpc::Status s = stub_->StopReadInput(&ctx, req, &resp);
+    grpc::Status s = stub_->StopRecording(&ctx, req, &resp);
     if (!s.ok()) return FailVoid(s);
     return ApiResult<void>{};
   }

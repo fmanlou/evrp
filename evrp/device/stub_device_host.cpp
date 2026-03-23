@@ -27,9 +27,9 @@ api::ApiResult<void> StubDeviceHost::Ping() {
   return api::ApiResult<void>{};
 }
 
-api::ApiResult<void> StubDeviceHost::StartReadInput(
+api::ApiResult<void> StubDeviceHost::StartRecording(
     const std::vector<api::DeviceKind>& /*kinds*/) {
-  return Fail(Unimplemented("StartReadInput"));
+  return Fail(Unimplemented("StartRecording"));
 }
 
 api::ApiResult<void> StubDeviceHost::ReadInputEvents(
@@ -37,8 +37,8 @@ api::ApiResult<void> StubDeviceHost::ReadInputEvents(
   return Fail(Unimplemented("ReadInputEvents"));
 }
 
-api::ApiResult<void> StubDeviceHost::StopReadInput() {
-  return Fail(Unimplemented("StopReadInput"));
+api::ApiResult<void> StubDeviceHost::StopRecording() {
+  return Fail(Unimplemented("StopRecording"));
 }
 
 api::ApiResult<void> StubDeviceHost::UploadRecording(

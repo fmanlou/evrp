@@ -22,7 +22,7 @@
 
 | 能力 | 现有代码（参考） | evrp-device 中的职责 |
 |------|------------------|----------------------|
-| 发现/打开 evdev、`read` 事件 | `evdev.*`、`inputdevice.*`、`touchdevice.*`、`keyboard/*` | `StartReadInput` 按 `DeviceKind` 选择设备并启动采集；读线程将事件转为 `InputEvent` |
+| 发现/打开 evdev、`read` 事件 | `evdev.*`、`inputdevice.*`、`touchdevice.*`、`keyboard/*` | `StartRecording` 按 `DeviceKind` 选择设备并启动采集；读线程将事件转为 `InputEvent` |
 | 注入回放 | `inputeventwriter.*`、`mouse/*`、`keyboard/*` | `PlaybackRecording` 读**当前缓存**的 eventformat（或等价字节流），经 `InputEventWriter` 注入 |
 | 光标 | `cursor/cursorpos.*` | `GetCursorPositionAvailability` / `ReadCursorPosition` 直接委托 `CursorPos` |
 | 文件/缓冲 | `filesystem.*`（可选） | `UploadRecording` 拼接帧 → 落盘或内存，作为「当前可回放」资源 |
@@ -33,9 +33,9 @@
 
 ## 3. 运行时模型（建议）
 
-### 3.1 读路径：`StartReadInput` → `ReadInputEvents` → `StopReadInput`
+### 3.1 读路径：`StartRecording` → `ReadInputEvents` → `StopRecording`
 
-- **会话模型（建议首版）**：单连接内 **一次**「读会话」：先 `StartReadInput`（携带 `kinds`），再 **一个** `ReadInputEvents` 服务端流；`StopReadInput` 结束采集并结束/取消流。
+- **会话模型（建议首版）**：单连接内 **一次**「读会话」：先 `StartRecording`（携带 `kinds`），再 **一个** `ReadInputEvents` 服务端流；`StopRecording` 结束采集并结束/取消流。
 - **并发**：采集线程与 gRPC 写流解耦：环形缓冲或阻塞队列，**`ReadInputEvents`** 协程/线程从队列取事件 `Write` 到流。
 - **背压**：队列满时的策略（丢事件计数 + `UploadRecordingStatus` 式告警 **不**适用于读流；读流建议阻塞或合并策略，首版可 **阻塞** 并文档说明延迟风险）。
 - **`DeviceKind` → 设备路径**：沿用 `find_first_*` / `find_device_path` 与 `DeviceId` 映射；`UNSPECIFIED` 的语义在实现里固定（例如忽略或报错）。
@@ -44,7 +44,7 @@
 
 - **上传**：严格帧序 **start → N × middle（校验 `checksum`）→ end**；拼接后写入 **单一「当前资源」** 槽（路径或内存句柄）。
 - **下行 `UploadRecordingStatus`**：实现可周期性 `bytes_received` 等价逻辑已通过删除字段简化为仅 `code`/`message`；至少 **最后一帧** 表示成功或失败。
-- **回放**：`PlaybackRecording` 无参，只读 **最近一次成功上传** 的资源；与 **读会话** 互斥策略需在实现中定义（首版建议：**回放时拒绝 `StartReadInput`** 或 **停止读后再回放**）。
+- **回放**：`PlaybackRecording` 无参，只读 **最近一次成功上传** 的资源；与 **读会话** 互斥策略需在实现中定义（首版建议：**回放时拒绝 `StartRecording`** 或 **停止读后再回放**）。
 
 ### 3.3 光标
 
@@ -78,9 +78,9 @@
 
 ### M1：读事件路径（核心）
 
-- [ ] `StartReadInput`：解析 `kinds`，打开对应 evdev，启动读线程
+- [ ] `StartRecording`：解析 `kinds`，打开对应 evdev，启动读线程
 - [ ] `ReadInputEvents`：推送 `InputEvent`（与内核 `input_event` + `DeviceKind` 对齐）
-- [ ] `StopReadInput`：停止线程、关闭 fd、结束流
+- [ ] `StopRecording`：停止线程、关闭 fd、结束流
 - [ ] 单测或集成测：mock evdev 或 `/dev/input` 可用环境
 
 ### M2：上传 + 回放

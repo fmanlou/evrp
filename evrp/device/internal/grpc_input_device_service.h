@@ -14,9 +14,9 @@ class GrpcInputDeviceService final
  public:
   explicit GrpcInputDeviceService(api::IDeviceHost& host);
 
-  grpc::Status StartReadInput(
+  grpc::Status StartRecording(
       grpc::ServerContext* context,
-      const evrp::device::v1::StartReadInputRequest* request,
+      const evrp::device::v1::StartRecordingRequest* request,
       google::protobuf::Empty* response) override;
 
   grpc::Status ReadInputEvents(
@@ -24,7 +24,7 @@ class GrpcInputDeviceService final
       const google::protobuf::Empty* request,
       grpc::ServerWriter<evrp::device::v1::InputEvent>* writer) override;
 
-  grpc::Status StopReadInput(grpc::ServerContext* context,
+  grpc::Status StopRecording(grpc::ServerContext* context,
                              const google::protobuf::Empty* request,
                              google::protobuf::Empty* response) override;
 

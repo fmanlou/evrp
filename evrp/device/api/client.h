@@ -15,12 +15,12 @@ class IDeviceClient {
 
   virtual ApiResult<void> Ping() = 0;
 
-  virtual ApiResult<void> StartReadInput(const std::vector<DeviceKind>& kinds) = 0;
+  virtual ApiResult<void> StartRecording(const std::vector<DeviceKind>& kinds) = 0;
 
   virtual ApiResult<void> ReadInputEvents(
       const std::function<void(const InputEvent&)>& on_event) = 0;
 
-  virtual ApiResult<void> StopReadInput() = 0;
+  virtual ApiResult<void> StopRecording() = 0;
 
   virtual ApiResult<void> UploadRecording(
       const std::function<bool(UploadFrame* frame)>& next_frame_to_send,

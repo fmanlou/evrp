@@ -66,16 +66,16 @@ void DrainUploadStream(
 
 GrpcInputDeviceService::GrpcInputDeviceService(api::IDeviceHost& host) : host_(host) {}
 
-grpc::Status GrpcInputDeviceService::StartReadInput(
+grpc::Status GrpcInputDeviceService::StartRecording(
     grpc::ServerContext* /*context*/,
-    const evrp::device::v1::StartReadInputRequest* request,
+    const evrp::device::v1::StartRecordingRequest* request,
     google::protobuf::Empty* /*response*/) {
   std::vector<api::DeviceKind> kinds;
   kinds.reserve(static_cast<size_t>(request->kinds_size()));
   for (int i = 0; i < request->kinds_size(); ++i) {
     kinds.push_back(FromProtoEnum(request->kinds(i)));
   }
-  auto r = host_.StartReadInput(kinds);
+  auto r = host_.StartRecording(kinds);
   return ToGrpc(r.error);
 }
 
@@ -91,10 +91,10 @@ grpc::Status GrpcInputDeviceService::ReadInputEvents(
   return ToGrpc(r.error);
 }
 
-grpc::Status GrpcInputDeviceService::StopReadInput(
+grpc::Status GrpcInputDeviceService::StopRecording(
     grpc::ServerContext* /*context*/, const google::protobuf::Empty* /*request*/,
     google::protobuf::Empty* /*response*/) {
-  auto r = host_.StopReadInput();
+  auto r = host_.StopRecording();
   return ToGrpc(r.error);
 }
 
