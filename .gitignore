@@ -1,5 +1,4 @@
 build/
-build-third-party-install/
 .cache
 
 # 第三方安装到仓库内 library/ 的产物（说明见仓库根目录 LIBRARY.md）

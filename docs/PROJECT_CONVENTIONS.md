@@ -25,7 +25,7 @@
 
 - 根 **`CMakeLists.txt`** 只在 **`library/`** 下查找 Lua 与 GoogleTest（`NO_DEFAULT_PATH`）；**Protobuf**、**gRPC**、**gflags** 通过 **`CMAKE_PREFIX_PATH`** / **`find_package(... PATHS)`** 从 **`library/protobuf`**、**`library/grpc`**、**`library/gflags`** 解析，不编译 `third_party` 源码。
 - 配置主工程 **前**，须已把 Lua / GTest / Protobuf / gRPC / gflags 安装到对应子目录（由安装脚本写入）。
-- **`third_party/lua`、`third_party/googletest`、`third_party/protobuf`、`third_party/grpc`、`third_party/gflags`** 为子模块源码；**编译与安装**由 **`scripts/install-third-party-to-library.sh`** 完成（脚本内直接 `cmake -S third_party/...`；**gRPC 使用已安装到 `library/protobuf` 的 Protobuf**）。子模块（含各嵌套仓库）通过 **`git submodule update --init --recursive`** 更新；安装脚本开头也会执行该命令。详见 **`LIBRARY.md`**。
+- **`third_party/lua`、`third_party/googletest`、`third_party/protobuf`、`third_party/grpc`、`third_party/gflags`** 为子模块源码；**编译与安装**由 **`scripts/install-third-party-to-library.sh`**（总入口）及各库脚本 **`install-*-to-library.sh`** 完成（**gRPC 使用已安装到 `library/protobuf` 的 Protobuf**）。子模块（含各嵌套仓库）通过 **`git submodule update --init --recursive`** 更新；总入口开头也会执行该命令。详见 **`LIBRARY.md`**。
 
 **克隆仓库后请先执行：** `git submodule update --init --recursive`（或与安装脚本二选一）。详见 **`LIBRARY.md`**。
 

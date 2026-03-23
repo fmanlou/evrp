@@ -27,15 +27,25 @@ library/
 git submodule update --init --recursive
 ```
 
-安装脚本 **`scripts/install-third-party-to-library.sh`** 开头也会执行上述命令（需在 **git 克隆** 的工作目录下运行）。
+总入口 **`scripts/install-third-party-to-library.sh`** 会先执行 **`git submodule update --init --recursive`**（需在 **git 克隆** 的工作目录下），再依次调用各库独立脚本；每个脚本在**安装成功后**会删除 **`build/third-party/<库名>/`** 临时编译目录。
 
-再安装到 **`library/`**：
+也可**单独**安装某一库（同样支持跳过已安装目录、`EVRP_FORCE_THIRD_PARTY_INSTALL`）：
+
+| 脚本 | 安装前缀 |
+|------|----------|
+| **`scripts/install-lua-to-library.sh`** | `library/lua/` |
+| **`scripts/install-googletest-to-library.sh`** | `library/googletest/` |
+| **`scripts/install-protobuf-to-library.sh`** | `library/protobuf/` |
+| **`scripts/install-grpc-to-library.sh`** | `library/grpc/`（依赖已安装的 `library/protobuf`） |
+| **`scripts/install-gflags-to-library.sh`** | `library/gflags/` |
+
+一键安装到 **`library/`**：
 
 ```bash
 ./scripts/install-third-party-to-library.sh
 ```
 
-（脚本依次安装 Lua、GoogleTest、Protobuf、gRPC、gflags；gRPC **使用已安装到 `library/protobuf` 的 Protobuf**。）若 **`library/lua`**、**`library/googletest`**、**`library/protobuf`**、**`library/grpc`**、**`library/gflags`** 下已有对应安装结果，会**跳过**该组件的编译与安装。若要**强制全部重装**：
+（依次安装 Lua、GoogleTest、Protobuf、gRPC、gflags；gRPC **使用已安装到 `library/protobuf` 的 Protobuf**。）若对应 **`library/<组件>/`** 下已有安装结果，会**跳过**该组件。若要**强制全部重装**：
 
 ```bash
 EVRP_FORCE_THIRD_PARTY_INSTALL=1 ./scripts/install-third-party-to-library.sh
