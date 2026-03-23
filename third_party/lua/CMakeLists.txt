@@ -16,11 +16,11 @@ target_include_directories(lua PUBLIC ${LUA_DIR})
 target_compile_definitions(lua PRIVATE LUA_USE_LINUX)
 target_link_libraries(lua PUBLIC m)
 
-# 安装到 <CMAKE_INSTALL_PREFIX>/lua/（默认前缀为 <repo>/library），供后续构建复用 IMPORTED 库
+# 安装到 <CMAKE_INSTALL_PREFIX>/{lib,include/lua}（前缀一般为 <repo>/library/lua），供主工程 IMPORTED 库查找
 install(
   TARGETS lua
-  ARCHIVE DESTINATION lua/lib
-  LIBRARY DESTINATION lua/lib)
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib)
 install(
   FILES ${LUA_DIR}/lua.h ${LUA_DIR}/lauxlib.h ${LUA_DIR}/lualib.h ${LUA_DIR}/luaconf.h
-  DESTINATION lua/include/lua)
+  DESTINATION include/lua)

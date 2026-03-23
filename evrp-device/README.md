@@ -15,14 +15,13 @@
 
 ## 构建
 
-在仓库根目录（**必须**打开 `EVRP_BUILD_DEVICE`，并安装上述依赖）：
+在仓库根目录安装上述依赖后，**默认**会生成 **`evrp-device`**（与 `evrp` 同一次配置）：
 
 ```bash
-cmake -B build -DEVRP_BUILD_DEVICE=ON
-cmake --build build --target evrp-device
+cmake -B build
+cmake --build build
+# 或：cmake --build build --target evrp-device
 ```
-
-未安装 gRPC 时，不要开启该选项，默认的 `evrp` 主目标仍可正常配置。
 
 生成的可执行文件：`build/evrp-device`（或构建目录下的目标名）。
 

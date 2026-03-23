@@ -1,9 +1,11 @@
 cmake_minimum_required(VERSION 3.14)
 project(evrp LANGUAGES C CXX)
 
-# --- library/ 与 Lua、GoogleTest（安装：scripts/install-third-party-to-library.sh）---
+# --- library/ 与 Lua、GoogleTest、Protobuf（安装：scripts/install-third-party-to-library.sh）---
 set(EVRP_LIBRARY_DIR "${CMAKE_SOURCE_DIR}/library" CACHE PATH
     "Third-party install prefix for this repo")
+list(APPEND CMAKE_PREFIX_PATH "${EVRP_LIBRARY_DIR}")
+list(APPEND CMAKE_PREFIX_PATH "${EVRP_LIBRARY_DIR}/protobuf")
 
 find_library(
   EVRP_LUA_LIB
@@ -29,7 +31,8 @@ endif()
 
 find_package(GTest CONFIG REQUIRED PATHS "${EVRP_LIBRARY_DIR}/googletest" NO_DEFAULT_PATH)
 
-set(CMAKE_CXX_STANDARD 11)
+# Protobuf 5.x / gRPC 需要 C++17；其余源码与之兼容
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -135,58 +138,54 @@ gtest_discover_tests(evrp_tests)
 # ---------------------------------------------------------------------------
 # evrp-device：gRPC 服务端（依赖安装到 library/ 或系统 PATH，见 docs/PROJECT_CONVENTIONS.md）
 # ---------------------------------------------------------------------------
-option(EVRP_BUILD_DEVICE
-       "Build evrp-device gRPC server (needs gRPC C++, protobuf)" OFF)
+find_package(Protobuf REQUIRED)
+find_package(gRPC CONFIG REQUIRED)
+find_package(gflags CONFIG REQUIRED)
 
-if(EVRP_BUILD_DEVICE)
-  find_package(Protobuf REQUIRED)
-  find_package(gRPC CONFIG REQUIRED)
-  find_package(gflags CONFIG REQUIRED)
+set(PROTO_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/proto")
+set(DEVICE_PROTO "${PROTO_ROOT}/evrp/device/v1/device.proto")
+set(GEN_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
 
-  set(PROTO_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/proto")
-  set(DEVICE_PROTO "${PROTO_ROOT}/evrp/device/v1/device.proto")
-  set(GEN_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
+find_program(GRPC_CPP_PLUGIN_PROGRAM NAMES grpc_cpp_plugin REQUIRED
+             HINTS "${EVRP_LIBRARY_DIR}/bin")
+find_program(PROTOC_PROGRAM NAMES protoc REQUIRED
+             HINTS "${EVRP_LIBRARY_DIR}/protobuf/bin" "${EVRP_LIBRARY_DIR}/bin")
 
-  find_program(GRPC_CPP_PLUGIN_PROGRAM NAMES grpc_cpp_plugin REQUIRED
-               HINTS "${EVRP_LIBRARY_DIR}/bin")
-  find_program(PROTOC_PROGRAM NAMES protoc REQUIRED HINTS "${EVRP_LIBRARY_DIR}/bin")
+set(DEVICE_PB_CC "${GEN_DIR}/evrp/device/v1/device.pb.cc")
+set(DEVICE_PB_H "${GEN_DIR}/evrp/device/v1/device.pb.h")
+set(DEVICE_GRPC_CC "${GEN_DIR}/evrp/device/v1/device.grpc.pb.cc")
+set(DEVICE_GRPC_H "${GEN_DIR}/evrp/device/v1/device.grpc.pb.h")
 
-  set(DEVICE_PB_CC "${GEN_DIR}/evrp/device/v1/device.pb.cc")
-  set(DEVICE_PB_H "${GEN_DIR}/evrp/device/v1/device.pb.h")
-  set(DEVICE_GRPC_CC "${GEN_DIR}/evrp/device/v1/device.grpc.pb.cc")
-  set(DEVICE_GRPC_H "${GEN_DIR}/evrp/device/v1/device.grpc.pb.h")
+add_custom_command(
+  OUTPUT ${DEVICE_PB_CC} ${DEVICE_PB_H} ${DEVICE_GRPC_CC} ${DEVICE_GRPC_H}
+  COMMAND ${CMAKE_COMMAND} -E make_directory "${GEN_DIR}/evrp/device/v1"
+  COMMAND
+    ${PROTOC_PROGRAM} --cpp_out=${GEN_DIR} --grpc_out=${GEN_DIR}
+    --plugin=protoc-gen-grpc=${GRPC_CPP_PLUGIN_PROGRAM} -I${PROTO_ROOT}
+    ${DEVICE_PROTO}
+  DEPENDS ${DEVICE_PROTO}
+  COMMENT "Generating protobuf/gRPC sources from device.proto"
+  VERBATIM)
 
-  add_custom_command(
-    OUTPUT ${DEVICE_PB_CC} ${DEVICE_PB_H} ${DEVICE_GRPC_CC} ${DEVICE_GRPC_H}
-    COMMAND ${CMAKE_COMMAND} -E make_directory "${GEN_DIR}/evrp/device/v1"
-    COMMAND
-      ${PROTOC_PROGRAM} --cpp_out=${GEN_DIR} --grpc_out=${GEN_DIR}
-      --plugin=protoc-gen-grpc=${GRPC_CPP_PLUGIN_PROGRAM} -I${PROTO_ROOT}
-      ${DEVICE_PROTO}
-    DEPENDS ${DEVICE_PROTO}
-    COMMENT "Generating protobuf/gRPC sources from device.proto"
-    VERBATIM)
+add_library(evrp_device_proto STATIC ${DEVICE_PB_CC} ${DEVICE_GRPC_CC})
+target_include_directories(evrp_device_proto PUBLIC ${GEN_DIR})
+target_link_libraries(evrp_device_proto PUBLIC protobuf::libprotobuf
+                                               gRPC::grpc++)
 
-  add_library(evrp_device_proto STATIC ${DEVICE_PB_CC} ${DEVICE_GRPC_CC})
-  target_include_directories(evrp_device_proto PUBLIC ${GEN_DIR})
-  target_link_libraries(evrp_device_proto PUBLIC protobuf::libprotobuf
-                                                 gRPC::grpc++)
+add_library(evrp_device_api INTERFACE)
+target_include_directories(evrp_device_api
+                           INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 
-  add_library(evrp_device_api INTERFACE)
-  target_include_directories(evrp_device_api
-                             INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+add_library(
+  evrp_device_grpc STATIC
+  evrp/device/internal/grpc_server_impl.cpp
+  evrp/device/internal/grpc_input_device_service.cpp
+  evrp/device/internal/grpc_device_client.cpp)
+target_include_directories(evrp_device_grpc
+                           PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(evrp_device_grpc PUBLIC evrp_device_proto)
 
-  add_library(
-    evrp_device_grpc STATIC
-    evrp/device/internal/grpc_server_impl.cpp
-    evrp/device/internal/grpc_input_device_service.cpp
-    evrp/device/internal/grpc_device_client.cpp)
-  target_include_directories(evrp_device_grpc
-                             PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-  target_link_libraries(evrp_device_grpc PUBLIC evrp_device_proto)
-
-  add_executable(evrp-device evrp-device/main.cpp
-                             evrp/device/stub_device_host.cpp)
-  target_link_libraries(evrp-device PRIVATE evrp_device_api evrp_device_grpc
-                                            gRPC::grpc++ gflags::gflags)
-endif()
+add_executable(evrp-device evrp-device/main.cpp
+                           evrp/device/stub_device_host.cpp)
+target_link_libraries(evrp-device PRIVATE evrp_device_api evrp_device_grpc
+                                          gRPC::grpc++ gflags::gflags)
