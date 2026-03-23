@@ -29,16 +29,35 @@ api::ApiResult<void> StubDeviceHost::Ping() {
 
 api::ApiResult<void> StubDeviceHost::StartRecording(
     const std::vector<api::DeviceKind>& /*kinds*/) {
-  return Fail(Unimplemented("StartRecording"));
+  std::lock_guard<std::mutex> lock(recording_mu_);
+  if (recording_session_active_) {
+    return Fail(api::ApiError::Make(409, "Recording session already active"));
+  }
+  recording_session_active_ = true;
+  stop_recording_requested_ = false;
+  return api::ApiResult<void>{};
 }
 
 api::ApiResult<void> StubDeviceHost::ReadInputEvents(
     const std::function<void(const api::InputEvent&)>& /*emit*/) {
-  return Fail(Unimplemented("ReadInputEvents"));
+  std::unique_lock<std::mutex> lock(recording_mu_);
+  if (!recording_session_active_) {
+    return Fail(api::ApiError::Make(
+        400, "StartRecording must be called before ReadInputEvents"));
+  }
+  while (!stop_recording_requested_) {
+    recording_cv_.wait(lock);
+  }
+  recording_session_active_ = false;
+  stop_recording_requested_ = false;
+  return api::ApiResult<void>{};
 }
 
 api::ApiResult<void> StubDeviceHost::StopRecording() {
-  return Fail(Unimplemented("StopRecording"));
+  std::lock_guard<std::mutex> lock(recording_mu_);
+  stop_recording_requested_ = true;
+  recording_cv_.notify_all();
+  return api::ApiResult<void>{};
 }
 
 api::ApiResult<void> StubDeviceHost::UploadRecording(
