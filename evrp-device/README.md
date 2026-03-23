@@ -1,6 +1,8 @@
 # evrp-device
 
-设备端 gRPC 服务，实现 `proto/evrp/device/v1/device.proto` 中的 `InputDeviceService`。
+设备端进程：对外暴露 gRPC `InputDeviceService`，**业务与设备核心逻辑**通过 `evrp/device/api/` 中的 **`IDeviceHost`** 交互，不直接使用 proto 类型（见 [`docs/API_LAYER.md`](../docs/API_LAYER.md)）。
+
+gRPC 入口：`evrp-device/grpc/grpc_input_device_service.*` 负责 proto ↔ api 转换。
 
 ## 依赖（构建）
 

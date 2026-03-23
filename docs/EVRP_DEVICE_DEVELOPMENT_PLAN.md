@@ -16,6 +16,8 @@
 
 ## 2. 与现有代码的映射
 
+设备能力应先实现 **`evrp::device::api::IDeviceHost`**（见 [`API_LAYER.md`](./API_LAYER.md)），再由 gRPC 适配器挂到网络；**不要**在核心业务中 include `*.pb.h`。
+
 当前单体程序中的模块可复用到 evrp-device：
 
 | 能力 | 现有代码（参考） | evrp-device 中的职责 |

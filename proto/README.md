@@ -2,7 +2,9 @@
 
 ## 职责
 
-**evrp-device** 通过 `InputDeviceService` 提供：
+业务代码宜通过 **`evrp/device/api/`**（`IDeviceHost` / `IDeviceClient`）与设备能力交互，**不**直接依赖本目录生成的 `*.pb.h`；详见 [`docs/API_LAYER.md`](../docs/API_LAYER.md)。
+
+**evrp-device** 通过 gRPC `InputDeviceService` 提供：
 
 | RPC | 说明 |
 |-----|------|

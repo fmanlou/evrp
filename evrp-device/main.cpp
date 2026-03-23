@@ -1,4 +1,5 @@
 // evrp-device：设备端 gRPC 服务（InputDeviceService）。
+// 业务实现通过 api::IDeviceHost，不直接使用 proto/grpc。
 // 用法: evrp-device [--listen ADDRESS]
 // 默认 ADDRESS = 127.0.0.1:50051
 
@@ -11,7 +12,8 @@
 #include <grpcpp/grpcpp.h>
 #include <grpcpp/health_check_service_interface.h>
 
-#include "device_service.h"
+#include "evrp/device/stub_device_host.h"
+#include "grpc/grpc_input_device_service.h"
 
 namespace {
 
@@ -44,13 +46,14 @@ std::string ParseListen(int argc, char** argv) {
 int main(int argc, char** argv) {
   const std::string listen_addr = ParseListen(argc, argv);
 
-  evrp::device::InputDeviceServiceImpl service;
+  evrp::device::StubDeviceHost host_impl;
+  evrp::device::GrpcInputDeviceService grpc_service(host_impl);
 
   grpc::EnableDefaultHealthCheckService(true);
 
   grpc::ServerBuilder builder;
   builder.AddListeningPort(listen_addr, grpc::InsecureServerCredentials());
-  builder.RegisterService(&service);
+  builder.RegisterService(&grpc_service);
   std::unique_ptr<grpc::Server> server(builder.BuildAndStart());
   if (!server) {
     std::cerr << "evrp-device: failed to listen on " << listen_addr << "\n";

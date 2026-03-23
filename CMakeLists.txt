@@ -144,7 +144,14 @@ if(EVRP_BUILD_DEVICE)
   target_include_directories(evrp_device_proto PUBLIC ${GEN_DIR})
   target_link_libraries(evrp_device_proto PUBLIC protobuf::libprotobuf gRPC::grpc++)
 
-  add_executable(evrp-device evrp-device/main.cpp evrp-device/device_service.cpp)
+  add_library(evrp_device_api INTERFACE)
+  target_include_directories(evrp_device_api INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+
+  add_executable(
+    evrp-device
+    evrp-device/main.cpp
+    evrp/device/stub_device_host.cpp
+    evrp-device/grpc/grpc_input_device_service.cpp)
   target_include_directories(evrp-device PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/evrp-device)
-  target_link_libraries(evrp-device PRIVATE evrp_device_proto gRPC::grpc++)
+  target_link_libraries(evrp-device PRIVATE evrp_device_api evrp_device_proto gRPC::grpc++)
 endif()

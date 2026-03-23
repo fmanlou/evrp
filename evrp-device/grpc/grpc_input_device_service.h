@@ -2,15 +2,18 @@
 
 #include <grpcpp/grpcpp.h>
 
+#include "evrp/device/api/host.h"
 #include "evrp/device/v1/device.grpc.pb.h"
 
 namespace evrp {
 namespace device {
 
-// InputDeviceService 的首版实现：Ping 可用，其余 RPC 返回 UNIMPLEMENTED（后续按 EVRP_DEVICE_DEVELOPMENT_PLAN 填充）。
-class InputDeviceServiceImpl final
+// 将 gRPC InputDeviceService 映射为 api::IDeviceHost；业务实现只依赖 IDeviceHost，不依赖本类。
+class GrpcInputDeviceService final
     : public evrp::device::v1::InputDeviceService::Service {
  public:
+  explicit GrpcInputDeviceService(api::IDeviceHost& host);
+
   grpc::Status StartReadInput(
       grpc::ServerContext* context,
       const evrp::device::v1::StartReadInputRequest* request,
@@ -53,6 +56,9 @@ class InputDeviceServiceImpl final
   grpc::Status Ping(grpc::ServerContext* context,
                     const evrp::device::v1::PingRequest* request,
                     evrp::device::v1::PingResponse* response) override;
+
+ private:
+  api::IDeviceHost& host_;
 };
 
 }  // namespace device
