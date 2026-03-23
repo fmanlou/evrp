@@ -159,6 +159,8 @@ evrp-app
 
 ## 五、实施阶段建议
 
+**evrp-device 细化开发步骤（里程碑、运行时模型、测试）见 [EVRP_DEVICE_DEVELOPMENT_PLAN.md](./EVRP_DEVICE_DEVELOPMENT_PLAN.md)。**
+
 ### 阶段一：协议与接口设计（gRPC）
 - 编写 `.proto`：服务名、RPC 列表、请求/响应消息、流式语义（Unary / streaming）
 - 选用 `grpc_cpp_plugin` 生成 C++ stub 与 service 基类；CMake 集成 `find_package(gRPC)` 或 `FetchContent`/`add_subdirectory` 引入依赖
