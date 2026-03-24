@@ -167,12 +167,12 @@ bool LocalInputListener::wait_for_input_event() {
   if (!listening_active_ || disposed_) {
     return false;
   }
+  std::unique_lock<std::mutex> lock(mu_);
+  if (disposed_ || !listening_active_ || devices_.empty()) {
+    return false;
+  }
   while (true) {
     int fds[32];
-    std::unique_lock<std::mutex> lock(mu_);
-    if (disposed_ || !listening_active_ || devices_.empty()) {
-      return false;
-    }
     size_t n = devices_.size();
     if (n > 32) {
       n = 32;
@@ -184,7 +184,11 @@ bool LocalInputListener::wait_for_input_event() {
     lock.unlock();
     bool ready[32]{};
     int ret = fs_.poll_fds(fds, nfds, -1, ready);
+    lock.lock();
     if (!listening_active_ || disposed_) {
+      return false;
+    }
+    if (devices_.empty()) {
       return false;
     }
     if (ret < 0) {
