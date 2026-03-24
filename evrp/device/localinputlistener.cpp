@@ -126,15 +126,25 @@ std::vector<api::InputEvent> LocalInputListener::read_input_events() {
     return {};
   }
 
+  if (!listening_active_.load()) {
+    return out;
+  }
+
   for (size_t i = 0; i < n; ++i) {
     if (!ready[i]) {
       continue;
+    }
+    if (!listening_active_.load()) {
+      return out;
     }
     int ne = read_events(devices_[i].fd, evbuf, 64);
     if (ne <= 0) {
       continue;
     }
     for (int j = 0; j < ne; ++j) {
+      if (!listening_active_.load()) {
+        return out;
+      }
       if (evbuf[j].type == EV_SYN) {
         continue;
       }
