@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <mutex>
 #include <vector>
 
@@ -10,7 +11,7 @@ namespace evrp::device {
 
 // 进程内输入监听（非 gRPC）：start_listening 打开 evdev 设备；read_input_events 非阻塞
 // 轮询一次（timeout 0），有非 EV_SYN 事件则返回，否则返回空 vector；需 root 或 input 组权限。
-// listening_active_ 为 bool，仅在 mu_ 下读写；read_input_events 在 poll/read 期间持同一把锁。
+// listening_active_ 为 std::atomic<bool>；devices_ 仅在 mu_ 下访问；read_input_events 在 poll/read 期间持锁。
 class LocalInputListener final : public api::IInputListener {
  public:
   LocalInputListener() = default;
@@ -37,7 +38,7 @@ class LocalInputListener final : public api::IInputListener {
 
   FileSystem fs_;
   std::mutex mu_;
-  bool listening_active_{false};
+  std::atomic<bool> listening_active_{false};
   std::vector<TrackedDevice> devices_;
 };
 

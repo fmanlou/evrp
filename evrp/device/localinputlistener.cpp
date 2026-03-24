@@ -58,7 +58,7 @@ void LocalInputListener::close_devices_unlocked() {
 
 bool LocalInputListener::start_listening(const std::vector<api::DeviceKind>& kinds) {
   std::lock_guard<std::mutex> lock(mu_);
-  if (listening_active_) {
+  if (listening_active_.load()) {
     return false;
   }
   close_devices_unlocked();
@@ -102,7 +102,7 @@ bool LocalInputListener::start_listening(const std::vector<api::DeviceKind>& kin
 
 std::vector<api::InputEvent> LocalInputListener::read_input_events() {
   std::lock_guard<std::mutex> lock(mu_);
-  if (!listening_active_ || devices_.empty()) {
+  if (!listening_active_.load() || devices_.empty()) {
     return {};
   }
 
