@@ -30,7 +30,7 @@ class LocalInputListener final : public api::IInputListener {
   // 未先 start_listening、已 cancel_listening（会话已结束）或尚无已打开设备时返回空 vector。
   std::vector<api::InputEvent> read_input_events() override;
 
-  bool wait_for_input_event() override;
+  bool wait_for_input_event(int timeout_ms) override;
 
   void cancel_listening() override;
 

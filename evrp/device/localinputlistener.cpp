@@ -163,8 +163,11 @@ std::vector<api::InputEvent> LocalInputListener::read_input_events() {
   return out;
 }
 
-bool LocalInputListener::wait_for_input_event() {
+bool LocalInputListener::wait_for_input_event(int timeout_ms) {
   if (!listening_active_ || disposed_) {
+    return false;
+  }
+  if (timeout_ms < 0) {
     return false;
   }
   std::unique_lock<std::mutex> lock(mu_);
@@ -177,13 +180,13 @@ bool LocalInputListener::wait_for_input_event() {
     if (n > 32) {
       n = 32;
     }
-    int nfds = static_cast<int>(n);
+    int n_poll = static_cast<int>(n);
     for (size_t i = 0; i < n; ++i) {
       fds[i] = devices_[i].fd;
     }
     lock.unlock();
     bool ready[32]{};
-    int ret = fs_.poll_fds(fds, nfds, -1, ready);
+    int ret = fs_.poll_fds(fds, n_poll, timeout_ms, ready);
     lock.lock();
     if (!listening_active_ || disposed_) {
       return false;
@@ -197,7 +200,12 @@ bool LocalInputListener::wait_for_input_event() {
     if (ret == 0) {
       continue;
     }
-    return true;
+    for (int i = 0; i < n_poll; ++i) {
+      if (ready[i]) {
+        return true;
+      }
+    }
+    continue;
   }
   return false;
 }
