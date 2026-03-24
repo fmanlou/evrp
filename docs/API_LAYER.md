@@ -11,7 +11,7 @@
 | `evrp/device/api/inputlistener.h` | **`IInputListener`**：进程内输入监听会话（非 gRPC） |
 | `evrp/device/api/client.h` | **`IDeviceClient`**：业务侧调用设备 |
 | `evrp/device/api/server.h` | **`run_device_server(address, IDeviceHost&)`**：启动服务并阻塞 |
-| `evrp/device/api/client_factory.h` | **`connect_device_client(target)`**：返回 `IDeviceClient` |
+| `evrp/device/api/clientfactory.h` | **`connect_device_client(target)`**：返回 `IDeviceClient` |
 
 ## gRPC / proto 封装位置（实现细节）
 

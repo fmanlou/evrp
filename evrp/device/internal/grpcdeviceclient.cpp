@@ -1,6 +1,6 @@
 // gRPC 客户端实现：仅在本翻译单元包含 gRPC / proto 头文件。
 
-#include "evrp/device/api/client_factory.h"
+#include "evrp/device/api/clientfactory.h"
 
 #include <google/protobuf/empty.pb.h>
 
