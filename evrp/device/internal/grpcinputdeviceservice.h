@@ -4,8 +4,6 @@
 
 #include <grpcpp/grpcpp.h>
 
-#include <atomic>
-
 #include "evrp/device/api/host.h"
 #include "evrp/device/api/inputlistener.h"
 #include "evrp/device/v1/device.grpc.pb.h"
@@ -63,7 +61,6 @@ class GrpcInputDeviceService final
  private:
   api::IDeviceHost& host_;
   api::IInputListener& listener_;
-  std::atomic<bool> input_read_stop_{false};
 };
 
 }  // namespace evrp::device::internal
