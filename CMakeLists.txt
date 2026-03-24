@@ -213,4 +213,5 @@ target_link_libraries(evrp_device_grpc PUBLIC evrp_device_proto)
 
 add_executable(evrp-device evrp-device/main.cpp evrp/device/stubdevicehost.cpp)
 target_link_libraries(evrp-device PRIVATE evrp_device_api evrp_device_grpc
-                                          gRPC::grpc++ gflags::gflags)
+                                          localinputlistener gRPC::grpc++
+                                          gflags::gflags)

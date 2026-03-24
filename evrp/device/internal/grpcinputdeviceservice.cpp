@@ -2,6 +2,8 @@
 
 #include <google/protobuf/empty.pb.h>
 
+#include <chrono>
+#include <thread>
 #include <vector>
 
 namespace evrp::device::internal {
@@ -64,38 +66,74 @@ void DrainUploadStream(
 
 }  // namespace
 
-GrpcInputDeviceService::GrpcInputDeviceService(api::IDeviceHost& host) : host_(host) {}
+GrpcInputDeviceService::GrpcInputDeviceService(api::IDeviceHost& host,
+                                               api::IInputListener& listener)
+    : host_(host), listener_(listener) {}
 
 grpc::Status GrpcInputDeviceService::StartRecording(
     grpc::ServerContext* /*context*/,
     const evrp::device::v1::StartRecordingRequest* request,
     google::protobuf::Empty* /*response*/) {
+  if (input_session_active_.load()) {
+    return grpc::Status(grpc::StatusCode::ALREADY_EXISTS,
+                        "recording session already active");
+  }
   std::vector<api::DeviceKind> kinds;
   kinds.reserve(static_cast<size_t>(request->kinds_size()));
   for (int i = 0; i < request->kinds_size(); ++i) {
     kinds.push_back(FromProtoEnum(request->kinds(i)));
   }
-  auto r = host_.start_recording(kinds);
-  return ToGrpc(r.error);
+  if (!listener_.start_listening(kinds)) {
+    return grpc::Status(grpc::StatusCode::FAILED_PRECONDITION,
+                        "start_listening failed (no devices or already listening)");
+  }
+  input_read_stop_.store(false);
+  input_session_active_.store(true);
+  return grpc::Status::OK;
 }
 
 grpc::Status GrpcInputDeviceService::ReadInputEvents(
-    grpc::ServerContext* /*context*/,
+    grpc::ServerContext* context,
     const google::protobuf::Empty* /*request*/,
     grpc::ServerWriter<evrp::device::v1::InputEvent>* writer) {
-  auto r = host_.read_input_events([&](const api::InputEvent& e) {
-    evrp::device::v1::InputEvent msg;
-    ToProto(e, &msg);
-    writer->Write(msg);
-  });
-  return ToGrpc(r.error);
+  if (!input_session_active_.load()) {
+    return grpc::Status(grpc::StatusCode::FAILED_PRECONDITION,
+                        "start_recording required before read_input_events");
+  }
+
+  while (!input_read_stop_.load() && !context->IsCancelled()) {
+    std::vector<api::InputEvent> batch = listener_.read_input_events();
+    for (const api::InputEvent& e : batch) {
+      evrp::device::v1::InputEvent msg;
+      ToProto(e, &msg);
+      if (!writer->Write(msg)) {
+        listener_.cancel_listening();
+        input_read_stop_.store(false);
+        input_session_active_.store(false);
+        return grpc::Status(grpc::StatusCode::ABORTED, "stream write failed");
+      }
+    }
+    if (!batch.empty()) {
+      continue;
+    }
+    if (!input_read_stop_.load() && !context->IsCancelled()) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+  }
+
+  listener_.cancel_listening();
+  input_read_stop_.store(false);
+  input_session_active_.store(false);
+  return grpc::Status::OK;
 }
 
 grpc::Status GrpcInputDeviceService::StopRecording(
     grpc::ServerContext* /*context*/, const google::protobuf::Empty* /*request*/,
     google::protobuf::Empty* /*response*/) {
-  auto r = host_.stop_recording();
-  return ToGrpc(r.error);
+  input_read_stop_.store(true);
+  listener_.cancel_listening();
+  input_session_active_.store(false);
+  return grpc::Status::OK;
 }
 
 grpc::Status GrpcInputDeviceService::UploadRecording(

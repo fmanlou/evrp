@@ -4,7 +4,10 @@
 
 #include <grpcpp/grpcpp.h>
 
+#include <atomic>
+
 #include "evrp/device/api/host.h"
+#include "evrp/device/api/inputlistener.h"
 #include "evrp/device/v1/device.grpc.pb.h"
 
 namespace evrp::device::internal {
@@ -12,7 +15,7 @@ namespace evrp::device::internal {
 class GrpcInputDeviceService final
     : public evrp::device::v1::InputDeviceService::Service {
  public:
-  explicit GrpcInputDeviceService(api::IDeviceHost& host);
+  GrpcInputDeviceService(api::IDeviceHost& host, api::IInputListener& listener);
 
   grpc::Status StartRecording(
       grpc::ServerContext* context,
@@ -59,6 +62,9 @@ class GrpcInputDeviceService final
 
  private:
   api::IDeviceHost& host_;
+  api::IInputListener& listener_;
+  std::atomic<bool> input_session_active_{false};
+  std::atomic<bool> input_read_stop_{false};
 };
 
 }  // namespace evrp::device::internal

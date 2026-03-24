@@ -12,8 +12,9 @@
 
 namespace evrp::device::api {
 
-int run_device_server(const std::string& listen_address, IDeviceHost& host) {
-  internal::GrpcInputDeviceService grpc_service(host);
+int run_device_server(const std::string& listen_address, IDeviceHost& host,
+                      IInputListener& input_listener) {
+  internal::GrpcInputDeviceService grpc_service(host, input_listener);
 
   grpc::EnableDefaultHealthCheckService(true);
 
