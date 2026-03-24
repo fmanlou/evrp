@@ -41,8 +41,8 @@ api::InputEvent to_api_input_event(api::DeviceKind device, const Event& ev) {
 }  // namespace
 
 LocalInputListener::~LocalInputListener() {
-  std::lock_guard<std::mutex> lock(mu_);
   listening_active_ = false;
+  std::lock_guard<std::mutex> lock(mu_);
   close_devices_unlocked();
 }
 
@@ -145,8 +145,8 @@ std::vector<api::InputEvent> LocalInputListener::read_input_events() {
 }
 
 void LocalInputListener::cancel_listening() {
-  std::lock_guard<std::mutex> lock(mu_);
   listening_active_ = false;
+  std::lock_guard<std::mutex> lock(mu_);
   close_devices_unlocked();
 }
 
