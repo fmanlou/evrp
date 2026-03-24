@@ -101,30 +101,20 @@ bool LocalInputListener::start_listening(const std::vector<api::DeviceKind>& kin
 }
 
 std::vector<api::InputEvent> LocalInputListener::read_input_events() {
-  std::vector<TrackedDevice> local;
-  {
-    std::lock_guard<std::mutex> lock(mu_);
-    if (!listening_active_ || devices_.empty()) {
-      return {};
-    }
-    local = devices_;
-  }
-  if (local.size() > 32) {
-    local.resize(32);
+  std::lock_guard<std::mutex> lock(mu_);
+  if (!listening_active_ || devices_.empty()) {
+    return {};
   }
 
-  {
-    std::lock_guard<std::mutex> lock(mu_);
-    if (!listening_active_) {
-      return {};
-    }
+  size_t n = devices_.size();
+  if (n > 32) {
+    n = 32;
   }
 
-  const size_t n = local.size();
   std::vector<int> fds;
   fds.reserve(n);
   for (size_t i = 0; i < n; ++i) {
-    fds.push_back(local[i].fd);
+    fds.push_back(devices_[i].fd);
   }
 
   std::vector<api::InputEvent> out;
@@ -136,24 +126,11 @@ std::vector<api::InputEvent> LocalInputListener::read_input_events() {
     return {};
   }
 
-  {
-    std::lock_guard<std::mutex> lock(mu_);
-    if (!listening_active_) {
-      return {};
-    }
-  }
-
   for (size_t i = 0; i < n; ++i) {
     if (!ready[i]) {
       continue;
     }
-    {
-      std::lock_guard<std::mutex> lock(mu_);
-      if (!listening_active_) {
-        return {};
-      }
-    }
-    int ne = read_events(local[i].fd, evbuf, 64);
+    int ne = read_events(devices_[i].fd, evbuf, 64);
     if (ne <= 0) {
       continue;
     }
@@ -161,13 +138,7 @@ std::vector<api::InputEvent> LocalInputListener::read_input_events() {
       if (evbuf[j].type == EV_SYN) {
         continue;
       }
-      out.push_back(to_api_input_event(local[i].kind, evbuf[j]));
-    }
-  }
-  {
-    std::lock_guard<std::mutex> lock(mu_);
-    if (!listening_active_) {
-      return {};
+      out.push_back(to_api_input_event(devices_[i].kind, evbuf[j]));
     }
   }
   return out;

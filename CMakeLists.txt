@@ -193,8 +193,12 @@ target_include_directories(evrp_device_api
                            INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_library(localinputlistener STATIC evrp/device/localinputlistener.cpp)
-target_include_directories(localinputlistener PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(localinputlistener PUBLIC evrp_device_api PRIVATE inputdevice)
+target_include_directories(localinputlistener
+                           PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(
+  localinputlistener
+  PUBLIC evrp_device_api
+  PRIVATE inputdevice)
 
 add_library(
   evrp_device_grpc STATIC
@@ -205,6 +209,5 @@ target_include_directories(evrp_device_grpc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(evrp_device_grpc PUBLIC evrp_device_proto)
 
 add_executable(evrp-device evrp-device/main.cpp evrp/device/stubdevicehost.cpp)
-target_link_libraries(
-  evrp-device PRIVATE evrp_device_api evrp_device_grpc gRPC::grpc++
-                      gflags::gflags)
+target_link_libraries(evrp-device PRIVATE evrp_device_api evrp_device_grpc
+                                          gRPC::grpc++ gflags::gflags)
