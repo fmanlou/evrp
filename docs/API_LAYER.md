@@ -30,7 +30,7 @@ CMake 目标 **`evrp_device_grpc`**（静态库）聚合上述实现；可执行
 ```
 业务 / main.cpp / 设备核心
     → 仅 include evrp/device/api/*.h；gRPC 进程可使用 `stubdevicehost.h`（实现 IDeviceHost 的桩）
-    → 进程内输入监听见 `localinputlistener.h`（`LocalInputListener` 实现 `IInputListener`：`start_listening` / `read_input_events`→`vector<InputEvent>`；`cancel_listening` 结束监听，可在 read 前调用；非 IDeviceHost）
+    → 进程内输入监听见 `localinputlistener.h`（`LocalInputListener` 实现 `IInputListener`：`start_listening` 打开 evdev、`read_input_events` 非阻塞轮询一次；`cancel_listening` 关闭设备；通常需读 `/dev/input/event*` 的权限；非 IDeviceHost）
     → 实现 IDeviceHost 时不包含 grpc
 
 evrp_device_grpc（内部 .cpp）

@@ -194,7 +194,7 @@ target_include_directories(evrp_device_api
 
 add_library(localinputlistener STATIC evrp/device/localinputlistener.cpp)
 target_include_directories(localinputlistener PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(localinputlistener PUBLIC evrp_device_api)
+target_link_libraries(localinputlistener PUBLIC evrp_device_api PRIVATE inputdevice)
 
 add_library(
   evrp_device_grpc STATIC
