@@ -162,6 +162,10 @@ std::vector<api::InputEvent> LocalInputListener::read_input_events() {
   return out;
 }
 
+bool LocalInputListener::is_listening() const {
+  return listening_active_;
+}
+
 void LocalInputListener::cancel_listening() {
   listening_active_ = false;
   std::lock_guard<std::mutex> lock(mu_);

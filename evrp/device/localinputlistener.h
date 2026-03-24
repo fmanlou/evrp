@@ -32,6 +32,8 @@ class LocalInputListener final : public api::IInputListener {
 
   void cancel_listening() override;
 
+  bool is_listening() const override;
+
  private:
   struct TrackedDevice {
     int fd{-1};
