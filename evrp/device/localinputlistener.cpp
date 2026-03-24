@@ -40,11 +40,9 @@ api::InputEvent to_api_input_event(api::DeviceKind device, const Event& ev) {
 
 }  // namespace
 
-LocalInputListener::~LocalInputListener() {
-  listening_active_ = false;
-  std::lock_guard<std::mutex> lock(mu_);
-  close_devices_unlocked();
-}
+void LocalInputListener::dispose() { cancel_listening(); }
+
+LocalInputListener::~LocalInputListener() { dispose(); }
 
 void LocalInputListener::close_devices_unlocked() {
   for (auto& d : devices_) {
