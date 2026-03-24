@@ -191,9 +191,6 @@ bool LocalInputListener::wait_for_input_event(int timeout_ms) {
     if (!listening_active_ || disposed_) {
       return false;
     }
-    if (devices_.empty()) {
-      return false;
-    }
     if (ret < 0) {
       continue;
     }
