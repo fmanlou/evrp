@@ -74,7 +74,7 @@ grpc::Status GrpcInputDeviceService::StartRecording(
     grpc::ServerContext* /*context*/,
     const evrp::device::v1::StartRecordingRequest* request,
     google::protobuf::Empty* /*response*/) {
-  if (input_session_active_.load()) {
+  if (listener_.is_listening()) {
     return grpc::Status(grpc::StatusCode::ALREADY_EXISTS,
                         "recording session already active");
   }
@@ -88,7 +88,6 @@ grpc::Status GrpcInputDeviceService::StartRecording(
                         "start_listening failed (no devices or already listening)");
   }
   input_read_stop_.store(false);
-  input_session_active_.store(true);
   return grpc::Status::OK;
 }
 
@@ -96,7 +95,7 @@ grpc::Status GrpcInputDeviceService::ReadInputEvents(
     grpc::ServerContext* context,
     const google::protobuf::Empty* /*request*/,
     grpc::ServerWriter<evrp::device::v1::InputEvent>* writer) {
-  if (!input_session_active_.load()) {
+  if (!listener_.is_listening()) {
     return grpc::Status(grpc::StatusCode::FAILED_PRECONDITION,
                         "start_recording required before read_input_events");
   }
@@ -109,7 +108,6 @@ grpc::Status GrpcInputDeviceService::ReadInputEvents(
       if (!writer->Write(msg)) {
         listener_.cancel_listening();
         input_read_stop_.store(false);
-        input_session_active_.store(false);
         return grpc::Status(grpc::StatusCode::ABORTED, "stream write failed");
       }
     }
@@ -123,7 +121,6 @@ grpc::Status GrpcInputDeviceService::ReadInputEvents(
 
   listener_.cancel_listening();
   input_read_stop_.store(false);
-  input_session_active_.store(false);
   return grpc::Status::OK;
 }
 
@@ -132,7 +129,6 @@ grpc::Status GrpcInputDeviceService::StopRecording(
     google::protobuf::Empty* /*response*/) {
   input_read_stop_.store(true);
   listener_.cancel_listening();
-  input_session_active_.store(false);
   return grpc::Status::OK;
 }
 

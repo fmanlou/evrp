@@ -63,7 +63,6 @@ class GrpcInputDeviceService final
  private:
   api::IDeviceHost& host_;
   api::IInputListener& listener_;
-  std::atomic<bool> input_session_active_{false};
   std::atomic<bool> input_read_stop_{false};
 };
 
