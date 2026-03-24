@@ -58,7 +58,8 @@ void LocalInputListener::close_devices_unlocked() {
   devices_.clear();
 }
 
-bool LocalInputListener::start_listening(const std::vector<api::DeviceKind>& kinds) {
+bool LocalInputListener::start_listening(
+    const std::vector<api::DeviceKind>& kinds) {
   std::lock_guard<std::mutex> lock(mu_);
   if (disposed_) {
     return false;
@@ -162,9 +163,42 @@ std::vector<api::InputEvent> LocalInputListener::read_input_events() {
   return out;
 }
 
-bool LocalInputListener::is_listening() const {
-  return listening_active_;
+bool LocalInputListener::wait_for_input_event() {
+  if (!listening_active_ || disposed_) {
+    return false;
+  }
+  while (true) {
+    int fds[32];
+    std::unique_lock<std::mutex> lock(mu_);
+    if (disposed_ || !listening_active_ || devices_.empty()) {
+      return false;
+    }
+    size_t n = devices_.size();
+    if (n > 32) {
+      n = 32;
+    }
+    int nfds = static_cast<int>(n);
+    for (size_t i = 0; i < n; ++i) {
+      fds[i] = devices_[i].fd;
+    }
+    lock.unlock();
+    bool ready[32]{};
+    int ret = fs_.poll_fds(fds, nfds, -1, ready);
+    if (!listening_active_ || disposed_) {
+      return false;
+    }
+    if (ret < 0) {
+      continue;
+    }
+    if (ret == 0) {
+      continue;
+    }
+    return true;
+  }
+  return false;
 }
+
+bool LocalInputListener::is_listening() const { return listening_active_; }
 
 void LocalInputListener::cancel_listening() {
   listening_active_ = false;
