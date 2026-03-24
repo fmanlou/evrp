@@ -11,7 +11,7 @@ namespace evrp::device {
 
 // 进程内输入监听（非 gRPC）：start_listening 打开 evdev 设备；read_input_events 非阻塞
 // 轮询一次（timeout 0），有非 EV_SYN 事件则返回，否则返回空 vector；需 root 或 input 组权限。
-// dispose() 在 cancel_listening 返回后再持锁置 disposed_；disposed_ 为 std::atomic<bool>（C++20 起可按 bool 读写）；devices_ 仅在 mu_ 下访问。
+// dispose() 在 cancel_listening 返回后再持锁置 disposed_；listening_active_/disposed_ 为 std::atomic<bool>（C++20 起可按 bool 读写）；devices_ 仅在 mu_ 下访问。
 class LocalInputListener final : public api::IInputListener {
  public:
   LocalInputListener() = default;

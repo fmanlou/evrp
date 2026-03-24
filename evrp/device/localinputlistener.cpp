@@ -63,7 +63,7 @@ bool LocalInputListener::start_listening(const std::vector<api::DeviceKind>& kin
   if (disposed_) {
     return false;
   }
-  if (listening_active_.load()) {
+  if (listening_active_) {
     return false;
   }
   close_devices_unlocked();
@@ -110,7 +110,7 @@ std::vector<api::InputEvent> LocalInputListener::read_input_events() {
   if (disposed_) {
     return {};
   }
-  if (!listening_active_.load() || devices_.empty()) {
+  if (!listening_active_ || devices_.empty()) {
     return {};
   }
 
@@ -134,7 +134,7 @@ std::vector<api::InputEvent> LocalInputListener::read_input_events() {
     return {};
   }
 
-  if (!listening_active_.load()) {
+  if (!listening_active_) {
     return out;
   }
 
@@ -142,7 +142,7 @@ std::vector<api::InputEvent> LocalInputListener::read_input_events() {
     if (!ready[i]) {
       continue;
     }
-    if (!listening_active_.load()) {
+    if (!listening_active_) {
       return out;
     }
     int ne = read_events(devices_[i].fd, evbuf, 64);
@@ -150,7 +150,7 @@ std::vector<api::InputEvent> LocalInputListener::read_input_events() {
       continue;
     }
     for (int j = 0; j < ne; ++j) {
-      if (!listening_active_.load()) {
+      if (!listening_active_) {
         return out;
       }
       if (evbuf[j].type == EV_SYN) {
@@ -163,11 +163,11 @@ std::vector<api::InputEvent> LocalInputListener::read_input_events() {
 }
 
 void LocalInputListener::cancel_listening() {
+  listening_active_ = false;
   std::lock_guard<std::mutex> lock(mu_);
   if (disposed_) {
     return;
   }
-  listening_active_ = false;
   close_devices_unlocked();
 }
 
