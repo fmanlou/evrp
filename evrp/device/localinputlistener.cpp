@@ -170,7 +170,7 @@ bool LocalInputListener::wait_for_input_event(int timeout_ms) {
   if (timeout_ms < 0) {
     return false;
   }
-  std::unique_lock<std::mutex> lock(mu_);
+  std::lock_guard<std::mutex> lock(mu_);
   if (disposed_ || !listening_active_ || devices_.empty()) {
     return false;
   }
@@ -184,10 +184,8 @@ bool LocalInputListener::wait_for_input_event(int timeout_ms) {
     for (size_t i = 0; i < n; ++i) {
       fds[i] = devices_[i].fd;
     }
-    lock.unlock();
     bool ready[32]{};
     int ret = fs_.poll_fds(fds, n_poll, timeout_ms, ready);
-    lock.lock();
     if (!listening_active_ || disposed_) {
       return false;
     }
