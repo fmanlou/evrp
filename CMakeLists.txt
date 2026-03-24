@@ -199,6 +199,9 @@ target_link_libraries(
   localinputlistener
   PUBLIC evrp_device_api
   PRIVATE inputdevice)
+set_target_properties(
+  localinputlistener
+  PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
 
 add_library(
   evrp_device_grpc STATIC

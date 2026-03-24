@@ -40,7 +40,11 @@ api::InputEvent to_api_input_event(api::DeviceKind device, const Event& ev) {
 
 }  // namespace
 
-void LocalInputListener::dispose() { cancel_listening(); }
+void LocalInputListener::dispose() {
+  cancel_listening();
+  std::lock_guard<std::mutex> lock(mu_);
+  disposed_ = true;
+}
 
 LocalInputListener::~LocalInputListener() { dispose(); }
 
@@ -56,6 +60,9 @@ void LocalInputListener::close_devices_unlocked() {
 
 bool LocalInputListener::start_listening(const std::vector<api::DeviceKind>& kinds) {
   std::lock_guard<std::mutex> lock(mu_);
+  if (disposed_) {
+    return false;
+  }
   if (listening_active_.load()) {
     return false;
   }
@@ -100,6 +107,9 @@ bool LocalInputListener::start_listening(const std::vector<api::DeviceKind>& kin
 
 std::vector<api::InputEvent> LocalInputListener::read_input_events() {
   std::lock_guard<std::mutex> lock(mu_);
+  if (disposed_) {
+    return {};
+  }
   if (!listening_active_.load() || devices_.empty()) {
     return {};
   }
@@ -153,8 +163,11 @@ std::vector<api::InputEvent> LocalInputListener::read_input_events() {
 }
 
 void LocalInputListener::cancel_listening() {
-  listening_active_ = false;
   std::lock_guard<std::mutex> lock(mu_);
+  if (disposed_) {
+    return;
+  }
+  listening_active_ = false;
   close_devices_unlocked();
 }
 
