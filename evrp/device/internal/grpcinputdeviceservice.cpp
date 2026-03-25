@@ -2,6 +2,8 @@
 
 #include <google/protobuf/empty.pb.h>
 
+#include <chrono>
+#include <thread>
 #include <vector>
 
 namespace evrp::device::internal {
@@ -94,12 +96,12 @@ grpc::Status GrpcInputDeviceService::ReadInputEvents(
     grpc::ServerContext* context,
     const google::protobuf::Empty* /*request*/,
     grpc::ServerWriter<evrp::device::v1::InputEvent>* writer) {
-  if (!listener_.is_listening()) {
-    return grpc::Status(grpc::StatusCode::FAILED_PRECONDITION,
-                        "start_recording required before read_input_events");
-  }
-
-  while (listener_.is_listening() && !context->IsCancelled()) {
+  while (!context->IsCancelled()) {
+    if (!listener_.is_listening()) {
+      std::this_thread::sleep_for(
+          std::chrono::milliseconds(k_input_wait_poll_timeout_ms));
+      continue;
+    }
     if (!listener_.wait_for_input_event(k_input_wait_poll_timeout_ms)) {
       if (!listener_.is_listening() || context->IsCancelled()) {
         break;
@@ -107,6 +109,9 @@ grpc::Status GrpcInputDeviceService::ReadInputEvents(
       continue;
     }
     std::vector<api::InputEvent> batch = listener_.read_input_events();
+    if (batch.empty()) {
+      continue;
+    }
     for (const api::InputEvent& e : batch) {
       evrp::device::v1::InputEvent msg;
       ToProto(e, &msg);
