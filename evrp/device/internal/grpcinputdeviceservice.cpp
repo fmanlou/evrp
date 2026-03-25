@@ -1,5 +1,7 @@
 #include "evrp/device/internal/grpcinputdeviceservice.h"
 
+#include "evrp/device/api/deviceprotoconv.h"
+
 #include <google/protobuf/empty.pb.h>
 
 #include <chrono>
@@ -17,45 +19,6 @@ grpc::Status ToGrpc(const api::ApiError& e) {
     return grpc::Status(grpc::StatusCode::UNIMPLEMENTED, e.message);
   }
   return grpc::Status(grpc::StatusCode::UNKNOWN, e.message);
-}
-
-evrp::device::v1::DeviceKind ToProtoEnum(api::DeviceKind k) {
-  switch (k) {
-    case api::DeviceKind::kTouchpad:
-      return evrp::device::v1::DEVICE_KIND_TOUCHPAD;
-    case api::DeviceKind::kTouchscreen:
-      return evrp::device::v1::DEVICE_KIND_TOUCHSCREEN;
-    case api::DeviceKind::kMouse:
-      return evrp::device::v1::DEVICE_KIND_MOUSE;
-    case api::DeviceKind::kKeyboard:
-      return evrp::device::v1::DEVICE_KIND_KEYBOARD;
-    default:
-      return evrp::device::v1::DEVICE_KIND_UNSPECIFIED;
-  }
-}
-
-api::DeviceKind FromProtoEnum(evrp::device::v1::DeviceKind k) {
-  switch (k) {
-    case evrp::device::v1::DEVICE_KIND_TOUCHPAD:
-      return api::DeviceKind::kTouchpad;
-    case evrp::device::v1::DEVICE_KIND_TOUCHSCREEN:
-      return api::DeviceKind::kTouchscreen;
-    case evrp::device::v1::DEVICE_KIND_MOUSE:
-      return api::DeviceKind::kMouse;
-    case evrp::device::v1::DEVICE_KIND_KEYBOARD:
-      return api::DeviceKind::kKeyboard;
-    default:
-      return api::DeviceKind::kUnspecified;
-  }
-}
-
-void ToProto(const api::InputEvent& e, evrp::device::v1::InputEvent* p) {
-  p->set_device(ToProtoEnum(e.device));
-  p->set_time_sec(e.time_sec);
-  p->set_time_usec(e.time_usec);
-  p->set_type(e.type);
-  p->set_code(e.code);
-  p->set_value(e.value);
 }
 
 void DrainUploadStream(
@@ -81,10 +44,7 @@ grpc::Status GrpcInputDeviceService::StartRecording(
                         "recording session already active");
   }
   std::vector<api::DeviceKind> kinds;
-  kinds.reserve(static_cast<size_t>(request->kinds_size()));
-  for (int i = 0; i < request->kinds_size(); ++i) {
-    kinds.push_back(FromProtoEnum(request->kinds(i)));
-  }
+  api::FromProto(request->kinds(), &kinds);
   if (!listener_.start_listening(kinds)) {
     return grpc::Status(grpc::StatusCode::FAILED_PRECONDITION,
                         "start_listening failed (no devices or already listening)");
@@ -114,7 +74,7 @@ grpc::Status GrpcInputDeviceService::ReadInputEvents(
     }
     for (const api::InputEvent& e : batch) {
       evrp::device::v1::InputEvent msg;
-      ToProto(e, &msg);
+      api::ToProto(e, &msg);
       if (!writer->Write(msg)) {
         listener_.cancel_listening();
         return grpc::Status(grpc::StatusCode::ABORTED, "stream write failed");

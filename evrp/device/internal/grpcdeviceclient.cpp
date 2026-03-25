@@ -1,6 +1,7 @@
 // gRPC 客户端实现：仅在本翻译单元包含 gRPC / proto 头文件。
 
 #include "evrp/device/api/clientfactory.h"
+#include "evrp/device/api/deviceprotoconv.h"
 
 #include <google/protobuf/empty.pb.h>
 
@@ -16,46 +17,6 @@
 
 namespace evrp::device::api {
 namespace {
-
-evrp::device::v1::DeviceKind ToProtoEnum(DeviceKind k) {
-  switch (k) {
-    case DeviceKind::kTouchpad:
-      return evrp::device::v1::DEVICE_KIND_TOUCHPAD;
-    case DeviceKind::kTouchscreen:
-      return evrp::device::v1::DEVICE_KIND_TOUCHSCREEN;
-    case DeviceKind::kMouse:
-      return evrp::device::v1::DEVICE_KIND_MOUSE;
-    case DeviceKind::kKeyboard:
-      return evrp::device::v1::DEVICE_KIND_KEYBOARD;
-    default:
-      return evrp::device::v1::DEVICE_KIND_UNSPECIFIED;
-  }
-}
-
-void FromProto(const evrp::device::v1::InputEvent& p, InputEvent* e) {
-  switch (p.device()) {
-    case evrp::device::v1::DEVICE_KIND_TOUCHPAD:
-      e->device = DeviceKind::kTouchpad;
-      break;
-    case evrp::device::v1::DEVICE_KIND_TOUCHSCREEN:
-      e->device = DeviceKind::kTouchscreen;
-      break;
-    case evrp::device::v1::DEVICE_KIND_MOUSE:
-      e->device = DeviceKind::kMouse;
-      break;
-    case evrp::device::v1::DEVICE_KIND_KEYBOARD:
-      e->device = DeviceKind::kKeyboard;
-      break;
-    default:
-      e->device = DeviceKind::kUnspecified;
-      break;
-  }
-  e->time_sec = p.time_sec();
-  e->time_usec = p.time_usec();
-  e->type = p.type();
-  e->code = p.code();
-  e->value = p.value();
-}
 
 ApiError FromGrpcStatus(const grpc::Status& s) {
   if (s.ok()) return ApiError::success();
@@ -112,7 +73,7 @@ class GrpcDeviceClient final : public IDeviceClient {
     grpc::ClientContext ctx;
     evrp::device::v1::StartRecordingRequest req;
     for (DeviceKind k : kinds) {
-      req.add_kinds(ToProtoEnum(k));
+      req.add_kinds(ToProto(k));
     }
     google::protobuf::Empty resp;
     grpc::Status s = stub_->StartRecording(&ctx, req, &resp);

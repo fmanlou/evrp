@@ -6,7 +6,7 @@
 
 namespace evrp::device::api {
 
-// 与 proto DeviceKind 对齐；业务层只使用本枚举，不依赖 protobuf。
+// 与 proto DeviceKind 对齐；业务层可只使用本类型。与 device.proto 的互转见 deviceprotoconv.h。
 enum class DeviceKind {
   kUnspecified = 0,
   kTouchpad = 1,
