@@ -2,6 +2,7 @@
 
 #include <atomic>
 #include <mutex>
+#include <set>
 #include <vector>
 
 #include "evrp/device/api/inputlistener.h"
@@ -9,8 +10,8 @@
 
 namespace evrp::device {
 
-// 进程内输入监听（非 gRPC）：start_listening 打开 evdev 设备；read_input_events 非阻塞
-// 轮询一次（timeout 0），有非 EV_SYN 事件则返回，否则返回空 vector；需 root 或 input 组权限。
+// 进程内输入监听（非 gRPC）：start_listening 打开 evdev；wait_for_input_event 阻塞 poll；
+// read_input_events 仅消费其缓存的 poll 结果；需 root 或 input 组权限。
 // dispose() 在 cancel_listening 返回后再持锁置 disposed_；listening_active_/disposed_ 为 std::atomic<bool>（C++20 起可按 bool 读写）；devices_ 仅在 mu_ 下访问。
 class LocalInputListener final : public api::IInputListener {
  public:
@@ -26,8 +27,7 @@ class LocalInputListener final : public api::IInputListener {
 
   bool start_listening(const std::vector<api::DeviceKind>& kinds) override;
 
-  // 单次非阻塞读取；当前无可用非 EV_SYN 事件则返回空 vector。
-  // 未先 start_listening、已 cancel_listening（会话已结束）或尚无已打开设备时返回空 vector。
+  // 消费 wait_for_input_event 缓存的 poll 结果；无匹配缓存时返回空 vector。
   std::vector<api::InputEvent> read_input_events() override;
 
   bool wait_for_input_event(int timeout_ms) override;
@@ -42,13 +42,14 @@ class LocalInputListener final : public api::IInputListener {
     api::DeviceKind kind{api::DeviceKind::kUnspecified};
   };
 
-  void close_devices_unlocked();
+  void close_devices();
 
   FileSystem fs_;
   std::mutex mu_;
   std::atomic<bool> listening_active_{false};
   std::atomic<bool> disposed_{false};
   std::vector<TrackedDevice> devices_;
+  std::set<size_t> poll_ready_indices_;
 };
 
 }  // namespace evrp::device

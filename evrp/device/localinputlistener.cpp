@@ -48,7 +48,7 @@ void LocalInputListener::dispose() {
 
 LocalInputListener::~LocalInputListener() { dispose(); }
 
-void LocalInputListener::close_devices_unlocked() {
+void LocalInputListener::close_devices() {
   for (auto& d : devices_) {
     if (d.fd >= 0) {
       fs_.close_fd(d.fd);
@@ -56,6 +56,7 @@ void LocalInputListener::close_devices_unlocked() {
     d.fd = -1;
   }
   devices_.clear();
+  poll_ready_indices_.clear();
 }
 
 bool LocalInputListener::start_listening(
@@ -67,7 +68,6 @@ bool LocalInputListener::start_listening(
   if (listening_active_) {
     return false;
   }
-  close_devices_unlocked();
 
   std::unordered_set<std::string> opened_paths;
   std::vector<TrackedDevice> new_devices;
@@ -120,27 +120,15 @@ std::vector<api::InputEvent> LocalInputListener::read_input_events() {
     n = 32;
   }
 
-  std::vector<int> fds;
-  fds.reserve(n);
-  for (size_t i = 0; i < n; ++i) {
-    fds.push_back(devices_[i].fd);
+  if (poll_ready_indices_.empty()) {
+    return {};
   }
 
   std::vector<api::InputEvent> out;
   Event evbuf[64];
-  bool ready[32]{};
 
-  int ret = fs_.poll_fds(fds.data(), static_cast<int>(fds.size()), 0, ready);
-  if (ret <= 0) {
-    return {};
-  }
-
-  if (!listening_active_) {
-    return out;
-  }
-
-  for (size_t i = 0; i < n; ++i) {
-    if (!ready[i]) {
+  for (size_t i : poll_ready_indices_) {
+    if (i >= n) {
       continue;
     }
     if (!listening_active_) {
@@ -160,6 +148,7 @@ std::vector<api::InputEvent> LocalInputListener::read_input_events() {
       out.push_back(to_api_input_event(devices_[i].kind, evbuf[j]));
     }
   }
+  poll_ready_indices_.clear();
   return out;
 }
 
@@ -174,35 +163,29 @@ bool LocalInputListener::wait_for_input_event(int timeout_ms) {
   if (disposed_ || !listening_active_ || devices_.empty()) {
     return false;
   }
-  while (true) {
-    int fds[32];
-    size_t n = devices_.size();
-    if (n > 32) {
-      n = 32;
-    }
-    int n_poll = static_cast<int>(n);
-    for (size_t i = 0; i < n; ++i) {
-      fds[i] = devices_[i].fd;
-    }
-    bool ready[32]{};
-    int ret = fs_.poll_fds(fds, n_poll, timeout_ms, ready);
-    if (!listening_active_ || disposed_) {
-      return false;
-    }
-    if (ret < 0) {
-      continue;
-    }
-    if (ret == 0) {
-      continue;
-    }
-    for (int i = 0; i < n_poll; ++i) {
-      if (ready[i]) {
-        return true;
-      }
-    }
-    continue;
+  int fds[32];
+  size_t n = devices_.size();
+  if (n > 32) {
+    n = 32;
   }
-  return false;
+  int n_poll = static_cast<int>(n);
+  for (size_t i = 0; i < n; ++i) {
+    fds[i] = devices_[i].fd;
+  }
+  bool ready[32]{};
+  int ret = fs_.poll_fds(fds, n_poll, timeout_ms, ready);
+  if (!listening_active_ || disposed_) {
+    return false;
+  }
+  if (ret <= 0) {
+    return false;
+  }
+  for (int j = 0; j < n_poll; ++j) {
+    if (ready[j]) {
+      poll_ready_indices_.insert(static_cast<size_t>(j));
+    }
+  }
+  return !poll_ready_indices_.empty();
 }
 
 bool LocalInputListener::is_listening() const { return listening_active_; }
@@ -213,7 +196,7 @@ void LocalInputListener::cancel_listening() {
   if (disposed_) {
     return;
   }
-  close_devices_unlocked();
+  close_devices();
 }
 
 }  // namespace evrp::device

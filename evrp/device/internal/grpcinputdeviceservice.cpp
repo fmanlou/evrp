@@ -2,12 +2,12 @@
 
 #include <google/protobuf/empty.pb.h>
 
-#include <chrono>
-#include <thread>
 #include <vector>
 
 namespace evrp::device::internal {
 namespace {
+
+constexpr int k_input_wait_poll_timeout_ms = 250;
 
 grpc::Status ToGrpc(const api::ApiError& e) {
   if (e.is_ok()) return grpc::Status::OK;
@@ -100,6 +100,12 @@ grpc::Status GrpcInputDeviceService::ReadInputEvents(
   }
 
   while (listener_.is_listening() && !context->IsCancelled()) {
+    if (!listener_.wait_for_input_event(k_input_wait_poll_timeout_ms)) {
+      if (!listener_.is_listening() || context->IsCancelled()) {
+        break;
+      }
+      continue;
+    }
     std::vector<api::InputEvent> batch = listener_.read_input_events();
     for (const api::InputEvent& e : batch) {
       evrp::device::v1::InputEvent msg;
@@ -108,12 +114,6 @@ grpc::Status GrpcInputDeviceService::ReadInputEvents(
         listener_.cancel_listening();
         return grpc::Status(grpc::StatusCode::ABORTED, "stream write failed");
       }
-    }
-    if (!batch.empty()) {
-      continue;
-    }
-    if (listener_.is_listening() && !context->IsCancelled()) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
   }
 
