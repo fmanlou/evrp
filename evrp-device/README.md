@@ -1,8 +1,8 @@
 # evrp-device
 
-设备端进程：入口 **`main.cpp` 仅** 包含 `evrp/device/api/server.h` 与 **`IDeviceHost`** 实现（如 `StubDeviceHost`），**不包含** gRPC 头文件。
+设备端进程：入口 **`main.cpp` 包含 **`evrp/device/server/server.h`** 与 **`IDeviceHost`** 实现（如 `StubDeviceHost`），**不包含** gRPC 头文件。
 
-传输与 proto 全部在 **`evrp/device/internal/*.cpp`** 与 CMake 目标 **`evrp_device_grpc`** 中实现（见 [`docs/API_LAYER.md`](../docs/API_LAYER.md)）。
+传输与 proto 全部在 **`evrp/device/server/*.cpp`**、**`evrp/device/client/*.cpp`** 与 CMake 目标 **`evrp_device_grpc`** 中实现（见 [`docs/API_LAYER.md`](../docs/API_LAYER.md)）。
 
 ## 依赖（构建）
 

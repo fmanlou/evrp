@@ -1,4 +1,4 @@
-#include "evrp/device/localinputlistener.h"
+#include "evrp/device/server/localinputlistener.h"
 
 #include <linux/input-event-codes.h>
 
@@ -8,7 +8,7 @@
 #include "evdev.h"
 #include "inputdevice.h"
 
-namespace evrp::device {
+namespace evrp::device::server {
 
 namespace {
 
@@ -199,4 +199,4 @@ void LocalInputListener::cancel_listening() {
   close_devices();
 }
 
-}  // namespace evrp::device
+}  // namespace evrp::device::server

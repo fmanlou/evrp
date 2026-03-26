@@ -1,14 +1,14 @@
 #pragma once
 
-// 内部实现：仅由 grpcserverimpl.cpp / 本目录 .cpp 包含，业务代码勿 include。
+// 设备端 gRPC 服务实现：由 server/grpcserverimpl.cpp 使用；业务代码勿直接 include。
 
 #include <grpcpp/grpcpp.h>
 
-#include "evrp/device/api/host.h"
 #include "evrp/device/api/inputlistener.h"
+#include "evrp/device/server/host.h"
 #include "evrp/device/v1/device.grpc.pb.h"
 
-namespace evrp::device::internal {
+namespace evrp::device::server {
 
 class GrpcInputDeviceService final
     : public evrp::device::v1::InputDeviceService::Service {
@@ -32,7 +32,7 @@ class GrpcInputDeviceService final
   grpc::Status UploadRecording(
       grpc::ServerContext* context,
       grpc::ServerReaderWriter<evrp::device::v1::UploadRecordingStatus,
-                               evrp::device::v1::UploadRecordingFrame>* stream)
+                             evrp::device::v1::UploadRecordingFrame>* stream)
       override;
 
   grpc::Status PlaybackRecording(
@@ -63,4 +63,4 @@ class GrpcInputDeviceService final
   api::IInputListener& listener_;
 };
 
-}  // namespace evrp::device::internal
+}  // namespace evrp::device::server

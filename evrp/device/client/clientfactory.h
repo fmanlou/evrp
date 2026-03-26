@@ -3,7 +3,7 @@
 #include <memory>
 #include <string>
 
-#include "evrp/device/api/client.h"
+#include "evrp/device/client/client.h"
 
 namespace evrp::device::api {
 

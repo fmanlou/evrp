@@ -3,7 +3,7 @@
 #include <condition_variable>
 #include <mutex>
 
-#include "evrp/device/api/host.h"
+#include "evrp/device/server/host.h"
 
 namespace evrp::device {
 

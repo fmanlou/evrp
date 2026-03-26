@@ -3,7 +3,7 @@
 #include <functional>
 #include <vector>
 
-#include "evrp/device/api/types.h"
+#include "evrp/device/common/types.h"
 
 namespace evrp::device::api {
 

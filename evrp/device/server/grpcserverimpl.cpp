@@ -1,6 +1,6 @@
-// gRPC 服务端启动：仅在本翻译单元包含 gRPC 头文件。
+// gRPC 服务端启动（evrp/device/server）。仅在本翻译单元包含 gRPC 头文件。
 
-#include "evrp/device/api/server.h"
+#include "evrp/device/server/server.h"
 
 #include <iostream>
 #include <memory>
@@ -8,13 +8,14 @@
 #include <grpcpp/grpcpp.h>
 #include <grpcpp/health_check_service_interface.h>
 
-#include "evrp/device/internal/grpcinputdeviceservice.h"
+#include "evrp/device/server/grpcinputdeviceservice.h"
 
 namespace evrp::device::api {
 
 int run_device_server(const std::string& listen_address, IDeviceHost& host,
                       IInputListener& input_listener) {
-  internal::GrpcInputDeviceService grpc_service(host, input_listener);
+  ::evrp::device::server::GrpcInputDeviceService grpc_service(host,
+                                                               input_listener);
 
   grpc::EnableDefaultHealthCheckService(true);
 

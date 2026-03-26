@@ -1,6 +1,6 @@
-#include "evrp/device/internal/grpcinputdeviceservice.h"
+#include "evrp/device/server/grpcinputdeviceservice.h"
 
-#include "evrp/device/api/deviceprotoconv.h"
+#include "evrp/device/common/deviceprotoconv.h"
 
 #include <google/protobuf/empty.pb.h>
 
@@ -8,7 +8,7 @@
 #include <thread>
 #include <vector>
 
-namespace evrp::device::internal {
+namespace evrp::device::server {
 namespace {
 
 constexpr int k_input_wait_poll_timeout_ms = 250;
@@ -185,4 +185,4 @@ grpc::Status GrpcInputDeviceService::Ping(grpc::ServerContext* /*context*/,
   return ToGrpc(r.error);
 }
 
-}  // namespace evrp::device::internal
+}  // namespace evrp::device::server

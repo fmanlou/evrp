@@ -8,7 +8,7 @@
 #include "evrp/device/api/inputlistener.h"
 #include "filesystem.h"
 
-namespace evrp::device {
+namespace evrp::device::server {
 
 // 进程内输入监听（非 gRPC）：start_listening 打开 evdev；wait_for_input_event 阻塞 poll；
 // read_input_events 仅消费其缓存的 poll 结果；需 root 或 input 组权限。
@@ -52,4 +52,4 @@ class LocalInputListener final : public api::IInputListener {
   std::set<size_t> poll_ready_indices_;
 };
 
-}  // namespace evrp::device
+}  // namespace evrp::device::server
