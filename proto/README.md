@@ -2,7 +2,7 @@
 
 ## 职责
 
-业务代码通过 **`evrp/device/{api,internal,server}/`**（如 `server/server.h`、`IDeviceHost` 等）访问设备端能力，**不** include 本目录生成的 `*.pb.h` 或 gRPC（proto 互转见 `internal/deviceprotoconv.h`）；详见 [`docs/API_LAYER.md`](../docs/API_LAYER.md)。
+业务代码通过 **`evrp/device/{api,internal,server}/`**（如 `server/server.h` 等）访问设备端能力，**不** include 本目录生成的 `*.pb.h` 或 gRPC（proto 互转见 `internal/deviceprotoconv.h`）；详见 [`docs/API_LAYER.md`](../docs/API_LAYER.md)。
 
 **evrp-device** 通过 gRPC `InputDeviceService` 提供：
 

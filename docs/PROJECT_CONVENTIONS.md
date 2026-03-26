@@ -65,5 +65,5 @@ cmake --build build
 ## C++ 命名（本仓库业务代码）
 
 - **函数、方法、自由函数**：`snake_case`（例如 `run_device_server`、`read_input_events`）。
-- **类型**（`class` / `struct` / `enum` / `using`）：`PascalCase`（例如 `IDeviceHost`、`ApiResult`）。
-- **与 gRPC / protobuf 生成代码的接口**：保持生成器产生的名称（如 `InputDeviceService::ReadInputEvents`），适配层在调用 `IDeviceHost` 时再转为上述业务命名。
+- **类型**（`class` / `struct` / `enum` / `using`）：`PascalCase`（例如 `IInputListener`、`ApiResult`）。
+- **与 gRPC / protobuf 生成代码的接口**：保持生成器产生的名称（如 `InputDeviceService::ReadInputEvents`），适配层再转为 `api` 层类型与命名。
