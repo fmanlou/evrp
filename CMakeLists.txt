@@ -214,12 +214,11 @@ set_target_properties(
 add_library(
   evrp_device_grpc STATIC
   evrp/device/server/grpcserverimpl.cpp
-  evrp/device/server/grpcinputdeviceservice.cpp
-  evrp/device/client/grpcdeviceclient.cpp)
+  evrp/device/server/grpcinputdeviceservice.cpp)
 target_include_directories(evrp_device_grpc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(evrp_device_grpc PUBLIC evrp_device_proto deviceprotoconv)
 
-add_executable(evrp-device evrp-device/main.cpp evrp/device/stubdevicehost.cpp)
+add_executable(evrp-device evrp-device/main.cpp)
 target_link_libraries(evrp-device PRIVATE evrp_device_api evrp_device_grpc
                                           localinputlistener gRPC::grpc++
                                           gflags::gflags)

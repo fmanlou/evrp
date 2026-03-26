@@ -5,7 +5,6 @@
 #include <grpcpp/grpcpp.h>
 
 #include "evrp/device/api/inputlistener.h"
-#include "evrp/device/server/host.h"
 #include "evrp/device/v1/device.grpc.pb.h"
 
 namespace evrp::device::server {
@@ -13,7 +12,7 @@ namespace evrp::device::server {
 class GrpcInputDeviceService final
     : public evrp::device::v1::InputDeviceService::Service {
  public:
-  GrpcInputDeviceService(api::IDeviceHost& host, api::IInputListener& listener);
+  explicit GrpcInputDeviceService(api::IInputListener& listener);
 
   grpc::Status StartRecording(
       grpc::ServerContext* context,
@@ -59,7 +58,6 @@ class GrpcInputDeviceService final
                     evrp::device::v1::PingResponse* response) override;
 
  private:
-  api::IDeviceHost& host_;
   api::IInputListener& listener_;
 };
 

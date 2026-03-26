@@ -16,7 +16,7 @@
 
 ## 2. 与现有代码的映射
 
-设备能力应先实现 **`evrp::device::api::IDeviceHost`**（见 [`API_LAYER.md`](./API_LAYER.md)）；启动服务用 **`api::run_device_server`**，**不要**在业务或 `main` 中 include `grpcpp` / `*.pb.h`。业务侧连接设备用 **`api::connect_device_client`**（实现位于 `evrp_device_grpc`）。
+设备能力应先实现 **`evrp::device::api::IDeviceHost`**（见 [`API_LAYER.md`](./API_LAYER.md)）；启动服务用 **`api::run_device_server`**，**不要**在业务或 `main` 中 include `grpcpp` / `*.pb.h`。业务侧作为 gRPC 客户端连接设备时，使用本仓库生成的 stub 或自行封装（本仓库不再提供独立设备客户端库）。
 
 当前单体程序中的模块可复用到 evrp-device：
 
