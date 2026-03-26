@@ -4,7 +4,7 @@
 
 namespace evrp::device::api {
 
-// 与 proto DeviceKind 对齐。与 device.proto 的互转见 evrp/device/common/deviceprotoconv.h。
+// 与 proto DeviceKind 对齐。与 device.proto 的互转见 evrp/device/internal/deviceprotoconv.h。
 enum class DeviceKind {
   kUnspecified = 0,
   kTouchpad = 1,

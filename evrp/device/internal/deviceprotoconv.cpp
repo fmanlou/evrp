@@ -1,4 +1,4 @@
-#include "evrp/device/common/deviceprotoconv.h"
+#include "evrp/device/internal/deviceprotoconv.h"
 
 namespace evrp::device::api {
 

@@ -1,7 +1,7 @@
 // gRPC 设备客户端实现（evrp/device/client）。仅在本翻译单元包含 gRPC / proto 头文件。
 
 #include "evrp/device/client/clientfactory.h"
-#include "evrp/device/common/deviceprotoconv.h"
+#include "evrp/device/internal/deviceprotoconv.h"
 
 #include <google/protobuf/empty.pb.h>
 

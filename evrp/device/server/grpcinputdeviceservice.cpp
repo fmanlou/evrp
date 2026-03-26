@@ -1,6 +1,6 @@
 #include "evrp/device/server/grpcinputdeviceservice.h"
 
-#include "evrp/device/common/deviceprotoconv.h"
+#include "evrp/device/internal/deviceprotoconv.h"
 
 #include <google/protobuf/empty.pb.h>
 

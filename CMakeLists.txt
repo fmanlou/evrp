@@ -192,7 +192,7 @@ add_library(evrp_device_api INTERFACE)
 target_include_directories(evrp_device_api
                            INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_library(deviceprotoconv STATIC evrp/device/common/deviceprotoconv.cpp)
+add_library(deviceprotoconv STATIC evrp/device/internal/deviceprotoconv.cpp)
 target_include_directories(deviceprotoconv
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(deviceprotoconv PUBLIC evrp_device_api evrp_device_proto)
