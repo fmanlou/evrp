@@ -1,6 +1,6 @@
 // gRPC 服务端启动（evrp/device/server）。仅在本翻译单元包含 gRPC 头文件。
 
-#include "evrp/device/server/server.h"
+#include "evrp/device/api/server.h"
 
 #include <iostream>
 #include <memory>

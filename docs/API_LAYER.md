@@ -1,6 +1,6 @@
 # 设备 API 抽象层（业务不可见 gRPC / proto）
 
-业务代码按角色 include **`evrp/device/api/`**（`IInputListener` 与输入相关 **`api/types.h`**）、**`internal/`**（扩展值类型、`deviceprotoconv`）、**`server/`**（设备端主机与启动服务），**不** `#include` 任何 `*.pb.h`、`grpcpp` 或 `InputDeviceService::Stub`（`internal/deviceprotoconv.h` 除外，供已与 gRPC 同库的适配层使用）。
+业务代码按角色 include **`evrp/device/api/`**（`IInputListener`、**`api/types.h`**、**`api/server.h`**（`run_device_server`））、**`internal/`**（扩展值类型、`deviceprotoconv`）；设备端 gRPC 与 `LocalInputListener` 等实现在 **`evrp/device/server/`** 源码中，由 **`evrp_device_grpc`** 与可执行文件链接，**不** `#include` 任何 `*.pb.h`、`grpcpp` 或 `InputDeviceService::Stub`（`internal/deviceprotoconv.h` 除外，供已与 gRPC 同库的适配层使用）。
 
 ## 公共头文件（无 gRPC，除 deviceprotoconv）
 
@@ -10,7 +10,7 @@
 | `evrp/device/api/inputlistener.h` | **`IInputListener`**：进程内输入监听会话（非 gRPC） |
 | `evrp/device/internal/types.h` | 其余值类型与 `ApiResult` / `ApiError`（依赖 `api/types.h`） |
 | `evrp/device/internal/deviceprotoconv.h` | `api` 类型 ↔ `device.proto`（依赖 protobuf，见 CMake **`deviceprotoconv`**） |
-| `evrp/device/server/server.h` | **`run_device_server(address, IInputListener&)`**：启动服务并阻塞；录制相关 RPC 使用 `IInputListener` |
+| `evrp/device/api/server.h` | **`run_device_server(address, IInputListener&)`**：启动服务并阻塞；录制相关 RPC 使用 `IInputListener` |
 
 ## gRPC / proto 封装位置（实现细节）
 

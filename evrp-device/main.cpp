@@ -4,7 +4,7 @@
 #include <string>
 
 #include "evrp/device/server/localinputlistener.h"
-#include "evrp/device/server/server.h"
+#include "evrp/device/api/server.h"
 
 DEFINE_string(listen, "127.0.0.1:50051",
               "Listen address for the device service (e.g. host:port)");
