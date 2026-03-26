@@ -2,7 +2,7 @@
 
 设备端进程：入口 **`main.cpp`** 仅构造 **`LocalInputListener`** 并调用 **`run_device_server`**，**不包含** gRPC 头文件。
 
-传输与 proto 全部在 **`evrp/device/server/*.cpp`** 与 CMake 目标 **`evrp_device_grpc`** 中实现（见 [`docs/API_LAYER.md`](../docs/API_LAYER.md)）。
+传输与 proto 全部在 **`evrp/device/server/*.cpp`** 与 CMake 目标 **`evrp_device_grpc`** 中实现。
 
 ## 依赖（构建）
 
@@ -32,4 +32,4 @@ cmake --build build
 # 或 --listen=... ；查看帮助：./build/evrp-device -help
 ```
 
-当前首版仅 **`Ping`** 返回成功，其余 RPC 为 **UNIMPLEMENTED**（见 `docs/EVRP_DEVICE_DEVELOPMENT_PLAN.md`）。
+当前首版仅 **`Ping`** 返回成功，其余 RPC 为 **UNIMPLEMENTED**（实现见 `evrp/device/server/grpcinputdeviceservice.cpp`）。
