@@ -19,15 +19,8 @@ bool RemoteInputListener::start_listening(
   }
 
   evrp::device::v1::StartRecordingRequest req;
-  bool any = false;
-  for (api::DeviceKind k : kinds) {
-    if (k == api::DeviceKind::kUnspecified) {
-      continue;
-    }
-    req.add_kinds(api::ToProto(k));
-    any = true;
-  }
-  if (!any) {
+  api::ToProto(kinds, req.mutable_kinds());
+  if (req.kinds_size() == 0) {
     return false;
   }
 

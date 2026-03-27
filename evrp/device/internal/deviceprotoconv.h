@@ -19,6 +19,9 @@ void FromProto(const google::protobuf::RepeatedField<int>& proto_kinds,
 std::vector<DeviceKind> FromProto(
     const google::protobuf::RepeatedField<int>& proto_kinds);
 
+void ToProto(const std::vector<DeviceKind>& kinds,
+             google::protobuf::RepeatedField<int>* proto_kinds);
+
 void ToProto(const InputEvent& e, evrp::device::v1::InputEvent* p);
 
 void FromProto(const evrp::device::v1::InputEvent& p, InputEvent* e);

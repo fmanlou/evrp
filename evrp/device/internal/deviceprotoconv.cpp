@@ -48,6 +48,14 @@ std::vector<DeviceKind> FromProto(
   return kinds;
 }
 
+void ToProto(const std::vector<DeviceKind>& kinds,
+             google::protobuf::RepeatedField<int>* proto_kinds) {
+  proto_kinds->Clear();
+  for (DeviceKind k : kinds) {
+    proto_kinds->Add(static_cast<int>(ToProto(k)));
+  }
+}
+
 void ToProto(const InputEvent& e, evrp::device::v1::InputEvent* p) {
   p->set_device(ToProto(e.device));
   p->set_time_sec(e.time_sec);
