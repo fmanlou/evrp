@@ -211,6 +211,16 @@ set_target_properties(
   localinputlistener
   PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
 
+add_library(device_remote_inputlistener STATIC
+            evrp/device/client/remoteinputlistener.cpp)
+target_include_directories(device_remote_inputlistener
+                           PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(device_remote_inputlistener PUBLIC evrp_device_proto
+                                                         deviceprotoconv)
+set_target_properties(
+  device_remote_inputlistener
+  PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
+
 add_library(
   evrp_device_grpc STATIC
   evrp/device/server/grpcserverimpl.cpp

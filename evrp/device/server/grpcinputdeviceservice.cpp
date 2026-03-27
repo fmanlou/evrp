@@ -4,14 +4,10 @@
 
 #include <google/protobuf/empty.pb.h>
 
-#include <chrono>
-#include <thread>
 #include <vector>
 
 namespace evrp::device::server {
 namespace {
-
-constexpr int k_input_wait_poll_timeout_ms = 250;
 
 void DrainUploadStream(
     grpc::ServerReaderWriter<evrp::device::v1::UploadRecordingStatus,
@@ -43,37 +39,31 @@ grpc::Status GrpcInputDeviceService::StartRecording(
   return grpc::Status::OK;
 }
 
-grpc::Status GrpcInputDeviceService::ReadInputEvents(
-    grpc::ServerContext* context,
-    const google::protobuf::Empty* /*request*/,
-    grpc::ServerWriter<evrp::device::v1::InputEvent>* writer) {
-  while (!context->IsCancelled()) {
-    if (!listener_.is_listening()) {
-      std::this_thread::sleep_for(
-          std::chrono::milliseconds(k_input_wait_poll_timeout_ms));
-      continue;
-    }
-    if (!listener_.wait_for_input_event(k_input_wait_poll_timeout_ms)) {
-      if (!listener_.is_listening() || context->IsCancelled()) {
-        break;
-      }
-      continue;
-    }
-    std::vector<api::InputEvent> batch = listener_.read_input_events();
-    if (batch.empty()) {
-      continue;
-    }
-    for (const api::InputEvent& e : batch) {
-      evrp::device::v1::InputEvent msg;
-      api::ToProto(e, &msg);
-      if (!writer->Write(msg)) {
-        listener_.cancel_listening();
-        return grpc::Status(grpc::StatusCode::ABORTED, "stream write failed");
-      }
-    }
+grpc::Status GrpcInputDeviceService::WaitForInputEvent(
+    grpc::ServerContext* /*context*/,
+    const evrp::device::v1::WaitForInputEventRequest* request,
+    evrp::device::v1::WaitForInputEventResponse* response) {
+  if (request->timeout_ms() < 0) {
+    return grpc::Status(grpc::StatusCode::INVALID_ARGUMENT,
+                        "timeout_ms must be >= 0");
   }
+  if (!listener_.is_listening()) {
+    response->set_ready(false);
+    return grpc::Status::OK;
+  }
+  response->set_ready(
+      listener_.wait_for_input_event(request->timeout_ms()));
+  return grpc::Status::OK;
+}
 
-  listener_.cancel_listening();
+grpc::Status GrpcInputDeviceService::ReadInputEvents(
+    grpc::ServerContext* /*context*/,
+    const google::protobuf::Empty* /*request*/,
+    evrp::device::v1::ReadInputEventsResponse* response) {
+  std::vector<api::InputEvent> batch = listener_.read_input_events();
+  for (const api::InputEvent& e : batch) {
+    api::ToProto(e, response->add_events());
+  }
   return grpc::Status::OK;
 }
 

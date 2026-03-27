@@ -9,7 +9,8 @@
 | RPC | 说明 |
 |-----|------|
 | `StartRecording` | 指定 `DeviceKind` 并开始采集（开始录制）→ `Empty` |
-| `ReadInputEvents` | 仅拉取事件流 → `stream InputEvent`（宜在 `StartRecording` 之后） |
+| `WaitForInputEvent` | `timeout_ms`，对应 `wait_for_input_event` → `WaitForInputEventResponse`（`ready`） |
+| `ReadInputEvents` | 一次拉取就绪批次 → `ReadInputEventsResponse`（`repeated InputEvent`） |
 | `StopRecording` | 停止录制 → `Empty` |
 | `UploadRecording` | `UploadRecordingFrame`：开始帧 → 中间帧（`data` + `checksum`）→ 结束帧；下行 `UploadRecordingStatus`（`code` / `message`） |
 | `PlaybackRecording` / `StopPlayback` | 回放当前已缓存资源；`StopPlayback` 返回 `Empty` |

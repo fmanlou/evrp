@@ -19,10 +19,15 @@ class GrpcInputDeviceService final
       const evrp::device::v1::StartRecordingRequest* request,
       google::protobuf::Empty* response) override;
 
+  grpc::Status WaitForInputEvent(
+      grpc::ServerContext* context,
+      const evrp::device::v1::WaitForInputEventRequest* request,
+      evrp::device::v1::WaitForInputEventResponse* response) override;
+
   grpc::Status ReadInputEvents(
       grpc::ServerContext* context,
       const google::protobuf::Empty* request,
-      grpc::ServerWriter<evrp::device::v1::InputEvent>* writer) override;
+      evrp::device::v1::ReadInputEventsResponse* response) override;
 
   grpc::Status StopRecording(grpc::ServerContext* context,
                              const google::protobuf::Empty* request,
