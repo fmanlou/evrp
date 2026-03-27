@@ -74,4 +74,25 @@ void FromProto(const evrp::device::v1::InputEvent& p, InputEvent* e) {
   e->value = p.value();
 }
 
+void FromProto(
+    const google::protobuf::RepeatedPtrField<evrp::device::v1::InputEvent>&
+        proto_events,
+    std::vector<InputEvent>* out) {
+  out->clear();
+  out->reserve(static_cast<size_t>(proto_events.size()));
+  for (int i = 0; i < proto_events.size(); ++i) {
+    InputEvent e;
+    FromProto(proto_events.Get(i), &e);
+    out->push_back(std::move(e));
+  }
+}
+
+std::vector<InputEvent> FromProto(
+    const google::protobuf::RepeatedPtrField<evrp::device::v1::InputEvent>&
+        proto_events) {
+  std::vector<InputEvent> events;
+  FromProto(proto_events, &events);
+  return events;
+}
+
 }  // namespace evrp::device::api

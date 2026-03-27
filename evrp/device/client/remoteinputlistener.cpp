@@ -48,14 +48,7 @@ std::vector<api::InputEvent> RemoteInputListener::read_input_events() {
     return {};
   }
 
-  std::vector<api::InputEvent> out;
-  out.reserve(static_cast<size_t>(resp.events_size()));
-  for (int i = 0; i < resp.events_size(); ++i) {
-    api::InputEvent e;
-    api::FromProto(resp.events(i), &e);
-    out.push_back(std::move(e));
-  }
-  return out;
+  return api::FromProto(resp.events());
 }
 
 bool RemoteInputListener::wait_for_input_event(int timeout_ms) {

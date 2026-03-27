@@ -3,6 +3,7 @@
 #include <vector>
 
 #include <google/protobuf/repeated_field.h>
+#include <google/protobuf/repeated_ptr_field.h>
 
 #include "evrp/device/api/types.h"
 #include "evrp/device/v1/device.pb.h"
@@ -25,5 +26,14 @@ void ToProto(const std::vector<DeviceKind>& kinds,
 void ToProto(const InputEvent& e, evrp::device::v1::InputEvent* p);
 
 void FromProto(const evrp::device::v1::InputEvent& p, InputEvent* e);
+
+void FromProto(
+    const google::protobuf::RepeatedPtrField<evrp::device::v1::InputEvent>&
+        proto_events,
+    std::vector<InputEvent>* out);
+
+std::vector<InputEvent> FromProto(
+    const google::protobuf::RepeatedPtrField<evrp::device::v1::InputEvent>&
+        proto_events);
 
 }  // namespace evrp::device::api
