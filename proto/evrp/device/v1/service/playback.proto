@@ -1,0 +1,16 @@
+// evrp-device：录制上传与回放 RPC。消息类型见 `evrp/device/v1/types.proto`。
+
+syntax = "proto3";
+
+package evrp.device.v1;
+
+import "google/protobuf/empty.proto";
+import "evrp/device/v1/types.proto";
+
+service PlaybackService {
+  rpc UploadRecording(stream UploadRecordingFrame) returns (stream UploadRecordingStatus);
+
+  rpc PlaybackRecording(PlaybackRecordingRequest) returns (PlaybackRecordingResponse);
+
+  rpc StopPlayback(google.protobuf.Empty) returns (google.protobuf.Empty);
+}

@@ -1,6 +1,6 @@
 #pragma once
 
-// 设备端 `InputDeviceService` 实现（非监听类 RPC）；由 grpcserverimpl.cpp 注册。业务代码勿直接 include。
+// 设备端 `InputDeviceService` 实现（光标、保活等）；由 grpcserverimpl.cpp 注册。业务代码勿直接 include。
 
 #include <grpcpp/grpcpp.h>
 
@@ -12,21 +12,6 @@ class GrpcInputDeviceService final
     : public evrp::device::v1::InputDeviceService::Service {
  public:
   GrpcInputDeviceService() = default;
-
-  grpc::Status UploadRecording(
-      grpc::ServerContext* context,
-      grpc::ServerReaderWriter<evrp::device::v1::UploadRecordingStatus,
-                             evrp::device::v1::UploadRecordingFrame>* stream)
-      override;
-
-  grpc::Status PlaybackRecording(
-      grpc::ServerContext* context,
-      const evrp::device::v1::PlaybackRecordingRequest* request,
-      evrp::device::v1::PlaybackRecordingResponse* response) override;
-
-  grpc::Status StopPlayback(grpc::ServerContext* context,
-                            const google::protobuf::Empty* request,
-                            google::protobuf::Empty* response) override;
 
   grpc::Status GetCursorPositionAvailability(
       grpc::ServerContext* context,

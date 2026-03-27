@@ -32,4 +32,4 @@ cmake --build build
 # 或 --listen=... ；查看帮助：./build/evrp-device -help
 ```
 
-当前首版仅 **`Ping`** 返回成功，其余 RPC 为 **UNIMPLEMENTED**（实现见 `evrp/device/server/grpcinputdeviceservice.cpp`）。
+当前首版仅 **`InputListenService`** 与 **`Ping`** 为可用实现；**`InputDeviceService`** / **`PlaybackService`** 的其余 RPC 多为 **UNIMPLEMENTED**（实现见 `evrp/device/server/*.cpp`）。

@@ -1,19 +1,12 @@
-// evrp-device：`InputDeviceService` — 上传、回放、光标、保活等。输入监听见同目录 `inputlisten.proto`（`InputListenService`）。
+// evrp-device：`InputDeviceService` — 光标、保活等。监听见 `inputlisten.proto`；上传 / 回放见 `playback.proto`。
 
 syntax = "proto3";
 
 package evrp.device.v1;
 
-import "google/protobuf/empty.proto";
 import "evrp/device/v1/types.proto";
 
 service InputDeviceService {
-  rpc UploadRecording(stream UploadRecordingFrame) returns (stream UploadRecordingStatus);
-
-  rpc PlaybackRecording(PlaybackRecordingRequest) returns (PlaybackRecordingResponse);
-
-  rpc StopPlayback(google.protobuf.Empty) returns (google.protobuf.Empty);
-
   rpc GetCursorPositionAvailability(GetCursorPositionAvailabilityRequest)
       returns (GetCursorPositionAvailabilityResponse);
 

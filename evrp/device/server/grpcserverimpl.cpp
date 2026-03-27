@@ -10,6 +10,7 @@
 
 #include "evrp/device/server/grpcinputdeviceservice.h"
 #include "evrp/device/server/grpcinputlisten.h"
+#include "evrp/device/server/grpcplaybackservice.h"
 
 namespace evrp::device::api {
 
@@ -17,6 +18,7 @@ int run_device_server(const std::string& listen_address,
                       IInputListener& input_listener) {
   ::evrp::device::server::GrpcInputListenService listen_service(input_listener);
   ::evrp::device::server::GrpcInputDeviceService device_service;
+  ::evrp::device::server::GrpcPlaybackService playback_service;
 
   grpc::EnableDefaultHealthCheckService(true);
 
@@ -24,6 +26,7 @@ int run_device_server(const std::string& listen_address,
   builder.AddListeningPort(listen_address, grpc::InsecureServerCredentials());
   builder.RegisterService(&listen_service);
   builder.RegisterService(&device_service);
+  builder.RegisterService(&playback_service);
   std::unique_ptr<grpc::Server> server(builder.BuildAndStart());
   if (!server) {
     std::cerr << "evrp-device: failed to listen on " << listen_address << "\n";
