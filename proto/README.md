@@ -30,8 +30,8 @@
 ## 布局
 
 - `evrp/device/v1/types.proto` — v1 消息与枚举（无 `service`）
-- `evrp/device/v1/inputlisten.proto` — `InputListenService`（import `types.proto`）
-- `evrp/device/v1/service.proto` — `InputDeviceService`（import `types.proto`）
+- `evrp/device/v1/service/inputlisten.proto` — `InputListenService`（import `types.proto`）
+- `evrp/device/v1/service/service.proto` — `InputDeviceService`（import `types.proto`）
 
 ## 生成 C++ 代码（示例）
 
@@ -41,8 +41,8 @@ protoc -I proto \
   --grpc_out=generated/cpp \
   --plugin=protoc-gen-grpc="$(which grpc_cpp_plugin)" \
   proto/evrp/device/v1/types.proto \
-  proto/evrp/device/v1/inputlisten.proto \
-  proto/evrp/device/v1/service.proto
+  proto/evrp/device/v1/service/inputlisten.proto \
+  proto/evrp/device/v1/service/service.proto
 ```
 
 ## 版本

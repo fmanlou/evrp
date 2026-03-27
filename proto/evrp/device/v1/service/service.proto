@@ -1,4 +1,4 @@
-// evrp-device：`InputDeviceService` — 上传、回放、光标、保活等。输入监听见 inputlisten.proto（`InputListenService`）。
+// evrp-device：`InputDeviceService` — 上传、回放、光标、保活等。输入监听见同目录 `inputlisten.proto`（`InputListenService`）。
 
 syntax = "proto3";
 

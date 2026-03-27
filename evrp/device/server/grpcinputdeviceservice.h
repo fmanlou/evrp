@@ -4,7 +4,7 @@
 
 #include <grpcpp/grpcpp.h>
 
-#include "evrp/device/v1/service.grpc.pb.h"
+#include "evrp/device/v1/service/service.grpc.pb.h"
 
 namespace evrp::device::server {
 

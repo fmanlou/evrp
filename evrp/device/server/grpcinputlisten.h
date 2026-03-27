@@ -5,7 +5,7 @@
 #include <grpcpp/grpcpp.h>
 
 #include "evrp/device/api/inputlistener.h"
-#include "evrp/device/v1/inputlisten.grpc.pb.h"
+#include "evrp/device/v1/service/inputlisten.grpc.pb.h"
 
 namespace evrp::device::server {
 
