@@ -155,7 +155,8 @@ gtest_discover_tests(evrp_tests)
 find_package(gRPC CONFIG REQUIRED)
 
 set(PROTO_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/proto")
-set(DEVICE_PROTO "${PROTO_ROOT}/evrp/device/v1/device.proto")
+set(DEVICE_TYPES_PROTO "${PROTO_ROOT}/evrp/device/v1/types.proto")
+set(DEVICE_SERVICE_PROTO "${PROTO_ROOT}/evrp/device/v1/service.proto")
 set(GEN_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
 
 find_program(
@@ -167,23 +168,27 @@ find_program(
   NAMES protoc REQUIRED
   HINTS "${EVRP_LIBRARY_DIR}/protobuf/bin" "${EVRP_LIBRARY_DIR}/bin")
 
-set(DEVICE_PB_CC "${GEN_DIR}/evrp/device/v1/device.pb.cc")
-set(DEVICE_PB_H "${GEN_DIR}/evrp/device/v1/device.pb.h")
-set(DEVICE_GRPC_CC "${GEN_DIR}/evrp/device/v1/device.grpc.pb.cc")
-set(DEVICE_GRPC_H "${GEN_DIR}/evrp/device/v1/device.grpc.pb.h")
+set(DEVICE_TYPES_PB_CC "${GEN_DIR}/evrp/device/v1/types.pb.cc")
+set(DEVICE_TYPES_PB_H "${GEN_DIR}/evrp/device/v1/types.pb.h")
+set(DEVICE_SERVICE_PB_CC "${GEN_DIR}/evrp/device/v1/service.pb.cc")
+set(DEVICE_SERVICE_PB_H "${GEN_DIR}/evrp/device/v1/service.pb.h")
+set(DEVICE_SERVICE_GRPC_CC "${GEN_DIR}/evrp/device/v1/service.grpc.pb.cc")
+set(DEVICE_SERVICE_GRPC_H "${GEN_DIR}/evrp/device/v1/service.grpc.pb.h")
 
 add_custom_command(
-  OUTPUT ${DEVICE_PB_CC} ${DEVICE_PB_H} ${DEVICE_GRPC_CC} ${DEVICE_GRPC_H}
+  OUTPUT ${DEVICE_TYPES_PB_CC} ${DEVICE_TYPES_PB_H} ${DEVICE_SERVICE_PB_CC}
+         ${DEVICE_SERVICE_PB_H} ${DEVICE_SERVICE_GRPC_CC} ${DEVICE_SERVICE_GRPC_H}
   COMMAND ${CMAKE_COMMAND} -E make_directory "${GEN_DIR}/evrp/device/v1"
   COMMAND
     ${PROTOC_PROGRAM} --cpp_out=${GEN_DIR} --grpc_out=${GEN_DIR}
     --plugin=protoc-gen-grpc=${GRPC_CPP_PLUGIN_PROGRAM} -I${PROTO_ROOT}
-    ${DEVICE_PROTO}
-  DEPENDS ${DEVICE_PROTO}
-  COMMENT "Generating protobuf/gRPC sources from device.proto"
+    ${DEVICE_TYPES_PROTO} ${DEVICE_SERVICE_PROTO}
+  DEPENDS ${DEVICE_TYPES_PROTO} ${DEVICE_SERVICE_PROTO}
+  COMMENT "Generating protobuf/gRPC sources from types.proto and service.proto"
   VERBATIM)
 
-add_library(evrp_device_proto STATIC ${DEVICE_PB_CC} ${DEVICE_GRPC_CC})
+add_library(evrp_device_proto STATIC ${DEVICE_TYPES_PB_CC} ${DEVICE_SERVICE_PB_CC}
+                                     ${DEVICE_SERVICE_GRPC_CC})
 target_include_directories(evrp_device_proto PUBLIC ${GEN_DIR})
 target_link_libraries(evrp_device_proto PUBLIC protobuf::libprotobuf
                                                gRPC::grpc++)

@@ -1,17 +1,12 @@
-// evrp-device gRPC API (v1)
+// evrp-device：v1 消息/枚举定义（无 service）。gRPC 定义见 service.proto。
 //
-// - 读：`StartRecording`（开始录制）指定设备种类并开始采集；`WaitForInputEvent` 对应阻塞等待（与
-//   `IInputListener::wait_for_input_event`）；`ReadInputEvents` 一次拉取已就绪批次（对应
-//   `read_input_events`）；`StopRecording`（停止录制）结束采集。
-// - 回放：evrp-app 将完整录制资源上传到 device；无参请求回放当前已缓存资源（注入）。
-// - 光标：可先 `GetCursorPositionAvailability` 查询读坐标是否可用；再 `ReadCursorPosition` 取屏幕像素坐标。
-//   缓存策略由 evrp-device 实现；本文件不定义查询/列举/删除类 RPC。
+// - 录制读：`StartRecordingRequest`、`WaitForInputEvent*`、`ReadInputEventsResponse`、
+//   `InputEvent` 等与 `IInputListener` / 录制流水线对应。
+// - 上传/回放/光标/保活等请求响应见下文消息。
 
 syntax = "proto3";
 
 package evrp.device.v1;
-
-import "google/protobuf/empty.proto";
 
 option cc_enable_arenas = true;
 
@@ -117,30 +112,3 @@ message ReadCursorPositionResponse {
 message PingRequest {}
 
 message PingResponse {}
-
-// ---------------------------------------------------------------------------
-// 服务
-// ---------------------------------------------------------------------------
-
-service InputDeviceService {
-  rpc StartRecording(StartRecordingRequest) returns (google.protobuf.Empty);
-
-  rpc WaitForInputEvent(WaitForInputEventRequest) returns (WaitForInputEventResponse);
-
-  rpc ReadInputEvents(google.protobuf.Empty) returns (ReadInputEventsResponse);
-
-  rpc StopRecording(google.protobuf.Empty) returns (google.protobuf.Empty);
-
-  rpc UploadRecording(stream UploadRecordingFrame) returns (stream UploadRecordingStatus);
-
-  rpc PlaybackRecording(PlaybackRecordingRequest) returns (PlaybackRecordingResponse);
-
-  rpc StopPlayback(google.protobuf.Empty) returns (google.protobuf.Empty);
-
-  rpc GetCursorPositionAvailability(GetCursorPositionAvailabilityRequest)
-      returns (GetCursorPositionAvailabilityResponse);
-
-  rpc ReadCursorPosition(ReadCursorPositionRequest) returns (ReadCursorPositionResponse);
-
-  rpc Ping(PingRequest) returns (PingResponse);
-}
