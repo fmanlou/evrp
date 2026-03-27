@@ -50,9 +50,9 @@ message ReadInputEventsResponse {
 }
 
 // ---------------------------------------------------------------------------
-// 录制资源：按「开始帧 → 若干中间帧 → 结束帧」上传（client → device，Client-streaming）。
-// 中间帧（数据帧）承载 payload 分片及本帧校验码，避免单次消息过大并便于逐帧校验。
-// 服务端可流式回馈（server → client，Server-streaming），最后一帧含 code / message。
+// 录制资源：按「开始帧 → 若干中间帧 → 结束帧」上传（client → device）。每帧一次
+// `PlaybackService.UploadRecording` Unary，`UploadRecordingStatus` 为当次应答。
+// 中间帧（数据帧）承载 payload 分片及本帧校验码；算法与顺序由收发端约定。
 // ---------------------------------------------------------------------------
 
 // 开始帧：一次上传会话的第一帧。

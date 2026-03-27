@@ -3,23 +3,11 @@
 #include <google/protobuf/empty.pb.h>
 
 namespace evrp::device::server {
-namespace {
-
-void DrainUploadStream(
-    grpc::ServerReaderWriter<evrp::device::v1::UploadRecordingStatus,
-                             evrp::device::v1::UploadRecordingFrame>* stream) {
-  evrp::device::v1::UploadRecordingFrame msg;
-  while (stream->Read(&msg)) {
-  }
-}
-
-}  // namespace
 
 grpc::Status GrpcPlaybackService::UploadRecording(
     grpc::ServerContext* /*context*/,
-    grpc::ServerReaderWriter<evrp::device::v1::UploadRecordingStatus,
-                             evrp::device::v1::UploadRecordingFrame>* stream) {
-  DrainUploadStream(stream);
+    const evrp::device::v1::UploadRecordingFrame* /*request*/,
+    evrp::device::v1::UploadRecordingStatus* /*response*/) {
   return grpc::Status(grpc::StatusCode::UNIMPLEMENTED,
                       "upload_recording not implemented");
 }

@@ -8,7 +8,7 @@ import "google/protobuf/empty.proto";
 import "evrp/device/v1/types.proto";
 
 service PlaybackService {
-  rpc UploadRecording(stream UploadRecordingFrame) returns (stream UploadRecordingStatus);
+  rpc UploadRecording(UploadRecordingFrame) returns (UploadRecordingStatus);
 
   rpc PlaybackRecording(PlaybackRecordingRequest) returns (PlaybackRecordingResponse);
 
