@@ -1,4 +1,4 @@
-// evrp-device：InputDeviceService gRPC 定义。消息类型见 types.proto。
+// evrp-device：`InputDeviceService` — 上传、回放、光标、保活等。输入监听见 inputlisten.proto（`InputListenService`）。
 
 syntax = "proto3";
 
@@ -7,21 +7,7 @@ package evrp.device.v1;
 import "google/protobuf/empty.proto";
 import "evrp/device/v1/types.proto";
 
-// ---------------------------------------------------------------------------
-// 读：`StartRecording` 指定设备种类并开始采集；`WaitForInputEvent` 对应
-// `IInputListener::wait_for_input_event`；`ReadInputEvents` 对应 `read_input_events`；
-// `StopRecording` 结束采集。
-// ---------------------------------------------------------------------------
-
 service InputDeviceService {
-  rpc StartRecording(StartRecordingRequest) returns (google.protobuf.Empty);
-
-  rpc WaitForInputEvent(WaitForInputEventRequest) returns (WaitForInputEventResponse);
-
-  rpc ReadInputEvents(google.protobuf.Empty) returns (ReadInputEventsResponse);
-
-  rpc StopRecording(google.protobuf.Empty) returns (google.protobuf.Empty);
-
   rpc UploadRecording(stream UploadRecordingFrame) returns (stream UploadRecordingStatus);
 
   rpc PlaybackRecording(PlaybackRecordingRequest) returns (PlaybackRecordingResponse);

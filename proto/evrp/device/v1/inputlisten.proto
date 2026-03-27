@@ -1,0 +1,18 @@
+// evrp-device：`InputListenService` — 输入监听 / 录制读，与 `IInputListener` 对齐。消息见 types.proto。
+
+syntax = "proto3";
+
+package evrp.device.v1;
+
+import "google/protobuf/empty.proto";
+import "evrp/device/v1/types.proto";
+
+service InputListenService {
+  rpc StartRecording(StartRecordingRequest) returns (google.protobuf.Empty);
+
+  rpc WaitForInputEvent(WaitForInputEventRequest) returns (WaitForInputEventResponse);
+
+  rpc ReadInputEvents(google.protobuf.Empty) returns (ReadInputEventsResponse);
+
+  rpc StopRecording(google.protobuf.Empty) returns (google.protobuf.Empty);
+}

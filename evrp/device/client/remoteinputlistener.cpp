@@ -8,7 +8,7 @@ namespace evrp::device::client {
 
 RemoteInputListener::RemoteInputListener(std::shared_ptr<grpc::Channel> channel)
     : channel_(std::move(channel)),
-      stub_(evrp::device::v1::InputDeviceService::NewStub(channel_)) {}
+      stub_(evrp::device::v1::InputListenService::NewStub(channel_)) {}
 
 RemoteInputListener::~RemoteInputListener() { cancel_listening(); }
 

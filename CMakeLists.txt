@@ -156,6 +156,7 @@ find_package(gRPC CONFIG REQUIRED)
 
 set(PROTO_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/proto")
 set(DEVICE_TYPES_PROTO "${PROTO_ROOT}/evrp/device/v1/types.proto")
+set(DEVICE_INPUTLISTEN_PROTO "${PROTO_ROOT}/evrp/device/v1/inputlisten.proto")
 set(DEVICE_SERVICE_PROTO "${PROTO_ROOT}/evrp/device/v1/service.proto")
 set(GEN_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
 
@@ -170,24 +171,32 @@ find_program(
 
 set(DEVICE_TYPES_PB_CC "${GEN_DIR}/evrp/device/v1/types.pb.cc")
 set(DEVICE_TYPES_PB_H "${GEN_DIR}/evrp/device/v1/types.pb.h")
+set(DEVICE_INPUTLISTEN_PB_CC "${GEN_DIR}/evrp/device/v1/inputlisten.pb.cc")
+set(DEVICE_INPUTLISTEN_PB_H "${GEN_DIR}/evrp/device/v1/inputlisten.pb.h")
+set(DEVICE_INPUTLISTEN_GRPC_CC "${GEN_DIR}/evrp/device/v1/inputlisten.grpc.pb.cc")
+set(DEVICE_INPUTLISTEN_GRPC_H "${GEN_DIR}/evrp/device/v1/inputlisten.grpc.pb.h")
 set(DEVICE_SERVICE_PB_CC "${GEN_DIR}/evrp/device/v1/service.pb.cc")
 set(DEVICE_SERVICE_PB_H "${GEN_DIR}/evrp/device/v1/service.pb.h")
 set(DEVICE_SERVICE_GRPC_CC "${GEN_DIR}/evrp/device/v1/service.grpc.pb.cc")
 set(DEVICE_SERVICE_GRPC_H "${GEN_DIR}/evrp/device/v1/service.grpc.pb.h")
 
 add_custom_command(
-  OUTPUT ${DEVICE_TYPES_PB_CC} ${DEVICE_TYPES_PB_H} ${DEVICE_SERVICE_PB_CC}
-         ${DEVICE_SERVICE_PB_H} ${DEVICE_SERVICE_GRPC_CC} ${DEVICE_SERVICE_GRPC_H}
+  OUTPUT ${DEVICE_TYPES_PB_CC} ${DEVICE_TYPES_PB_H} ${DEVICE_INPUTLISTEN_PB_CC}
+         ${DEVICE_INPUTLISTEN_PB_H} ${DEVICE_INPUTLISTEN_GRPC_CC}
+         ${DEVICE_INPUTLISTEN_GRPC_H} ${DEVICE_SERVICE_PB_CC} ${DEVICE_SERVICE_PB_H}
+         ${DEVICE_SERVICE_GRPC_CC} ${DEVICE_SERVICE_GRPC_H}
   COMMAND ${CMAKE_COMMAND} -E make_directory "${GEN_DIR}/evrp/device/v1"
   COMMAND
     ${PROTOC_PROGRAM} --cpp_out=${GEN_DIR} --grpc_out=${GEN_DIR}
     --plugin=protoc-gen-grpc=${GRPC_CPP_PLUGIN_PROGRAM} -I${PROTO_ROOT}
-    ${DEVICE_TYPES_PROTO} ${DEVICE_SERVICE_PROTO}
-  DEPENDS ${DEVICE_TYPES_PROTO} ${DEVICE_SERVICE_PROTO}
-  COMMENT "Generating protobuf/gRPC sources from types.proto and service.proto"
+    ${DEVICE_TYPES_PROTO} ${DEVICE_INPUTLISTEN_PROTO} ${DEVICE_SERVICE_PROTO}
+  DEPENDS ${DEVICE_TYPES_PROTO} ${DEVICE_INPUTLISTEN_PROTO} ${DEVICE_SERVICE_PROTO}
+  COMMENT
+    "Generating protobuf/gRPC sources from types.proto, inputlisten.proto, service.proto"
   VERBATIM)
 
-add_library(evrp_device_proto STATIC ${DEVICE_TYPES_PB_CC} ${DEVICE_SERVICE_PB_CC}
+add_library(evrp_device_proto STATIC ${DEVICE_TYPES_PB_CC} ${DEVICE_INPUTLISTEN_PB_CC}
+                                     ${DEVICE_INPUTLISTEN_GRPC_CC} ${DEVICE_SERVICE_PB_CC}
                                      ${DEVICE_SERVICE_GRPC_CC})
 target_include_directories(evrp_device_proto PUBLIC ${GEN_DIR})
 target_link_libraries(evrp_device_proto PUBLIC protobuf::libprotobuf
@@ -229,6 +238,7 @@ set_target_properties(
 add_library(
   evrp_device_grpc STATIC
   evrp/device/server/grpcserverimpl.cpp
+  evrp/device/server/grpcinputlisten.cpp
   evrp/device/server/grpcinputdeviceservice.cpp)
 target_include_directories(evrp_device_grpc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(evrp_device_grpc PUBLIC evrp_device_proto tofromproto)

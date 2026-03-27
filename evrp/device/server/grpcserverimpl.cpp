@@ -9,18 +9,21 @@
 #include <grpcpp/health_check_service_interface.h>
 
 #include "evrp/device/server/grpcinputdeviceservice.h"
+#include "evrp/device/server/grpcinputlisten.h"
 
 namespace evrp::device::api {
 
 int run_device_server(const std::string& listen_address,
                       IInputListener& input_listener) {
-  ::evrp::device::server::GrpcInputDeviceService grpc_service(input_listener);
+  ::evrp::device::server::GrpcInputListenService listen_service(input_listener);
+  ::evrp::device::server::GrpcInputDeviceService device_service;
 
   grpc::EnableDefaultHealthCheckService(true);
 
   grpc::ServerBuilder builder;
   builder.AddListeningPort(listen_address, grpc::InsecureServerCredentials());
-  builder.RegisterService(&grpc_service);
+  builder.RegisterService(&listen_service);
+  builder.RegisterService(&device_service);
   std::unique_ptr<grpc::Server> server(builder.BuildAndStart());
   if (!server) {
     std::cerr << "evrp-device: failed to listen on " << listen_address << "\n";

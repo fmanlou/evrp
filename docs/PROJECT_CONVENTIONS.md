@@ -66,4 +66,4 @@ cmake --build build
 
 - **函数、方法、自由函数**：`snake_case`（例如 `run_device_server`、`read_input_events`）。
 - **类型**（`class` / `struct` / `enum` / `using`）：`PascalCase`（例如 `IInputListener`、`ApiResult`）。
-- **与 gRPC / protobuf 生成代码的接口**：保持生成器产生的名称（如 `InputDeviceService::ReadInputEvents`），适配层再转为 `api` 层类型与命名。
+- **与 gRPC / protobuf 生成代码的接口**：保持生成器产生的名称（如 `InputListenService::ReadInputEvents`），适配层再转为 `api` 层类型与命名。

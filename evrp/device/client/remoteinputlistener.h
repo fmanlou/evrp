@@ -6,11 +6,11 @@
 #include <grpcpp/grpcpp.h>
 
 #include "evrp/device/api/inputlistener.h"
-#include "evrp/device/v1/service.grpc.pb.h"
+#include "evrp/device/v1/inputlisten.grpc.pb.h"
 
 namespace evrp::device::client {
 
-// 通过 gRPC 将 `IInputListener` 映射到 `InputDeviceService`：`StartRecording` /
+// 通过 gRPC `InputListenService` 映射 `IInputListener`：`StartRecording` /
 // `WaitForInputEvent` / `ReadInputEvents` / `StopRecording`。约定：虚函数在同一线程调用。
 class RemoteInputListener final : public api::IInputListener {
  public:
@@ -33,7 +33,7 @@ class RemoteInputListener final : public api::IInputListener {
 
  private:
   std::shared_ptr<grpc::Channel> channel_;
-  std::unique_ptr<evrp::device::v1::InputDeviceService::Stub> stub_;
+  std::unique_ptr<evrp::device::v1::InputListenService::Stub> stub_;
 
   bool listening_active_{false};
 };

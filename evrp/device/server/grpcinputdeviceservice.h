@@ -1,10 +1,9 @@
 #pragma once
 
-// 设备端 gRPC 服务实现：由 server/grpcserverimpl.cpp 使用；业务代码勿直接 include。
+// 设备端 `InputDeviceService` 实现（非监听类 RPC）；由 grpcserverimpl.cpp 注册。业务代码勿直接 include。
 
 #include <grpcpp/grpcpp.h>
 
-#include "evrp/device/api/inputlistener.h"
 #include "evrp/device/v1/service.grpc.pb.h"
 
 namespace evrp::device::server {
@@ -12,26 +11,7 @@ namespace evrp::device::server {
 class GrpcInputDeviceService final
     : public evrp::device::v1::InputDeviceService::Service {
  public:
-  explicit GrpcInputDeviceService(api::IInputListener& listener);
-
-  grpc::Status StartRecording(
-      grpc::ServerContext* context,
-      const evrp::device::v1::StartRecordingRequest* request,
-      google::protobuf::Empty* response) override;
-
-  grpc::Status WaitForInputEvent(
-      grpc::ServerContext* context,
-      const evrp::device::v1::WaitForInputEventRequest* request,
-      evrp::device::v1::WaitForInputEventResponse* response) override;
-
-  grpc::Status ReadInputEvents(
-      grpc::ServerContext* context,
-      const google::protobuf::Empty* request,
-      evrp::device::v1::ReadInputEventsResponse* response) override;
-
-  grpc::Status StopRecording(grpc::ServerContext* context,
-                             const google::protobuf::Empty* request,
-                             google::protobuf::Empty* response) override;
+  GrpcInputDeviceService() = default;
 
   grpc::Status UploadRecording(
       grpc::ServerContext* context,
@@ -61,9 +41,6 @@ class GrpcInputDeviceService final
   grpc::Status Ping(grpc::ServerContext* context,
                     const evrp::device::v1::PingRequest* request,
                     evrp::device::v1::PingResponse* response) override;
-
- private:
-  api::IInputListener& listener_;
 };
 
 }  // namespace evrp::device::server
