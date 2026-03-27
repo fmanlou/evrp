@@ -2,7 +2,7 @@
 
 #include <google/protobuf/empty.pb.h>
 
-#include "evrp/device/internal/deviceprotoconv.h"
+#include "evrp/device/internal/tofromproto.h"
 
 namespace evrp::device::client {
 

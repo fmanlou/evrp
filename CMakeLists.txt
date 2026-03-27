@@ -192,12 +192,12 @@ add_library(evrp_device_api INTERFACE)
 target_include_directories(evrp_device_api
                            INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_library(deviceprotoconv STATIC evrp/device/internal/deviceprotoconv.cpp)
-target_include_directories(deviceprotoconv
+add_library(tofromproto STATIC evrp/device/internal/tofromproto.cpp)
+target_include_directories(tofromproto
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(deviceprotoconv PUBLIC evrp_device_api evrp_device_proto)
+target_link_libraries(tofromproto PUBLIC evrp_device_api evrp_device_proto)
 set_target_properties(
-  deviceprotoconv
+  tofromproto
   PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
 
 add_library(localinputlistener STATIC evrp/device/server/localinputlistener.cpp)
@@ -216,7 +216,7 @@ add_library(device_remote_inputlistener STATIC
 target_include_directories(device_remote_inputlistener
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(device_remote_inputlistener PUBLIC evrp_device_proto
-                                                         deviceprotoconv)
+                                                         tofromproto)
 set_target_properties(
   device_remote_inputlistener
   PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
@@ -226,7 +226,7 @@ add_library(
   evrp/device/server/grpcserverimpl.cpp
   evrp/device/server/grpcinputdeviceservice.cpp)
 target_include_directories(evrp_device_grpc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(evrp_device_grpc PUBLIC evrp_device_proto deviceprotoconv)
+target_link_libraries(evrp_device_grpc PUBLIC evrp_device_proto tofromproto)
 
 add_executable(evrp-device evrp-device/main.cpp)
 target_link_libraries(evrp-device PRIVATE evrp_device_api evrp_device_grpc

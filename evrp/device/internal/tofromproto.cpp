@@ -1,4 +1,4 @@
-#include "evrp/device/internal/deviceprotoconv.h"
+#include "evrp/device/internal/tofromproto.h"
 
 namespace evrp::device::api {
 
@@ -34,8 +34,8 @@ DeviceKind FromProto(evrp::device::v1::DeviceKind k) {
 
 void FromProto(const google::protobuf::RepeatedField<int>& proto_kinds,
                std::vector<DeviceKind>* out) {
-  out->clear();
-  out->reserve(static_cast<size_t>(proto_kinds.size()));
+  const size_t base = out->size();
+  out->reserve(base + static_cast<size_t>(proto_kinds.size()));
   for (int k : proto_kinds) {
     out->push_back(FromProto(static_cast<evrp::device::v1::DeviceKind>(k)));
   }
@@ -50,7 +50,6 @@ std::vector<DeviceKind> FromProto(
 
 void ToProto(const std::vector<DeviceKind>& kinds,
              google::protobuf::RepeatedField<int>* proto_kinds) {
-  proto_kinds->Clear();
   for (DeviceKind k : kinds) {
     proto_kinds->Add(static_cast<int>(ToProto(k)));
   }
@@ -78,8 +77,8 @@ void FromProto(
     const google::protobuf::RepeatedPtrField<evrp::device::v1::InputEvent>&
         proto_events,
     std::vector<InputEvent>* out) {
-  out->clear();
-  out->reserve(static_cast<size_t>(proto_events.size()));
+  const size_t base = out->size();
+  out->reserve(base + static_cast<size_t>(proto_events.size()));
   for (int i = 0; i < proto_events.size(); ++i) {
     InputEvent e;
     FromProto(proto_events.Get(i), &e);
