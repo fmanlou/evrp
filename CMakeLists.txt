@@ -257,3 +257,19 @@ add_executable(evrp-device evrp-device/main.cpp)
 target_link_libraries(evrp-device PRIVATE evrp_device_api evrp_device_grpc
                                           localinputlistener gRPC::grpc++
                                           gflags::gflags)
+
+add_executable(evrp_inputlisten_test_server evrp/inputlistentest/server.cpp)
+target_include_directories(evrp_inputlisten_test_server
+                           PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(
+  evrp_inputlisten_test_server
+  PRIVATE evrp_device_api evrp_device_grpc localinputlistener gRPC::grpc++
+          gflags::gflags)
+
+add_executable(evrp_inputlisten_test_client evrp/inputlistentest/client.cpp)
+target_include_directories(evrp_inputlisten_test_client
+                           PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(
+  evrp_inputlisten_test_client
+  PRIVATE evrp_device_api device_remote_inputlistener gRPC::grpc++
+          gflags::gflags)
