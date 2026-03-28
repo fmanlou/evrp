@@ -4,7 +4,7 @@
 
 namespace evrp::device::server {
 
-grpc::Status GrpcPlaybackService::UploadRecording(
+grpc::Status GrpcPlaybackService::Upload(
     grpc::ServerContext* /*context*/,
     const evrp::device::v1::UploadRecordingRequest* /*request*/,
     evrp::device::v1::UploadRecordingStatus* /*response*/) {
@@ -12,7 +12,7 @@ grpc::Status GrpcPlaybackService::UploadRecording(
                       "upload not implemented");
 }
 
-grpc::Status GrpcPlaybackService::PlaybackRecording(
+grpc::Status GrpcPlaybackService::Playback(
     grpc::ServerContext* /*context*/,
     const evrp::device::v1::PlaybackRecordingRequest* /*request*/,
     evrp::device::v1::PlaybackRecordingResponse* /*response*/) {
@@ -20,11 +20,11 @@ grpc::Status GrpcPlaybackService::PlaybackRecording(
                       "playback not implemented");
 }
 
-grpc::Status GrpcPlaybackService::StopPlayback(
+grpc::Status GrpcPlaybackService::Stop(
     grpc::ServerContext* /*context*/, const google::protobuf::Empty* /*request*/,
     google::protobuf::Empty* /*response*/) {
   return grpc::Status(grpc::StatusCode::UNIMPLEMENTED,
-                      "stop_playback not implemented");
+                      "stop not implemented");
 }
 
 }  // namespace evrp::device::server

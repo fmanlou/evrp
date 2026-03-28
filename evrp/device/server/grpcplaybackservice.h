@@ -13,17 +13,17 @@ class GrpcPlaybackService final
  public:
   GrpcPlaybackService() = default;
 
-  grpc::Status UploadRecording(
+  grpc::Status Upload(
       grpc::ServerContext* context,
       const evrp::device::v1::UploadRecordingRequest* request,
       evrp::device::v1::UploadRecordingStatus* response) override;
 
-  grpc::Status PlaybackRecording(
+  grpc::Status Playback(
       grpc::ServerContext* context,
       const evrp::device::v1::PlaybackRecordingRequest* request,
       evrp::device::v1::PlaybackRecordingResponse* response) override;
 
-  grpc::Status StopPlayback(grpc::ServerContext* context,
+  grpc::Status Stop(grpc::ServerContext* context,
                             const google::protobuf::Empty* request,
                             google::protobuf::Empty* response) override;
 };

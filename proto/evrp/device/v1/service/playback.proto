@@ -8,9 +8,9 @@ import "google/protobuf/empty.proto";
 import "evrp/device/v1/types.proto";
 
 service PlaybackService {
-  rpc UploadRecording(UploadRecordingRequest) returns (UploadRecordingStatus);
+  rpc Upload(UploadRecordingRequest) returns (UploadRecordingStatus);
 
-  rpc PlaybackRecording(PlaybackRecordingRequest) returns (PlaybackRecordingResponse);
+  rpc Playback(PlaybackRecordingRequest) returns (PlaybackRecordingResponse);
 
-  rpc StopPlayback(google.protobuf.Empty) returns (google.protobuf.Empty);
+  rpc Stop(google.protobuf.Empty) returns (google.protobuf.Empty);
 }
