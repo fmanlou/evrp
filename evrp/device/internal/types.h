@@ -31,9 +31,7 @@ struct CursorPosition {
 struct UploadFrame {
   enum class Kind { kStart, kMiddle, kEnd };
   Kind kind = Kind::kStart;
-  const uint8_t* data = nullptr;
-  size_t data_len = 0;
-  uint32_t checksum = 0;
+  std::vector<InputEvent> events;
 };
 
 // 统一业务侧错误描述（不暴露 grpc::StatusCode）。

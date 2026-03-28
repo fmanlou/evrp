@@ -9,7 +9,7 @@ grpc::Status GrpcPlaybackService::UploadRecording(
     const evrp::device::v1::UploadRecordingFrame* /*request*/,
     evrp::device::v1::UploadRecordingStatus* /*response*/) {
   return grpc::Status(grpc::StatusCode::UNIMPLEMENTED,
-                      "upload_recording not implemented");
+                      "upload not implemented");
 }
 
 grpc::Status GrpcPlaybackService::PlaybackRecording(
@@ -17,7 +17,7 @@ grpc::Status GrpcPlaybackService::PlaybackRecording(
     const evrp::device::v1::PlaybackRecordingRequest* /*request*/,
     evrp::device::v1::PlaybackRecordingResponse* /*response*/) {
   return grpc::Status(grpc::StatusCode::UNIMPLEMENTED,
-                      "playback_recording not implemented");
+                      "playback not implemented");
 }
 
 grpc::Status GrpcPlaybackService::StopPlayback(

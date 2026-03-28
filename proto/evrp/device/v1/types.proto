@@ -52,17 +52,15 @@ message ReadInputEventsResponse {
 // ---------------------------------------------------------------------------
 // 录制资源：按「开始帧 → 若干中间帧 → 结束帧」上传（client → device）。每帧一次
 // `PlaybackService.UploadRecording` Unary，`UploadRecordingStatus` 为当次应答。
-// 中间帧（数据帧）承载 payload 分片及本帧校验码；算法与顺序由收发端约定。
+// 中间帧携带一批 `InputEvent`（与录制读侧语义一致），可连续多条中间帧。
 // ---------------------------------------------------------------------------
 
 // 开始帧：一次上传会话的第一帧。
 message UploadRecordingStartFrame {}
 
-// 中间帧（数据帧）：payload 分片，可连续多条；每帧携带针对本帧 data 的校验码。
+// 中间帧：一批输入事件（可分多帧上传）。
 message UploadRecordingMiddleFrame {
-  bytes data = 1;
-  // 针对本帧 `data` 的校验码（通常为 CRC32；算法由实现约定，收发端须一致）。
-  uint32 checksum = 2;
+  repeated InputEvent events = 1;
 }
 
 // 结束帧：一次上传会话的最后一帧（无 payload）。
