@@ -4,6 +4,7 @@
 #include <string>
 
 #include "evrp/device/server/localinputlistener.h"
+#include "evrp/device/server/localplayback.h"
 #include "evrp/device/api/server.h"
 
 DEFINE_string(listen, "127.0.0.1:50051",
@@ -14,5 +15,7 @@ int main(int argc, char** argv) {
   gflags::ParseCommandLineFlags(&argc, &argv, true);
 
   evrp::device::server::LocalInputListener input_listener;
-  return evrp::device::api::run_device_server(FLAGS_listen, input_listener);
+  evrp::device::server::LocalPlayback playback;
+  return evrp::device::api::run_device_server(FLAGS_listen, input_listener,
+                                              playback);
 }

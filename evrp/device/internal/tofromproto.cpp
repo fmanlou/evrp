@@ -94,4 +94,9 @@ std::vector<InputEvent> FromProto(
   return events;
 }
 
+void ToProto(const OperationResult& r, evrp::device::v1::OperationResult* p) {
+  p->set_code(r.code);
+  p->set_message(r.message);
+}
+
 }  // namespace evrp::device::api

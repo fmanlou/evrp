@@ -50,17 +50,21 @@ message ReadInputEventsResponse {
 }
 
 // ---------------------------------------------------------------------------
+// 通用 Unary 应答（`code` / `message`）；与 `evrp/device/api/types.h` 中 `OperationResult` 对齐。
+// ---------------------------------------------------------------------------
+
+message OperationResult {
+  int32 code = 1;
+  string message = 2;
+}
+
+// ---------------------------------------------------------------------------
 // 录制资源：一次性 Unary 上传（client → device），整条 `InputEvent` 序列一次送达；
-// `PlaybackService.Upload` 应答为 `UploadRecordingStatus`。
+// `PlaybackService.Upload` 应答为 `OperationResult`。
 // ---------------------------------------------------------------------------
 
 message UploadRecordingRequest {
   repeated InputEvent events = 1;
-}
-
-message UploadRecordingStatus {
-  int32 code = 1;
-  string message = 2;
 }
 
 // ---------------------------------------------------------------------------
@@ -68,11 +72,6 @@ message UploadRecordingStatus {
 // ---------------------------------------------------------------------------
 
 message PlaybackRecordingRequest {}
-
-message PlaybackRecordingResponse {
-  int32 code = 1;
-  string message = 2;
-}
 
 message GetCursorPositionAvailabilityRequest {}
 

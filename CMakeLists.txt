@@ -234,6 +234,13 @@ set_target_properties(
   localinputlistener
   PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
 
+add_library(localplayback STATIC evrp/device/server/localplayback.cpp)
+target_include_directories(localplayback PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(localplayback PUBLIC evrp_device_api)
+set_target_properties(
+  localplayback
+  PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
+
 add_library(device_remote_inputlistener STATIC
             evrp/device/client/remoteinputlistener.cpp)
 target_include_directories(device_remote_inputlistener
@@ -255,16 +262,16 @@ target_link_libraries(evrp_device_grpc PUBLIC evrp_device_proto tofromproto)
 
 add_executable(evrp-device evrp-device/main.cpp)
 target_link_libraries(evrp-device PRIVATE evrp_device_api evrp_device_grpc
-                                          localinputlistener gRPC::grpc++
-                                          gflags::gflags)
+                                          localinputlistener localplayback
+                                          gRPC::grpc++ gflags::gflags)
 
 add_executable(evrp_inputlisten_test_server evrp/inputlistentest/server.cpp)
 target_include_directories(evrp_inputlisten_test_server
                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(
   evrp_inputlisten_test_server
-  PRIVATE evrp_device_api evrp_device_grpc localinputlistener gRPC::grpc++
-          gflags::gflags)
+  PRIVATE evrp_device_api evrp_device_grpc localinputlistener localplayback
+          gRPC::grpc++ gflags::gflags)
 
 add_executable(evrp_inputlisten_test_client evrp/inputlistentest/client.cpp)
 target_include_directories(evrp_inputlisten_test_client

@@ -4,6 +4,7 @@
 
 #include <grpcpp/grpcpp.h>
 
+#include "evrp/device/api/playback.h"
 #include "evrp/device/v1/service/playback.grpc.pb.h"
 
 namespace evrp::device::server {
@@ -11,21 +12,24 @@ namespace evrp::device::server {
 class GrpcPlaybackService final
     : public evrp::device::v1::PlaybackService::Service {
  public:
-  GrpcPlaybackService() = default;
+  explicit GrpcPlaybackService(api::IPlayback& playback);
 
   grpc::Status Upload(
       grpc::ServerContext* context,
       const evrp::device::v1::UploadRecordingRequest* request,
-      evrp::device::v1::UploadRecordingStatus* response) override;
+      evrp::device::v1::OperationResult* response) override;
 
   grpc::Status Playback(
       grpc::ServerContext* context,
       const evrp::device::v1::PlaybackRecordingRequest* request,
-      evrp::device::v1::PlaybackRecordingResponse* response) override;
+      evrp::device::v1::OperationResult* response) override;
 
   grpc::Status Stop(grpc::ServerContext* context,
-                            const google::protobuf::Empty* request,
-                            google::protobuf::Empty* response) override;
+                    const google::protobuf::Empty* request,
+                    google::protobuf::Empty* response) override;
+
+ private:
+  api::IPlayback& playback_;
 };
 
 }  // namespace evrp::device::server

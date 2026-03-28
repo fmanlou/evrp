@@ -19,8 +19,8 @@
 
 | RPC | 说明 |
 |-----|------|
-| `Upload` | Unary：一次 `UploadRecordingRequest`（`repeated InputEvent`），应答 `UploadRecordingStatus`（`code` / `message`） |
-| `Playback` | 在 device 上回放当前已缓存资源 |
+| `Upload` | Unary：一次 `UploadRecordingRequest`（`repeated InputEvent`），应答 `OperationResult`（`code` / `message`） |
+| `Playback` | 在 device 上回放当前已缓存资源 → `OperationResult` |
 | `Stop` | 停止回放 → `Empty` |
 
 ### `InputDeviceService`（`service/service.proto`）

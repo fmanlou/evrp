@@ -25,13 +25,7 @@ struct InputEvent {
   int32_t value = 0;
 };
 
-// 与 proto `UploadRecordingRequest` 对齐；事件列表互转见 `evrp/device/internal/tofromproto.h`。
-struct RecordingUpload {
-  std::vector<InputEvent> events;
-};
-
-// 通用应答体：`code` / `message`；与 proto `UploadRecordingStatus`、`PlaybackRecordingResponse`
-// 等 unary 应答字段一致。
+// 通用应答体：`code` / `message`；与 proto `OperationResult` 一致。
 struct OperationResult {
   int32_t code = 0;
   std::string message;

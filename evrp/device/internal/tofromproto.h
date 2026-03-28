@@ -39,4 +39,6 @@ std::vector<InputEvent> FromProto(
     const google::protobuf::RepeatedPtrField<evrp::device::v1::InputEvent>&
         proto_events);
 
+void ToProto(const OperationResult& r, evrp::device::v1::OperationResult* p);
+
 }  // namespace evrp::device::api
