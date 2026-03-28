@@ -27,10 +27,8 @@ struct CursorPosition {
   int32_t y = 0;
 };
 
-// 上传帧：与 proto UploadRecordingFrame oneof 对齐。
+// 上传：与 proto UploadRecordingRequest 对齐。
 struct UploadFrame {
-  enum class Kind { kStart, kMiddle, kEnd };
-  Kind kind = Kind::kStart;
   std::vector<InputEvent> events;
 };
 

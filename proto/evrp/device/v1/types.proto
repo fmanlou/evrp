@@ -50,28 +50,12 @@ message ReadInputEventsResponse {
 }
 
 // ---------------------------------------------------------------------------
-// 录制资源：按「开始帧 → 若干中间帧 → 结束帧」上传（client → device）。每帧一次
-// `PlaybackService.UploadRecording` Unary，`UploadRecordingStatus` 为当次应答。
-// 中间帧携带一批 `InputEvent`（与录制读侧语义一致），可连续多条中间帧。
+// 录制资源：一次性 Unary 上传（client → device），整条 `InputEvent` 序列一次送达；
+// `PlaybackService.UploadRecording` 应答为 `UploadRecordingStatus`。
 // ---------------------------------------------------------------------------
 
-// 开始帧：一次上传会话的第一帧。
-message UploadRecordingStartFrame {}
-
-// 中间帧：一批输入事件（可分多帧上传）。
-message UploadRecordingMiddleFrame {
+message UploadRecordingRequest {
   repeated InputEvent events = 1;
-}
-
-// 结束帧：一次上传会话的最后一帧（无 payload）。
-message UploadRecordingEndFrame {}
-
-message UploadRecordingFrame {
-  oneof frame {
-    UploadRecordingStartFrame start = 1;
-    UploadRecordingMiddleFrame middle = 2;
-    UploadRecordingEndFrame end = 3;
-  }
 }
 
 message UploadRecordingStatus {

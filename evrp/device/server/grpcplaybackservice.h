@@ -15,7 +15,7 @@ class GrpcPlaybackService final
 
   grpc::Status UploadRecording(
       grpc::ServerContext* context,
-      const evrp::device::v1::UploadRecordingFrame* request,
+      const evrp::device::v1::UploadRecordingRequest* request,
       evrp::device::v1::UploadRecordingStatus* response) override;
 
   grpc::Status PlaybackRecording(

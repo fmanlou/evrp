@@ -10,7 +10,7 @@ class IPlayback {
   virtual ~IPlayback() = default;
 
   // `result_out` 可为 nullptr；若非空，无论成功与否均可写入服务端返回的 code/message。
-  virtual bool upload(const RecordingUploadFrame& frame,
+  virtual bool upload(const RecordingUpload& recording,
                       OperationResult* result_out) = 0;
 
   virtual bool playback(OperationResult* result_out) = 0;

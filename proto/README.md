@@ -19,7 +19,7 @@
 
 | RPC | 说明 |
 |-----|------|
-| `UploadRecording` | Unary：每帧一条 `UploadRecordingFrame`（开始 / 中间含 `repeated InputEvent` / 结束），应答 `UploadRecordingStatus`（`code` / `message`）；按序多次调用完成整段上传 |
+| `UploadRecording` | Unary：一次 `UploadRecordingRequest`（`repeated InputEvent`），应答 `UploadRecordingStatus`（`code` / `message`） |
 | `PlaybackRecording` | 在 device 上回放当前已缓存资源 |
 | `StopPlayback` | 停止回放 → `Empty` |
 

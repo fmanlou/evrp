@@ -25,16 +25,8 @@ struct InputEvent {
   int32_t value = 0;
 };
 
-// 与 proto `UploadRecordingFrame` 三种帧对应；互转见 `evrp/device/internal/tofromproto.h`。
-enum class RecordingUploadFrameKind {
-  kStart,
-  kMiddle,
-  kEnd,
-};
-
-// 与 proto `UploadRecordingFrame` 对齐：开始帧无数据；中间帧为一批 `InputEvent`；结束帧无数据。
-struct RecordingUploadFrame {
-  RecordingUploadFrameKind kind = RecordingUploadFrameKind::kStart;
+// 与 proto `UploadRecordingRequest` 对齐；事件列表互转见 `evrp/device/internal/tofromproto.h`。
+struct RecordingUpload {
   std::vector<InputEvent> events;
 };
 

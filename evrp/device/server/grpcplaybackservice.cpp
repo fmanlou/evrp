@@ -6,7 +6,7 @@ namespace evrp::device::server {
 
 grpc::Status GrpcPlaybackService::UploadRecording(
     grpc::ServerContext* /*context*/,
-    const evrp::device::v1::UploadRecordingFrame* /*request*/,
+    const evrp::device::v1::UploadRecordingRequest* /*request*/,
     evrp::device::v1::UploadRecordingStatus* /*response*/) {
   return grpc::Status(grpc::StatusCode::UNIMPLEMENTED,
                       "upload not implemented");
