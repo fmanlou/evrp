@@ -223,7 +223,9 @@ set_target_properties(
   tofromproto
   PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
 
-add_library(localinputlistener STATIC evrp/device/server/localinputlistener.cpp)
+add_library(
+  localinputlistener STATIC evrp/device/server/localinputlistener.cpp
+                           evrp/device/server/dispatchedinputlistener.cpp)
 target_include_directories(localinputlistener
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(
