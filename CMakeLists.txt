@@ -225,7 +225,8 @@ set_target_properties(
 
 add_library(
   localinputlistener STATIC evrp/device/server/localinputlistener.cpp
-                           evrp/device/server/dispatchedinputlistener.cpp)
+                           evrp/device/server/dispatchedinputlistener.cpp
+                           evrp/device/server/syncdispatchqueue.cpp)
 target_include_directories(localinputlistener
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(
