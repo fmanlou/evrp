@@ -2,6 +2,7 @@
 
 #include <linux/input-event-codes.h>
 
+#include <memory>
 #include <unordered_set>
 
 #include "deviceid.h"
@@ -40,10 +41,65 @@ api::InputEvent to_api_input_event(api::DeviceKind device, const Event& ev) {
 
 }  // namespace
 
+LocalInputListener::LocalInputListener()
+    : dispatch_worker_([this]() { dispatch_loop(); }) {}
+
+void LocalInputListener::post_void(std::function<void()> fn) {
+  if (disposed_.load(std::memory_order_acquire)) {
+    return;
+  }
+  auto task = std::make_shared<std::packaged_task<void()>>(std::move(fn));
+  std::future<void> fut = task->get_future();
+  {
+    std::lock_guard<std::mutex> lock(dispatch_mu_);
+    if (dispatch_stop_) {
+      return;
+    }
+    dispatch_q_.push([task]() { (*task)(); });
+  }
+  dispatch_cv_.notify_one();
+  fut.get();
+}
+
+void LocalInputListener::dispatch_loop() {
+  for (;;) {
+    std::function<void()> job;
+    {
+      std::unique_lock<std::mutex> lock(dispatch_mu_);
+      dispatch_cv_.wait(lock, [this]() {
+        return dispatch_stop_ || !dispatch_q_.empty();
+      });
+      if (dispatch_stop_ && dispatch_q_.empty()) {
+        return;
+      }
+      job = std::move(dispatch_q_.front());
+      dispatch_q_.pop();
+    }
+    job();
+  }
+}
+
 void LocalInputListener::dispose() {
-  cancel_listening();
-  std::lock_guard<std::mutex> lock(mu_);
-  disposed_ = true;
+  std::future<void> cleanup_done;
+  {
+    std::lock_guard<std::mutex> lock(dispatch_mu_);
+    if (dispatch_stop_) {
+      return;
+    }
+    auto pt = std::make_shared<std::packaged_task<void()>>([this]() {
+      cancel_listening_on_worker();
+      std::lock_guard<std::mutex> l(mu_);
+      disposed_ = true;
+    });
+    cleanup_done = pt->get_future();
+    dispatch_q_.push([pt]() { (*pt)(); });
+    dispatch_stop_ = true;
+  }
+  dispatch_cv_.notify_all();
+  cleanup_done.wait();
+  if (dispatch_worker_.joinable()) {
+    dispatch_worker_.join();
+  }
 }
 
 LocalInputListener::~LocalInputListener() { dispose(); }
@@ -59,7 +115,7 @@ void LocalInputListener::close_devices() {
   poll_ready_indices_.clear();
 }
 
-bool LocalInputListener::start_listening(
+bool LocalInputListener::start_listening_on_worker(
     const std::vector<api::DeviceKind>& kinds) {
   std::lock_guard<std::mutex> lock(mu_);
   if (disposed_) {
@@ -106,7 +162,7 @@ bool LocalInputListener::start_listening(
   return true;
 }
 
-std::vector<api::InputEvent> LocalInputListener::read_input_events() {
+std::vector<api::InputEvent> LocalInputListener::read_input_events_on_worker() {
   std::lock_guard<std::mutex> lock(mu_);
   if (disposed_) {
     return {};
@@ -152,7 +208,7 @@ std::vector<api::InputEvent> LocalInputListener::read_input_events() {
   return out;
 }
 
-bool LocalInputListener::wait_for_input_event(int timeout_ms) {
+bool LocalInputListener::wait_for_input_event_on_worker(int timeout_ms) {
   if (!listening_active_ || disposed_) {
     return false;
   }
@@ -188,15 +244,38 @@ bool LocalInputListener::wait_for_input_event(int timeout_ms) {
   return !poll_ready_indices_.empty();
 }
 
-bool LocalInputListener::is_listening() const { return listening_active_; }
-
-void LocalInputListener::cancel_listening() {
+void LocalInputListener::cancel_listening_on_worker() {
   listening_active_ = false;
   std::lock_guard<std::mutex> lock(mu_);
   if (disposed_) {
     return;
   }
   close_devices();
+}
+
+bool LocalInputListener::start_listening(
+    const std::vector<api::DeviceKind>& kinds) {
+  return post_sync<bool>(
+      [this, kinds]() { return start_listening_on_worker(kinds); });
+}
+
+std::vector<api::InputEvent> LocalInputListener::read_input_events() {
+  return post_sync<std::vector<api::InputEvent>>(
+      [this]() { return read_input_events_on_worker(); });
+}
+
+bool LocalInputListener::wait_for_input_event(int timeout_ms) {
+  return post_sync<bool>([this, timeout_ms]() {
+    return wait_for_input_event_on_worker(timeout_ms);
+  });
+}
+
+void LocalInputListener::cancel_listening() {
+  post_void([this]() { cancel_listening_on_worker(); });
+}
+
+bool LocalInputListener::is_listening() const {
+  return listening_active_.load(std::memory_order_acquire);
 }
 
 }  // namespace evrp::device::server
