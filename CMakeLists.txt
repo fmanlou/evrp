@@ -236,7 +236,7 @@ set_target_properties(
 
 add_library(localplayback STATIC evrp/device/server/localplayback.cpp)
 target_include_directories(localplayback PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(localplayback PUBLIC evrp_device_api)
+target_link_libraries(localplayback PUBLIC evrp_device_api inputeventwriter)
 set_target_properties(
   localplayback
   PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)

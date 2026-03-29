@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <mutex>
 #include <vector>
 
@@ -8,8 +9,7 @@
 
 namespace evrp::device::server {
 
-// 进程内录制缓存与回放占位：`upload` 写入事件序列；`playback` 在无缓存时失败；
-// 事件注入（uinput 等）未实现时仍返回成功及业务 code 0。
+// 进程内：`upload` 缓存事件序列；`playback` 通过 `InputEventWriter` 按录制时间间隔写回 evdev。
 class LocalPlayback final : public api::IPlayback {
  public:
   LocalPlayback() = default;
@@ -28,6 +28,7 @@ class LocalPlayback final : public api::IPlayback {
   mutable std::mutex mu_;
   std::vector<api::InputEvent> cached_;
   bool playing_{false};
+  std::atomic<bool> stop_requested_{false};
 };
 
 }  // namespace evrp::device::server
