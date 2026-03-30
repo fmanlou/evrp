@@ -20,7 +20,10 @@ class LocalPlayback final : public api::IPlayback {
   bool upload(const std::vector<api::InputEvent>& events,
               api::OperationResult* result_out) override;
 
-  bool playback(api::OperationResult* result_out) override;
+  bool playback(api::OperationResult* result_out,
+                evrp::CountingSemaphore* progress_notify = nullptr) override;
+
+  int playback_index() const override;
 
   bool stop_playback() override;
 
@@ -29,6 +32,7 @@ class LocalPlayback final : public api::IPlayback {
   std::vector<api::InputEvent> cached_;
   bool playing_{false};
   std::atomic<bool> stop_requested_{false};
+  int current_event_index_{-1};
 };
 
 }  // namespace evrp::device::server

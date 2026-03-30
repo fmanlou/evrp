@@ -1,5 +1,3 @@
-// evrp-device：录制上传与回放 RPC。消息类型见 `evrp/device/v1/types.proto`。
-
 syntax = "proto3";
 
 package evrp.device.v1;
@@ -11,6 +9,8 @@ service PlaybackService {
   rpc Upload(UploadRecordingRequest) returns (OperationResult);
 
   rpc Playback(PlaybackRecordingRequest) returns (OperationResult);
+
+  rpc SubscribePlayback(google.protobuf.Empty) returns (stream PlaybackProgress);
 
   rpc Stop(google.protobuf.Empty) returns (google.protobuf.Empty);
 }

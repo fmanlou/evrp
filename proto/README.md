@@ -20,7 +20,8 @@
 | RPC | 说明 |
 |-----|------|
 | `Upload` | Unary：一次 `UploadRecordingRequest`（`repeated InputEvent`），应答 `OperationResult`（`code` / `message`） |
-| `Playback` | 在 device 上回放当前已缓存资源 → `OperationResult` |
+| `Playback` | 在 device 上回放当前已缓存资源 → `OperationResult`；宜与 `SubscribePlayback` 并行（先订阅） |
+| `SubscribePlayback` | 服务端流：`PlaybackProgress`（`done=false` 为当前事件；`done=true` + `result` 为整场结束，与 Unary `Playback` 一致） |
 | `Stop` | 停止回放 → `Empty` |
 
 ### `InputDeviceService`（`service/service.proto`）

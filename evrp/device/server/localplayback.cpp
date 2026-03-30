@@ -40,7 +40,11 @@ bool LocalPlayback::upload(const std::vector<api::InputEvent>& events,
   return true;
 }
 
-bool LocalPlayback::playback(api::OperationResult* result_out) {
+int LocalPlayback::playback_index() const { return current_event_index_; }
+
+bool LocalPlayback::playback(
+    api::OperationResult* result_out,
+    evrp::CountingSemaphore* progress_notify) {
   std::vector<api::InputEvent> batch;
   {
     std::lock_guard<std::mutex> lock(mu_);
@@ -55,13 +59,15 @@ bool LocalPlayback::playback(api::OperationResult* result_out) {
     playing_ = true;
   }
   stop_requested_ = false;
+  current_event_index_ = -1;
 
   FileSystem fs;
   InputEventWriter writer(&fs);
 
   bool first = true;
   int64_t prev_us = 0;
-  for (const api::InputEvent& e : batch) {
+  for (int i = 0; i < static_cast<int>(batch.size()); ++i) {
+    const api::InputEvent& e = batch[static_cast<size_t>(i)];
     if (stop_requested_) {
       break;
     }
@@ -89,6 +95,10 @@ bool LocalPlayback::playback(api::OperationResult* result_out) {
         result_out->message = "write event failed during playback";
       }
       return false;
+    }
+    current_event_index_ = i;
+    if (progress_notify != nullptr) {
+      progress_notify->release();
     }
   }
 

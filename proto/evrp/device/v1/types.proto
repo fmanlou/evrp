@@ -1,18 +1,8 @@
-// evrp-device：v1 消息/枚举定义（无 service）。gRPC 定义见 service.proto。
-//
-// - 录制读：`StartRecordingRequest`、`WaitForInputEvent*`、`ReadInputEventsResponse`、
-//   `InputEvent` 等与 `IInputListener` / 录制流水线对应。
-// - 上传/回放/光标/保活等请求响应见下文消息。
-
 syntax = "proto3";
 
 package evrp.device.v1;
 
 option cc_enable_arenas = true;
-
-// ---------------------------------------------------------------------------
-// 设备类型（与 deviceid 一致）
-// ---------------------------------------------------------------------------
 
 enum DeviceKind {
   DEVICE_KIND_UNSPECIFIED = 0;
@@ -26,7 +16,6 @@ message StartRecordingRequest {
   repeated DeviceKind kinds = 1;
 }
 
-// 单条输入事件（linux input_event 语义 + 来源设备）
 message InputEvent {
   DeviceKind device = 1;
   int64 time_sec = 2;
@@ -37,7 +26,6 @@ message InputEvent {
 }
 
 message WaitForInputEventRequest {
-  // 毫秒；与 `IInputListener::wait_for_input_event` 一致，须 >= 0。
   int32 timeout_ms = 1;
 }
 
@@ -49,29 +37,20 @@ message ReadInputEventsResponse {
   repeated InputEvent events = 1;
 }
 
-// ---------------------------------------------------------------------------
-// 通用 Unary 应答（`code` / `message`）；与 `evrp/device/api/types.h` 中 `OperationResult` 对齐。
-// ---------------------------------------------------------------------------
-
 message OperationResult {
   int32 code = 1;
   string message = 2;
 }
 
-// ---------------------------------------------------------------------------
-// 录制资源：一次性 Unary 上传（client → device），整条 `InputEvent` 序列一次送达；
-// `PlaybackService.Upload` 应答为 `OperationResult`。
-// ---------------------------------------------------------------------------
-
 message UploadRecordingRequest {
   repeated InputEvent events = 1;
 }
 
-// ---------------------------------------------------------------------------
-// 回放：在 device 上注入当前已缓存的录制资源（Unary）；具体缓存策略由实现决定。
-// ---------------------------------------------------------------------------
-
 message PlaybackRecordingRequest {}
+
+message PlaybackProgress {
+  int32 event_index = 1;
+}
 
 message GetCursorPositionAvailabilityRequest {}
 
@@ -85,10 +64,6 @@ message ReadCursorPositionResponse {
   int32 x = 1;
   int32 y = 2;
 }
-
-// ---------------------------------------------------------------------------
-// 保活
-// ---------------------------------------------------------------------------
 
 message PingRequest {}
 

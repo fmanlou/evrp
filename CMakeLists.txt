@@ -215,6 +215,13 @@ add_library(evrp_device_api INTERFACE)
 target_include_directories(evrp_device_api
                            INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 
+add_library(countingsemaphore STATIC evrp/countingsemaphore.cpp)
+target_include_directories(countingsemaphore
+                           PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+set_target_properties(
+  countingsemaphore
+  PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
+
 add_library(tofromproto STATIC evrp/device/internal/tofromproto.cpp)
 target_include_directories(tofromproto
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
@@ -239,7 +246,8 @@ set_target_properties(
 
 add_library(localplayback STATIC evrp/device/server/localplayback.cpp)
 target_include_directories(localplayback PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(localplayback PUBLIC evrp_device_api inputeventwriter)
+target_link_libraries(localplayback PUBLIC evrp_device_api inputeventwriter
+                                           countingsemaphore)
 set_target_properties(
   localplayback
   PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
@@ -261,7 +269,8 @@ add_library(
   evrp/device/server/grpcinputdeviceservice.cpp
   evrp/device/server/grpcplaybackservice.cpp)
 target_include_directories(evrp_device_grpc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(evrp_device_grpc PUBLIC evrp_device_proto tofromproto)
+target_link_libraries(evrp_device_grpc PUBLIC evrp_device_proto tofromproto
+                                              countingsemaphore)
 
 add_executable(evrp-device evrp-device/main.cpp)
 target_link_libraries(evrp-device PRIVATE evrp_device_api evrp_device_grpc
