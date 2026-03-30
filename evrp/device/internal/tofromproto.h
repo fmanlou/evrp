@@ -10,9 +10,6 @@
 
 namespace evrp::device::api {
 
-// ToProto / FromProto：api 类型与 types.proto 互转。带 `*out` / `proto_kinds` 指针的重载为**追加**写入；
-// 若需覆盖原内容，调用方须先对 `*out` 或 proto repeated 字段执行 clear。
-
 evrp::device::v1::DeviceKind ToProto(DeviceKind k);
 
 DeviceKind FromProto(evrp::device::v1::DeviceKind k);
@@ -28,6 +25,10 @@ void ToProto(const std::vector<DeviceKind>& kinds,
 
 void ToProto(const InputEvent& e, evrp::device::v1::InputEvent* p);
 
+void ToProto(
+    const std::vector<InputEvent>& events,
+    google::protobuf::RepeatedPtrField<evrp::device::v1::InputEvent>* out);
+
 void FromProto(const evrp::device::v1::InputEvent& p, InputEvent* e);
 
 void FromProto(
@@ -41,4 +42,4 @@ std::vector<InputEvent> FromProto(
 
 void ToProto(const OperationResult& r, evrp::device::v1::OperationResult* p);
 
-}  // namespace evrp::device::api
+}

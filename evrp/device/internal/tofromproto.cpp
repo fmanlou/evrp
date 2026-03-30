@@ -64,6 +64,14 @@ void ToProto(const InputEvent& e, evrp::device::v1::InputEvent* p) {
   p->set_value(e.value);
 }
 
+void ToProto(
+    const std::vector<InputEvent>& events,
+    google::protobuf::RepeatedPtrField<evrp::device::v1::InputEvent>* out) {
+  for (const InputEvent& e : events) {
+    ToProto(e, out->Add());
+  }
+}
+
 void FromProto(const evrp::device::v1::InputEvent& p, InputEvent* e) {
   e->device = FromProto(p.device());
   e->time_sec = p.time_sec();
