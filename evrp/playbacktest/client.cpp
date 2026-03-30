@@ -1,19 +1,19 @@
 #include <gflags/gflags.h>
 #include <grpcpp/grpcpp.h>
-
 #include <linux/input-event-codes.h>
 
 #include <iostream>
 #include <thread>
 #include <vector>
 
-#include "evrp/device/api/types.h"
 #include "evrp/countingsemaphore.h"
+#include "evrp/device/api/types.h"
 #include "evrp/device/client/remoteplayback.h"
 
 DEFINE_string(target, "127.0.0.1:50051", "Server address (host:port)");
 DEFINE_bool(progress, true,
-            "Use SubscribePlayback progress (CountingSemaphore) alongside Unary Playback");
+            "Use SubscribePlayback progress (CountingSemaphore) alongside "
+            "Unary Playback");
 
 namespace {
 
@@ -75,8 +75,8 @@ int main(int argc, char** argv) {
   std::cout << "evrp_playback_test_client: will replay " << events.size()
             << " key events (EV_KEY press/release) for \"hello world\"\n";
 
-  std::shared_ptr<grpc::Channel> channel = grpc::CreateChannel(
-      FLAGS_target, grpc::InsecureChannelCredentials());
+  std::shared_ptr<grpc::Channel> channel =
+      grpc::CreateChannel(FLAGS_target, grpc::InsecureChannelCredentials());
   evrp::device::client::RemotePlayback remote(channel);
 
   evrp::device::api::OperationResult up;
@@ -114,7 +114,8 @@ int main(int argc, char** argv) {
     return 1;
   }
   std::cout << "hello world\n";
-  std::cout << "evrp_playback_test_client: playback finished (keyboard injection "
-               "requires focus in a text field)\n";
+  std::cout
+      << "evrp_playback_test_client: playback finished (keyboard injection "
+         "requires focus in a text field)\n";
   return 0;
 }

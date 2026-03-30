@@ -1,11 +1,11 @@
 #pragma once
 
+#include <grpcpp/grpcpp.h>
+
 #include <atomic>
 #include <memory>
 #include <mutex>
 #include <vector>
-
-#include <grpcpp/grpcpp.h>
 
 #include "evrp/device/api/playback.h"
 #include "evrp/device/v1/service/playback.grpc.pb.h"
