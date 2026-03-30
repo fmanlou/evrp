@@ -301,3 +301,18 @@ target_link_libraries(
   evrp_inputlisten_test_client
   PRIVATE evrp_device_api device_remote_inputlistener gRPC::grpc++
           gflags::gflags)
+
+add_executable(evrp_playback_test_server evrp/playbacktest/server.cpp)
+target_include_directories(evrp_playback_test_server
+                           PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(
+  evrp_playback_test_server
+  PRIVATE evrp_device_api evrp_device_grpc localplayback gRPC::grpc++
+          gflags::gflags)
+
+add_executable(evrp_playback_test_client evrp/playbacktest/client.cpp)
+target_include_directories(evrp_playback_test_client
+                           PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(
+  evrp_playback_test_client
+  PRIVATE evrp_device_api device_remote_playback gRPC::grpc++ gflags::gflags)
