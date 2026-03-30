@@ -54,7 +54,7 @@ bool LocalPlayback::playback(api::OperationResult* result_out) {
     batch = cached_;
     playing_ = true;
   }
-  stop_requested_.store(false, std::memory_order_relaxed);
+  stop_requested_ = false;
 
   FileSystem fs;
   InputEventWriter writer(&fs);
@@ -62,7 +62,7 @@ bool LocalPlayback::playback(api::OperationResult* result_out) {
   bool first = true;
   int64_t prev_us = 0;
   for (const api::InputEvent& e : batch) {
-    if (stop_requested_.load(std::memory_order_relaxed)) {
+    if (stop_requested_) {
       break;
     }
 
@@ -104,7 +104,7 @@ bool LocalPlayback::playback(api::OperationResult* result_out) {
 }
 
 bool LocalPlayback::stop_playback() {
-  stop_requested_.store(true, std::memory_order_relaxed);
+  stop_requested_ = true;
   std::lock_guard<std::mutex> lock(mu_);
   playing_ = false;
   return true;
