@@ -19,15 +19,11 @@ library/
 
 根目录 **`CMakeLists.txt`** 已将 **`library/`**、**`library/protobuf/`**、**`library/grpc/`**、**`library/gflags/`** 加入 **`CMAKE_PREFIX_PATH`**；**gflags** 另用 **`find_package(gflags … PATHS library/gflags)`** 仅从本地安装查找。
 
-## 子模块与安装
+## 第三方源码与安装
 
-在仓库根目录**一次性**拉取并更新所有子模块（含嵌套）：
+**`third_party/`** 下的 Lua、GoogleTest、Protobuf、gRPC、gflags 等为仓库内已包含的上游源码（非 Git 子模块）；若本地缺失目录，请自行从对应上游仓库获取对应版本后放入对应路径。
 
-```bash
-git submodule update --init --recursive
-```
-
-总入口 **`scripts/install-third-party-to-library.sh`** 会先执行 **`git submodule update --init --recursive`**（需在 **git 克隆** 的工作目录下），再依次调用各库独立脚本；每个脚本在**安装成功后**会删除 **`build/third-party/<库名>/`** 临时编译目录。
+总入口 **`scripts/install-third-party-to-library.sh`** 会依次调用各库独立脚本；每个脚本在**安装成功后**会删除 **`build/third-party/<库名>/`** 临时编译目录。
 
 也可**单独**安装某一库（同样支持跳过已安装目录、`EVRP_FORCE_THIRD_PARTY_INSTALL`）：
 

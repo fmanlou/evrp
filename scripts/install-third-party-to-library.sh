@@ -6,18 +6,12 @@
 #
 # 若 library/<组件>/ 下已有对应安装结果，各子脚本会跳过；强制重装：EVRP_FORCE_THIRD_PARTY_INSTALL=1
 #
-# 子模块：脚本开头会执行 git submodule update --init --recursive（需在本仓库 git 工作区内执行）。
 # 各子脚本在编译安装成功后会删除对应的 build/third-party/<库名>/ 目录。
 
 set -e
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 SCR="$ROOT/scripts"
-
-if [ -d "$ROOT/.git" ] || [ -f "$ROOT/.git" ]; then
-  echo "git submodule update --init --recursive"
-  git -C "$ROOT" submodule update --init --recursive
-fi
 
 "$SCR/install-lua-to-library.sh" "$@"
 "$SCR/install-googletest-to-library.sh" "$@"
