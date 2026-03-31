@@ -3,3 +3,6 @@ build/
 
 # 第三方安装到仓库内 library/ 的产物（说明见仓库根目录 LIBRARY.md）
 library/*
+
+# install-log-to-library.sh 克隆的 log 源码（见 LIBRARY.md）
+third_party/log/

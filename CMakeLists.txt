@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.14)
 project(evrp LANGUAGES C CXX)
 
 # --- library/ 与
-# Lua、GoogleTest、Protobuf、gRPC、gflags（安装：scripts/install-third-party-to-library.sh）---
+# Lua、GoogleTest、Protobuf、gRPC、gflags、fmt、spdlog、log（安装：scripts/install-third-party-to-library.sh）---
 set(EVRP_LIBRARY_DIR
     "${CMAKE_SOURCE_DIR}/library"
     CACHE PATH "Third-party install prefix for this repo")
@@ -10,6 +10,9 @@ list(APPEND CMAKE_PREFIX_PATH "${EVRP_LIBRARY_DIR}")
 list(APPEND CMAKE_PREFIX_PATH "${EVRP_LIBRARY_DIR}/protobuf")
 list(APPEND CMAKE_PREFIX_PATH "${EVRP_LIBRARY_DIR}/grpc")
 list(APPEND CMAKE_PREFIX_PATH "${EVRP_LIBRARY_DIR}/gflags")
+list(APPEND CMAKE_PREFIX_PATH "${EVRP_LIBRARY_DIR}/fmt")
+list(APPEND CMAKE_PREFIX_PATH "${EVRP_LIBRARY_DIR}/spdlog")
+list(APPEND CMAKE_PREFIX_PATH "${EVRP_LIBRARY_DIR}/log")
 
 find_library(
   EVRP_LUA_LIB
@@ -40,6 +43,10 @@ find_package(GTest CONFIG REQUIRED PATHS "${EVRP_LIBRARY_DIR}/googletest"
 # gflags（argparser、evrp-device）
 set(GFLAGS_USE_TARGET_NAMESPACE ON)
 find_package(gflags CONFIG REQUIRED PATHS "${EVRP_LIBRARY_DIR}/gflags"
+             NO_DEFAULT_PATH)
+
+# fmanlou/log（fmt + spdlog 依赖；PREFIX_PATH 已含 library/fmt、library/spdlog）
+find_package(log CONFIG REQUIRED PATHS "${EVRP_LIBRARY_DIR}/log"
              NO_DEFAULT_PATH)
 
 # Protobuf 5.x / gRPC 需要 C++17；其余源码与之兼容

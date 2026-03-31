@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# 依次调用各库独立安装脚本，将 Lua、GoogleTest、Protobuf、gRPC、gflags 安装到 <repo>/library/。
+# 依次调用各库独立安装脚本，将 Lua、GoogleTest、Protobuf、gRPC、gflags、log（及 fmt/spdlog）安装到 <repo>/library/。
 # 用法：在仓库根目录执行
 #   ./scripts/install-third-party-to-library.sh
 # 可选：./scripts/install-third-party-to-library.sh -DCMAKE_BUILD_TYPE=Debug（传给各子脚本中 cmake -S）
@@ -18,6 +18,7 @@ SCR="$ROOT/scripts"
 "$SCR/install-protobuf-to-library.sh" "$@"
 "$SCR/install-grpc-to-library.sh" "$@"
 "$SCR/install-gflags-to-library.sh" "$@"
+"$SCR/install-log-to-library.sh" "$@"
 
-echo "Done. Installs under: $ROOT/library/lua, $ROOT/library/googletest, $ROOT/library/protobuf, $ROOT/library/grpc, $ROOT/library/gflags"
+echo "Done. Installs under: $ROOT/library/lua, $ROOT/library/googletest, $ROOT/library/protobuf, $ROOT/library/grpc, $ROOT/library/gflags, $ROOT/library/fmt, $ROOT/library/spdlog, $ROOT/library/log"
 echo "Configure: cmake -B build -DCMAKE_PREFIX_PATH=$ROOT/library"

@@ -15,17 +15,19 @@
   | `library/protobuf/` | Protobuf：`bin/protoc`、`include/`、`lib/`（含 `lib/cmake/protobuf`） |
   | `library/grpc/` | gRPC：`bin/grpc_cpp_plugin`、`include/`、`lib/`（含 `lib/cmake/grpc`） |
   | `library/gflags/` | gflags：`include/`、`lib/`（含 `lib/cmake/gflags`） |
+  | `library/fmt/`、`library/spdlog/` | **fmanlou/log** 的依赖（[log](https://github.com/fmanlou/log)） |
+  | `library/log/` | **fmanlou/log**：`lib/cmake/log`、`include/log/…` |
   | `library/share` | 按需（部分工具链使用） |
 
-- 顶层 **`CMakeLists.txt`** 将 **`EVRP_LIBRARY_DIR`**、**`EVRP_LIBRARY_DIR/protobuf`**、**`EVRP_LIBRARY_DIR/grpc`**、**`EVRP_LIBRARY_DIR/gflags`** 加入 **`CMAKE_PREFIX_PATH`**，以便 **`find_package(Protobuf)`** / **`find_package(gRPC)`** 等发现对应 `lib/cmake/...`；**`find_package(gflags)`** 使用 **`PATHS library/gflags`**；Lua/GTest 仍用显式路径；**`find_program(protoc …)`**、**`find_program(grpc_cpp_plugin …)`** 在 **`library/protobuf/bin`**、**`library/grpc/bin`**（及 **`library/bin`**）中查找。
+- 顶层 **`CMakeLists.txt`** 将 **`EVRP_LIBRARY_DIR`**、**`EVRP_LIBRARY_DIR/protobuf`**、**`EVRP_LIBRARY_DIR/grpc`**、**`EVRP_LIBRARY_DIR/gflags`**、**`EVRP_LIBRARY_DIR/fmt`**、**`EVRP_LIBRARY_DIR/spdlog`**、**`EVRP_LIBRARY_DIR/log`** 加入 **`CMAKE_PREFIX_PATH`**，以便 **`find_package(Protobuf)`** / **`find_package(gRPC)`** 等发现对应 `lib/cmake/...`；**`find_package(gflags)`** 使用 **`PATHS library/gflags`**；**`find_package(log)`** 使用 **`PATHS library/log`**（并解析 fmt/spdlog）；Lua/GTest 仍用显式路径；**`find_program(protoc …)`**、**`find_program(grpc_cpp_plugin …)`** 在 **`library/protobuf/bin`**、**`library/grpc/bin`**（及 **`library/bin`**）中查找。
 
 - 安装到 `library/` 的**具体文件**不纳入版本控制（见根目录 `.gitignore`）；目录说明见仓库根目录 **`LIBRARY.md`**。
 
-### 2. Lua / GoogleTest / Protobuf / gRPC / gflags：主工程**仅从 `library/` 获取（或 PREFIX 解析）**
+### 2. Lua / GoogleTest / Protobuf / gRPC / gflags / log（及 fmt、spdlog）：主工程**仅从 `library/` 获取（或 PREFIX 解析）**
 
-- 根 **`CMakeLists.txt`** 只在 **`library/`** 下查找 Lua 与 GoogleTest（`NO_DEFAULT_PATH`）；**Protobuf**、**gRPC**、**gflags** 通过 **`CMAKE_PREFIX_PATH`** / **`find_package(... PATHS)`** 从 **`library/protobuf`**、**`library/grpc`**、**`library/gflags`** 解析，不编译 `third_party` 源码。
-- 配置主工程 **前**，须已把 Lua / GTest / Protobuf / gRPC / gflags 安装到对应子目录（由安装脚本写入）。
-- **`third_party/lua`、`third_party/googletest`、`third_party/protobuf`、`third_party/grpc`、`third_party/gflags`** 为随仓库提供的上游源码树；**编译与安装**由 **`scripts/install-third-party-to-library.sh`**（总入口）及各库脚本 **`install-*-to-library.sh`** 完成（**gRPC 使用已安装到 `library/protobuf` 的 Protobuf**）。详见 **`LIBRARY.md`**。
+- 根 **`CMakeLists.txt`** 只在 **`library/`** 下查找 Lua 与 GoogleTest（`NO_DEFAULT_PATH`）；**Protobuf**、**gRPC**、**gflags**、**log**（及 **fmt**、**spdlog** 依赖）通过 **`CMAKE_PREFIX_PATH`** / **`find_package(... PATHS)`** 从对应 **`library/...`** 解析，不编译 `third_party` 源码（**log** 的源码由 **`scripts/install-log-to-library.sh`** 按需克隆到 **`third_party/log/`**，见根目录 **`.gitignore`**）。
+- 配置主工程 **前**，须已把上述组件安装到对应子目录（由安装脚本写入）。
+- **`third_party/lua`、`third_party/googletest`、`third_party/protobuf`、`third_party/grpc`、`third_party/gflags`** 为随仓库提供的上游源码树；**编译与安装**由 **`scripts/install-third-party-to-library.sh`**（总入口）及各库脚本 **`install-*-to-library.sh`** 完成（**gRPC 使用已安装到 `library/protobuf` 的 Protobuf**；**log** 依赖 **fmt、spdlog**，由 **`install-log-to-library.sh`** 一并安装到 **`library/`**）。详见 **`LIBRARY.md`**。
 
 **首次或更新第三方源码后：**
 
@@ -35,13 +37,13 @@ cmake -B build
 cmake --build build
 ```
 
-可选向脚本传入额外 CMake 参数（会传给 Lua、GTest、Protobuf、gRPC、gflags 五处 `cmake -S`），例如：
+可选向脚本传入额外 CMake 参数（会传给 Lua、GTest、Protobuf、gRPC、gflags、log（及 fmt/spdlog 构建）等处 `cmake -S`），例如：
 
 ```bash
 ./scripts/install-third-party-to-library.sh -DCMAKE_BUILD_TYPE=Release
 ```
 
-若 `library/` 中缺少 Lua 或 GTest，主工程 `cmake` 会 **FATAL_ERROR** 并提示运行上述脚本；缺少 **Protobuf** / **gRPC** / **gflags** 时对应 **`find_package(REQUIRED)`** 会失败，需先运行安装脚本（或自行安装到 **`library/protobuf/`**、**`library/grpc/`**、**`library/gflags/`**）。
+若 `library/` 中缺少 Lua 或 GTest，主工程 `cmake` 会 **FATAL_ERROR** 并提示运行上述脚本；缺少 **Protobuf** / **gRPC** / **gflags** / **log**（或 **fmt** / **spdlog**）时对应 **`find_package(REQUIRED)`** 会失败，需先运行安装脚本（或自行安装到约定前缀下）。
 
 **故障排除**：Lua 路径类错误多为旧缓存：删除 `build/` 后重新 `cmake -B build`。误装到 **`/usr/local/googletest`** 时可：`sudo rm -rf /usr/local/googletest`。
 
