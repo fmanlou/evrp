@@ -2,8 +2,8 @@
 
 #include "evrp/device/api/server.h"
 
-#include <iostream>
 #include <memory>
+#include <string>
 
 #include <grpcpp/grpcpp.h>
 #include <grpcpp/health_check_service_interface.h>
@@ -11,6 +11,7 @@
 #include "evrp/device/server/grpcinputdeviceservice.h"
 #include "evrp/device/server/grpcinputlisten.h"
 #include "evrp/device/server/grpcplaybackservice.h"
+#include "logger.h"
 
 namespace evrp::device::api {
 
@@ -30,11 +31,11 @@ int run_device_server(const std::string& listen_address,
   builder.RegisterService(&playback_service);
   std::unique_ptr<grpc::Server> server(builder.BuildAndStart());
   if (!server) {
-    std::cerr << "evrp-device: failed to listen on " << listen_address << "\n";
+    log_error("evrp-device: failed to listen on " + listen_address);
     return 1;
   }
 
-  std::cerr << "evrp-device listening on " << listen_address << "\n";
+  log_info("evrp-device listening on " + listen_address);
   server->Wait();
   return 0;
 }

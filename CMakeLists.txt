@@ -116,6 +116,7 @@ target_link_libraries(record PRIVATE evdev eventformat filesystem inputdevice
 
 add_library(logger STATIC logger.cpp)
 target_include_directories(logger PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(logger PUBLIC log::log)
 
 add_library(playback STATIC playback.cpp)
 target_include_directories(playback PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
@@ -286,12 +287,13 @@ add_library(
   evrp/device/server/grpcplaybackservice.cpp)
 target_include_directories(evrp_device_grpc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(evrp_device_grpc PUBLIC evrp_device_proto tofromproto
-                                              countingsemaphore)
+                                              countingsemaphore
+                       PRIVATE logger)
 
 add_executable(evrp-device evrp-device/main.cpp)
 target_link_libraries(evrp-device PRIVATE evrp_device_api evrp_device_grpc
                                           localinputlistener localplayback
-                                          gRPC::grpc++ gflags::gflags)
+                                          gRPC::grpc++ gflags::gflags logger)
 
 add_executable(evrp_inputlisten_test_server evrp/inputlistentest/server.cpp)
 target_include_directories(evrp_inputlisten_test_server
@@ -299,7 +301,7 @@ target_include_directories(evrp_inputlisten_test_server
 target_link_libraries(
   evrp_inputlisten_test_server
   PRIVATE evrp_device_api evrp_device_grpc localinputlistener localplayback
-          gRPC::grpc++ gflags::gflags)
+          gRPC::grpc++ gflags::gflags logger)
 
 add_executable(evrp_inputlisten_test_client evrp/inputlistentest/client.cpp)
 target_include_directories(evrp_inputlisten_test_client
@@ -307,7 +309,7 @@ target_include_directories(evrp_inputlisten_test_client
 target_link_libraries(
   evrp_inputlisten_test_client
   PRIVATE evrp_device_api device_remote_inputlistener gRPC::grpc++
-          gflags::gflags)
+          gflags::gflags logger)
 
 add_executable(evrp_playback_test_server evrp/playbacktest/server.cpp)
 target_include_directories(evrp_playback_test_server
@@ -315,11 +317,12 @@ target_include_directories(evrp_playback_test_server
 target_link_libraries(
   evrp_playback_test_server
   PRIVATE evrp_device_api evrp_device_grpc localplayback gRPC::grpc++
-          gflags::gflags)
+          gflags::gflags logger)
 
 add_executable(evrp_playback_test_client evrp/playbacktest/client.cpp)
 target_include_directories(evrp_playback_test_client
                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(
   evrp_playback_test_client
-  PRIVATE evrp_device_api device_remote_playback gRPC::grpc++ gflags::gflags)
+  PRIVATE evrp_device_api device_remote_playback gRPC::grpc++ gflags::gflags
+          logger)

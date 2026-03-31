@@ -3,6 +3,7 @@
 #include <gflags/gflags.h>
 #include <string>
 
+#include "logger.h"
 #include "evrp/device/server/dispatchedinputlistener.h"
 #include "evrp/device/server/localinputlistener.h"
 #include "evrp/device/server/localplayback.h"
@@ -12,6 +13,9 @@ DEFINE_string(listen, "127.0.0.1:50051",
               "Listen address for the device service (e.g. host:port)");
 
 int main(int argc, char** argv) {
+  Logger logger;
+  g_logger = &logger;
+
   gflags::SetUsageMessage("evrp-device");
   gflags::ParseCommandLineFlags(&argc, &argv, true);
 

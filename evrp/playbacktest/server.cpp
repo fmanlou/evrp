@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 
+#include "logger.h"
 #include "evrp/device/api/server.h"
 #include "evrp/device/api/inputlistener.h"
 #include "evrp/device/server/localplayback.h"
@@ -32,6 +33,9 @@ class NoInputListener final : public evrp::device::api::IInputListener {
 }  // namespace
 
 int main(int argc, char** argv) {
+  Logger logger;
+  g_logger = &logger;
+
   gflags::SetUsageMessage("evrp_playback_test_server — LocalPlayback + gRPC (playback only)");
   gflags::ParseCommandLineFlags(&argc, &argv, true);
 

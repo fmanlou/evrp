@@ -3,6 +3,7 @@
 #include <gflags/gflags.h>
 #include <string>
 
+#include "logger.h"
 #include "evrp/device/api/server.h"
 #include "evrp/device/server/dispatchedinputlistener.h"
 #include "evrp/device/server/localinputlistener.h"
@@ -12,6 +13,9 @@ DEFINE_string(listen, "127.0.0.1:50051",
               "Listen address (host:port) for InputListenService and peers");
 
 int main(int argc, char** argv) {
+  Logger logger;
+  g_logger = &logger;
+
   gflags::SetUsageMessage(
       "evrp_inputlisten_test_server — DispatchedInputListener + gRPC");
   gflags::ParseCommandLineFlags(&argc, &argv, true);
