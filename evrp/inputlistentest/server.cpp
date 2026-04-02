@@ -23,6 +23,6 @@ int main(int argc, char** argv) {
   evrp::device::server::LocalInputListener local_listener;
   evrp::device::server::DispatchedInputListener input_listener(local_listener);
   evrp::device::server::LocalPlayback playback;
-  return evrp::device::api::run_device_server(FLAGS_listen, input_listener,
+  return evrp::device::api::runDeviceServer(FLAGS_listen, input_listener,
                                               playback);
 }

@@ -10,25 +10,25 @@ class FileSystem {
  public:
   FileSystem();
 
-  int open_read_only(const char *path, bool nonblocking) const;
-  int open_read_write(const char *path) const;
-  void close_fd(int fd) const;
-  long read_fd(int fd, void *buffer, unsigned long size) const;
-  long write_fd(int fd, const void *buffer, unsigned long size) const;
-  int poll_fds(int *fds, int nfds, int timeout_ms, bool *ready) const;
+  int openReadOnly(const char *path, bool nonblocking) const;
+  int openReadWrite(const char *path) const;
+  void closeFd(int fd) const;
+  long readFd(int fd, void *buffer, unsigned long size) const;
+  long writeFd(int fd, const void *buffer, unsigned long size) const;
+  int pollFds(int *fds, int nfds, int timeout_ms, bool *ready) const;
 
   // Empty path means writing to stdout.
-  bool open_output(const std::string &path);
-  std::ostream &output_stream();
-  const std::string &error_message() const;
+  bool openOutput(const std::string &path);
+  std::ostream &outputStream();
+  const std::string &errorMessage() const;
 
-  bool open_input(const std::string &path);
-  std::istream &input_stream();
+  bool openInput(const std::string &path);
+  std::istream &inputStream();
 
  private:
   std::unique_ptr<std::ostream> owned_out_;
   std::ostream *out_;
   std::unique_ptr<std::ifstream> owned_in_;
   std::istream *in_;
-  std::string error_message_;
+  std::string errorMessage_;
 };

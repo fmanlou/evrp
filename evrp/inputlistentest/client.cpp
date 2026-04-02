@@ -18,13 +18,13 @@ DEFINE_string(
     "Comma-separated device kinds: keyboard,mouse,touchpad,touchscreen "
     "(default: all four)");
 DEFINE_int32(wait_ms, 2500,
-             "wait_for_input_event timeout per round (ms), must be >= 0");
+             "waitForInputEvent timeout per round (ms), must be >= 0");
 DEFINE_int32(rounds, 5,
-             "Number of wait/read rounds after start_listening (>= 1)");
+             "Number of wait/read rounds after startListening (>= 1)");
 
 namespace {
 
-bool append_kind(const std::string& token, std::vector<evrp::device::api::DeviceKind>* out) {
+bool appendKind(const std::string& token, std::vector<evrp::device::api::DeviceKind>* out) {
   if (token == "keyboard") {
     out->push_back(evrp::device::api::DeviceKind::kKeyboard);
     return true;
@@ -44,7 +44,7 @@ bool append_kind(const std::string& token, std::vector<evrp::device::api::Device
   return false;
 }
 
-bool parse_kinds(const std::string& csv,
+bool parseKinds(const std::string& csv,
                  std::vector<evrp::device::api::DeviceKind>* kinds) {
   kinds->clear();
   std::string t;
@@ -59,15 +59,15 @@ bool parse_kinds(const std::string& csv,
     if (t.empty()) {
       continue;
     }
-    if (!append_kind(t, kinds)) {
-      log_error("evrp_inputlisten_test_client: unknown kind \"" + t + "\"");
+    if (!appendKind(t, kinds)) {
+      logError("evrp_inputlisten_test_client: unknown kind \"" + t + "\"");
       return false;
     }
   }
   return true;
 }
 
-const char* device_kind_name(evrp::device::api::DeviceKind k) {
+const char* deviceKindName(evrp::device::api::DeviceKind k) {
   using evrp::device::api::DeviceKind;
   switch (k) {
     case DeviceKind::kTouchpad:
@@ -83,16 +83,16 @@ const char* device_kind_name(evrp::device::api::DeviceKind k) {
   }
 }
 
-void trace_input_events(int round, const std::vector<evrp::device::api::InputEvent>& batch) {
+void traceInputEvents(int round, const std::vector<evrp::device::api::InputEvent>& batch) {
   for (size_t j = 0; j < batch.size(); ++j) {
     const evrp::device::api::InputEvent& e = batch[j];
     std::ostringstream line;
     line << "  event round=" << round << " index=" << j
-         << " device=" << device_kind_name(e.device) << " time=" << e.time_sec << "."
+         << " device=" << deviceKindName(e.device) << " time=" << e.time_sec << "."
          << std::setfill('0') << std::setw(6) << e.time_usec << std::setfill(' ')
          << " type=0x" << std::hex << e.type << " code=0x" << e.code << std::dec
          << " value=" << e.value;
-    log_info(line.str());
+    logInfo(line.str());
   }
 }
 
@@ -107,20 +107,20 @@ int main(int argc, char** argv) {
   gflags::ParseCommandLineFlags(&argc, &argv, true);
 
   if (FLAGS_wait_ms < 0) {
-    log_error("evrp_inputlisten_test_client: --wait_ms must be >= 0");
+    logError("evrp_inputlisten_test_client: --wait_ms must be >= 0");
     return 2;
   }
   if (FLAGS_rounds < 1) {
-    log_error("evrp_inputlisten_test_client: --rounds must be >= 1");
+    logError("evrp_inputlisten_test_client: --rounds must be >= 1");
     return 2;
   }
 
   std::vector<evrp::device::api::DeviceKind> kinds;
-  if (!parse_kinds(FLAGS_kinds, &kinds)) {
+  if (!parseKinds(FLAGS_kinds, &kinds)) {
     return 2;
   }
   if (kinds.empty()) {
-    log_error("evrp_inputlisten_test_client: no device kinds after parse");
+    logError("evrp_inputlisten_test_client: no device kinds after parse");
     return 2;
   }
 
@@ -128,33 +128,33 @@ int main(int argc, char** argv) {
       FLAGS_target, grpc::InsecureChannelCredentials());
   evrp::device::client::RemoteInputListener listener(channel);
 
-  if (!listener.start_listening(kinds)) {
-    log_error(
-        "evrp_inputlisten_test_client: start_listening failed (no devices "
+  if (!listener.startListening(kinds)) {
+    logError(
+        "evrp_inputlisten_test_client: startListening failed (no devices "
         "or server error?). Is evrp_inputlisten_test_server running on " +
         FLAGS_target + "?");
     return 1;
   }
 
-  log_info(
+  logInfo(
       "evrp_inputlisten_test_client: listening; generate input or "
       "wait for timeouts...");
   int total_events = 0;
   for (int i = 0; i < FLAGS_rounds; ++i) {
-    if (listener.wait_for_input_event(FLAGS_wait_ms)) {
+    if (listener.waitForInputEvent(FLAGS_wait_ms)) {
       std::vector<evrp::device::api::InputEvent> batch =
-          listener.read_input_events();
+          listener.readInputEvents();
       total_events += static_cast<int>(batch.size());
-      log_info("round " + std::to_string(i) +
+      logInfo("round " + std::to_string(i) +
                " events=" + std::to_string(batch.size()));
-      trace_input_events(i, batch);
+      traceInputEvents(i, batch);
     } else {
-      log_info("round " + std::to_string(i) + " no event (timeout or not listening)");
+      logInfo("round " + std::to_string(i) + " no event (timeout or not listening)");
     }
   }
 
-  listener.cancel_listening();
-  log_info("evrp_inputlisten_test_client: done, total events=" +
+  listener.cancelListening();
+  logInfo("evrp_inputlisten_test_client: done, total events=" +
            std::to_string(total_events));
   return 0;
 }

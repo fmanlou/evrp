@@ -5,21 +5,21 @@
 #include <cctype>
 #include <string>
 
-static bool name_like_keyboard(const std::string &name) {
+static bool nameLikeKeyboard(const std::string &name) {
   std::string n = name;
   for (auto &c : n) c = static_cast<char>(std::tolower(c));
   return n.find("keyboard") != std::string::npos ||
          n.find("keypad") != std::string::npos;
 }
 
-bool is_keyboard_from_capabilities(const Capabilities &caps) {
+bool isKeyboardFromCapabilities(const Capabilities &caps) {
   bool has_keyboard_keys =
       caps.key_enter || caps.key_space || caps.key_esc || caps.key_a;
 
-  return caps.ev_key && has_keyboard_keys && name_like_keyboard(caps.name);
+  return caps.ev_key && has_keyboard_keys && nameLikeKeyboard(caps.name);
 }
 
-Event make_key_event(unsigned short code, int value) {
+Event makeKeyEvent(unsigned short code, int value) {
   Event ev = {};
   ev.type = EV_KEY;
   ev.code = code;
@@ -27,7 +27,7 @@ Event make_key_event(unsigned short code, int value) {
   return ev;
 }
 
-std::string keyboard_key_name_from_code(unsigned short code) {
+std::string keyboardKeyNameFromCode(unsigned short code) {
   if (code >= KEY_A && code <= KEY_Z) {
     char letter = static_cast<char>('A' + (code - KEY_A));
     return std::string(1, letter);
@@ -66,14 +66,14 @@ std::string keyboard_key_name_from_code(unsigned short code) {
   }
 }
 
-std::string keyboard_key_action_from_value(int value) {
+std::string keyboardKeyActionFromValue(int value) {
   if (value == 0) return "release";
   if (value == 1) return "press";
   if (value == 2) return "repeat";
   return "unknown(" + std::to_string(value) + ")";
 }
 
-void process_keyboard_event_with_ctrl_filter(
+void processKeyboardEventWithCtrlFilter(
     const Event &ev, keyboard_filter_state *state,
     std::vector<Event> *emitted_events) {
   if (!state || !emitted_events) return;
@@ -129,7 +129,7 @@ void process_keyboard_event_with_ctrl_filter(
   emitted_events->push_back(ev);
 }
 
-void flush_keyboard_event_filter(keyboard_filter_state *state,
+void flushKeyboardEventFilter(keyboard_filter_state *state,
                                  std::vector<Event> *emitted_events) {
   if (!state || !emitted_events) return;
   if (state->ctrl_down_count != 0) return;

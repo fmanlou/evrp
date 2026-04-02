@@ -5,9 +5,9 @@
 namespace evrp::device::server {
 
 SyncDispatchQueue::SyncDispatchQueue()
-    : worker_([this]() { dispatch_loop(); }) {}
+    : worker_([this]() { dispatchLoop(); }) {}
 
-void SyncDispatchQueue::post_void(std::function<void()> fn) {
+void SyncDispatchQueue::postVoid(std::function<void()> fn) {
   if (shutdown_done_.load(std::memory_order_acquire)) {
     return;
   }
@@ -24,7 +24,7 @@ void SyncDispatchQueue::post_void(std::function<void()> fn) {
   fut.get();
 }
 
-void SyncDispatchQueue::dispatch_loop() {
+void SyncDispatchQueue::dispatchLoop() {
   for (;;) {
     std::function<void()> job;
     {

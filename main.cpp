@@ -12,25 +12,25 @@ int main(int argc, char *argv[]) {
   CursorPos cursor;
   g_cursor = &cursor;
 
-  run_options options = parse_options(argc, argv);
-  g_logger->set_level(options.log_level);
+  run_options options = parseOptions(argc, argv);
+  g_logger->setLevel(options.log_level);
 
   int mode_count = (options.recording ? 1 : 0) + (options.playback ? 1 : 0);
   if (mode_count > 1) {
-    log_error("Cannot use --record and --playback at the same time.");
-    print_usage(argv[0]);
+    logError("Cannot use --record and --playback at the same time.");
+    printUsage(argv[0]);
     return 1;
   }
 
   if (mode_count == 0) {
-    print_usage(argv[0]);
+    printUsage(argv[0]);
     return 1;
   }
 
   if (options.playback) {
     if (options.playback_path.empty()) {
-      log_error("Playback (--playback) requires a file path.");
-      print_usage(argv[0]);
+      logError("Playback (--playback) requires a file path.");
+      printUsage(argv[0]);
       return 1;
     }
     return Playback(options).run();

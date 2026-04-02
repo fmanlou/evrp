@@ -18,6 +18,6 @@ class ScopeGuard {
 };
 
 template <typename F>
-ScopeGuard<F> make_scope_guard(F &&f) {
+ScopeGuard<F> makeScopeGuard(F &&f) {
   return ScopeGuard<F>(std::forward<F>(f));
 }

@@ -18,7 +18,7 @@ void CountingSemaphore::acquire() {
   --count_;
 }
 
-bool CountingSemaphore::try_acquire() {
+bool CountingSemaphore::tryAcquire() {
   std::lock_guard<std::mutex> lock(mu_);
   if (count_ == 0) {
     return false;

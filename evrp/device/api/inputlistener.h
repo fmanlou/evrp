@@ -10,15 +10,15 @@ class IInputListener {
  public:
   virtual ~IInputListener() = default;
 
-  virtual bool start_listening(const std::vector<DeviceKind>& kinds) = 0;
+  virtual bool startListening(const std::vector<DeviceKind>& kinds) = 0;
 
-  virtual std::vector<InputEvent> read_input_events() = 0;
+  virtual std::vector<InputEvent> readInputEvents() = 0;
 
-  virtual bool wait_for_input_event(int timeout_ms) = 0;
+  virtual bool waitForInputEvent(int timeout_ms) = 0;
 
-  virtual void cancel_listening() = 0;
+  virtual void cancelListening() = 0;
 
-  virtual bool is_listening() const = 0;
+  virtual bool isListening() const = 0;
 };
 
 }  // namespace evrp::device::api

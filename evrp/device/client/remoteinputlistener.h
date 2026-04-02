@@ -21,15 +21,15 @@ class RemoteInputListener final : public api::IInputListener {
   RemoteInputListener(const RemoteInputListener&) = delete;
   RemoteInputListener& operator=(const RemoteInputListener&) = delete;
 
-  bool start_listening(const std::vector<api::DeviceKind>& kinds) override;
+  bool startListening(const std::vector<api::DeviceKind>& kinds) override;
 
-  std::vector<api::InputEvent> read_input_events() override;
+  std::vector<api::InputEvent> readInputEvents() override;
 
-  bool wait_for_input_event(int timeout_ms) override;
+  bool waitForInputEvent(int timeout_ms) override;
 
-  void cancel_listening() override;
+  void cancelListening() override;
 
-  bool is_listening() const override;
+  bool isListening() const override;
 
  private:
   std::shared_ptr<grpc::Channel> channel_;

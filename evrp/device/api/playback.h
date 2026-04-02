@@ -17,9 +17,9 @@ class IPlayback {
   virtual bool playback(OperationResult* result_out,
                         evrp::CountingSemaphore* progress_notify = nullptr) = 0;
 
-  virtual int playback_index() const = 0;
+  virtual int playbackIndex() const = 0;
 
-  virtual bool stop_playback() = 0;
+  virtual bool stopPlayback() = 0;
 };
 
 }

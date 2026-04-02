@@ -10,36 +10,36 @@
 
 namespace evrp::device::api {
 
-evrp::device::v1::DeviceKind ToProto(DeviceKind k);
+evrp::device::v1::DeviceKind toProto(DeviceKind k);
 
-DeviceKind FromProto(evrp::device::v1::DeviceKind k);
+DeviceKind fromProto(evrp::device::v1::DeviceKind k);
 
-void FromProto(const google::protobuf::RepeatedField<int>& proto_kinds,
+void fromProto(const google::protobuf::RepeatedField<int>& proto_kinds,
                std::vector<DeviceKind>* out);
 
-std::vector<DeviceKind> FromProto(
+std::vector<DeviceKind> fromProto(
     const google::protobuf::RepeatedField<int>& proto_kinds);
 
-void ToProto(const std::vector<DeviceKind>& kinds,
+void toProto(const std::vector<DeviceKind>& kinds,
              google::protobuf::RepeatedField<int>* proto_kinds);
 
-void ToProto(const InputEvent& e, evrp::device::v1::InputEvent* p);
+void toProto(const InputEvent& e, evrp::device::v1::InputEvent* p);
 
-void ToProto(
+void toProto(
     const std::vector<InputEvent>& events,
     google::protobuf::RepeatedPtrField<evrp::device::v1::InputEvent>* out);
 
-void FromProto(const evrp::device::v1::InputEvent& p, InputEvent* e);
+void fromProto(const evrp::device::v1::InputEvent& p, InputEvent* e);
 
-void FromProto(
+void fromProto(
     const google::protobuf::RepeatedPtrField<evrp::device::v1::InputEvent>&
         proto_events,
     std::vector<InputEvent>* out);
 
-std::vector<InputEvent> FromProto(
+std::vector<InputEvent> fromProto(
     const google::protobuf::RepeatedPtrField<evrp::device::v1::InputEvent>&
         proto_events);
 
-void ToProto(const OperationResult& r, evrp::device::v1::OperationResult* p);
+void toProto(const OperationResult& r, evrp::device::v1::OperationResult* p);
 
 }

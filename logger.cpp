@@ -7,7 +7,7 @@
 
 namespace {
 
-logging::LogLevel to_logging_level(LogLevel l) {
+logging::LogLevel toLoggingLevel(LogLevel l) {
   switch (l) {
     case LogLevel::Error:
       return logging::LogLevel::Error;
@@ -23,7 +23,7 @@ logging::LogLevel to_logging_level(LogLevel l) {
   return logging::LogLevel::Info;
 }
 
-LogLevel from_logging_level(logging::LogLevel l) {
+LogLevel fromLoggingLevel(logging::LogLevel l) {
   switch (l) {
     case logging::LogLevel::Error:
       return LogLevel::Error;
@@ -43,7 +43,7 @@ LogLevel from_logging_level(logging::LogLevel l) {
 
 }  // namespace
 
-LogLevel log_level_from_string(const std::string& s) {
+LogLevel logLevelFromString(const std::string& s) {
   std::string lower = s;
   std::transform(lower.begin(), lower.end(), lower.begin(),
                  [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
@@ -55,7 +55,7 @@ LogLevel log_level_from_string(const std::string& s) {
   return LogLevel::Info;
 }
 
-const char* log_level_name(LogLevel level) {
+const char* logLevelName(LogLevel level) {
   switch (level) {
     case LogLevel::Error:
       return "ERROR";
@@ -75,16 +75,16 @@ Logger::Logger() : service_(std::make_unique<logging::LogService>("evrp")) {}
 
 Logger::~Logger() = default;
 
-void Logger::set_level(LogLevel level) {
-  service_->setLevel(to_logging_level(level));
+void Logger::setLevel(LogLevel level) {
+  service_->setLevel(toLoggingLevel(level));
 }
 
 LogLevel Logger::level() const {
-  return from_logging_level(service_->getLevel());
+  return fromLoggingLevel(service_->getLevel());
 }
 
 void Logger::log(LogLevel level, const std::string& msg) {
-  service_->log(to_logging_level(level), std::string(msg));
+  service_->log(toLoggingLevel(level), std::string(msg));
 }
 
 void Logger::error(const std::string& msg) {

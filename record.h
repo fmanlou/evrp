@@ -20,9 +20,9 @@ class Record {
   int run();
 
  private:
-  std::vector<RecordTarget> collect_targets();
-  void close_targets();
-  void record_events();
+  std::vector<RecordTarget> collectTargets();
+  void closeTargets();
+  void recordEvents();
 
   run_options options_;
   FileSystem fs_;

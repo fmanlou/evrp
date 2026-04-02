@@ -17,7 +17,7 @@ bool RemotePlayback::upload(const std::vector<api::InputEvent>& events,
   std::lock_guard<std::mutex> lock(call_mu_);
 
   evrp::device::v1::UploadRecordingRequest req;
-  api::ToProto(events, req.mutable_events());
+  api::toProto(events, req.mutable_events());
 
   grpc::ClientContext ctx;
   evrp::device::v1::OperationResult resp;
@@ -36,7 +36,7 @@ bool RemotePlayback::upload(const std::vector<api::InputEvent>& events,
   return resp.code() == 0;
 }
 
-int RemotePlayback::playback_index() const { return reported_index_; }
+int RemotePlayback::playbackIndex() const { return reported_index_; }
 
 bool RemotePlayback::playback(api::OperationResult* result_out,
                               evrp::CountingSemaphore* progress_notify) {
@@ -88,7 +88,7 @@ bool RemotePlayback::playback(api::OperationResult* result_out,
   return st.ok() && pb_result.code() == 0;
 }
 
-bool RemotePlayback::stop_playback() {
+bool RemotePlayback::stopPlayback() {
   std::lock_guard<std::mutex> lock(call_mu_);
 
   grpc::ClientContext ctx;

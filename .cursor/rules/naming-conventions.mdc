@@ -6,7 +6,7 @@ alwaysApply: true
 # Naming Conventions
 
 - Follow Google C++ style as the baseline.
-- All function names use lowercase with underscores (`snake_case`).
+- All function and method names use lower camelCase (`camelCase`).
 - Production file names use lowercase letters only and do not use underscores.
 - Unit test file names must be `<corresponding_file_name>_test.cpp`.
 - All header files use `#pragma once` only; do not use include guards.
@@ -16,8 +16,8 @@ alwaysApply: true
 
 ```cpp
 // Good
-int read_events();
-bool open_output(const std::string& path);
+int readEvents();
+bool openOutput(const std::string& path);
 ```
 
 ```text

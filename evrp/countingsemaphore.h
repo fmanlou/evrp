@@ -19,7 +19,7 @@ class CountingSemaphore {
 
   void release();
   void acquire();
-  bool try_acquire();
+  bool tryAcquire();
 
  private:
   std::mutex mu_;

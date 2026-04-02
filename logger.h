@@ -11,8 +11,8 @@ enum class LogLevel {
   Trace = 4,
 };
 
-LogLevel log_level_from_string(const std::string& s);
-const char* log_level_name(LogLevel level);
+LogLevel logLevelFromString(const std::string& s);
+const char* logLevelName(LogLevel level);
 
 namespace logging {
 class LogService;
@@ -23,7 +23,7 @@ class Logger {
   Logger();
   ~Logger();
 
-  void set_level(LogLevel level);
+  void setLevel(LogLevel level);
   LogLevel level() const;
 
   void error(const std::string& msg);
@@ -43,18 +43,18 @@ class Logger {
 
 extern Logger* g_logger;
 
-inline void log_error(const std::string& msg) {
+inline void logError(const std::string& msg) {
   if (g_logger) g_logger->error(msg);
 }
-inline void log_warn(const std::string& msg) {
+inline void logWarn(const std::string& msg) {
   if (g_logger) g_logger->warn(msg);
 }
-inline void log_info(const std::string& msg) {
+inline void logInfo(const std::string& msg) {
   if (g_logger) g_logger->info(msg);
 }
-inline void log_debug(const std::string& msg) {
+inline void logDebug(const std::string& msg) {
   if (g_logger) g_logger->debug(msg);
 }
-inline void log_trace(const std::string& msg) {
+inline void logTrace(const std::string& msg) {
   if (g_logger) g_logger->trace(msg);
 }

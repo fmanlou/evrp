@@ -6,7 +6,7 @@ namespace {
 
 class CursorPosBackendX11 : public CursorPosBackend {
  public:
-  bool get_position(int *x, int *y) override {
+  bool getPosition(int *x, int *y) override {
     if (!x || !y) return false;
 
     Display *d = XOpenDisplay(nullptr);
@@ -27,7 +27,7 @@ class CursorPosBackendX11 : public CursorPosBackend {
     return true;
   }
 
-  bool is_available() override {
+  bool isAvailable() override {
     Display *d = XOpenDisplay(nullptr);
     if (!d) return false;
     XCloseDisplay(d);
@@ -37,7 +37,7 @@ class CursorPosBackendX11 : public CursorPosBackend {
 
 }  // namespace
 
-CursorPosBackend *create_cursor_pos_backend_x11() {
+CursorPosBackend *createCursorPosBackendX11() {
   static CursorPosBackendX11 instance;
   return &instance;
 }

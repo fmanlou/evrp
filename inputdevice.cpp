@@ -8,7 +8,7 @@
 #include "keyboard/keyboarddevice.h"
 #include "touchdevice.h"
 
-static bool name_like_mouse(const std::string &name) {
+static bool nameLikeMouse(const std::string &name) {
   std::string n = name;
   for (auto &c : n) c = static_cast<char>(std::tolower(c));
   return n.find("mouse") != std::string::npos ||
@@ -16,42 +16,42 @@ static bool name_like_mouse(const std::string &name) {
          n.find("pointer") != std::string::npos;
 }
 
-bool is_touchpad(const char *dev_path) {
+bool isTouchpad(const char *dev_path) {
   Capabilities caps;
-  if (!open_and_get_capabilities(dev_path, &caps)) return false;
+  if (!openAndGetCapabilities(dev_path, &caps)) return false;
 
-  return is_touchpad_from_capabilities(caps);
+  return isTouchpadFromCapabilities(caps);
 }
 
-bool is_touchscreen(const char *dev_path) {
+bool isTouchscreen(const char *dev_path) {
   Capabilities caps;
-  if (!open_and_get_capabilities(dev_path, &caps)) return false;
+  if (!openAndGetCapabilities(dev_path, &caps)) return false;
 
-  return is_touchscreen_from_capabilities(caps);
+  return isTouchscreenFromCapabilities(caps);
 }
 
-bool is_mouse(const char *dev_path) {
+bool isMouse(const char *dev_path) {
   Capabilities caps;
-  if (!open_and_get_capabilities(dev_path, &caps)) return false;
+  if (!openAndGetCapabilities(dev_path, &caps)) return false;
 
-  return is_mouse_from_capabilities(caps);
+  return isMouseFromCapabilities(caps);
 }
 
-bool is_keyboard(const char *dev_path) {
+bool isKeyboard(const char *dev_path) {
   Capabilities caps;
-  if (!open_and_get_capabilities(dev_path, &caps)) return false;
+  if (!openAndGetCapabilities(dev_path, &caps)) return false;
 
-  return is_keyboard_from_capabilities(caps);
+  return isKeyboardFromCapabilities(caps);
 }
 
-bool is_mouse_from_capabilities(const Capabilities &caps) {
+bool isMouseFromCapabilities(const Capabilities &caps) {
   bool has_rel = caps.ev_rel && caps.rel_x && caps.rel_y;
   bool has_buttons = caps.btn_left || caps.btn_right || caps.btn_middle;
 
-  return has_rel && has_buttons && name_like_mouse(caps.name);
+  return has_rel && has_buttons && nameLikeMouse(caps.name);
 }
 
-Event make_event(unsigned short type, unsigned short code, int value) {
+Event makeEvent(unsigned short type, unsigned short code, int value) {
   Event ev = {};
   ev.type = type;
   ev.code = code;
@@ -59,48 +59,48 @@ Event make_event(unsigned short type, unsigned short code, int value) {
   return ev;
 }
 
-std::string find_first_touchpad() {
+std::string findFirstTouchpad() {
   for (int i = 0; i < 32; ++i) {
     std::string dev = "/dev/input/event" + std::to_string(i);
-    if (is_touchpad(dev.c_str())) return dev;
+    if (isTouchpad(dev.c_str())) return dev;
   }
   return {};
 }
 
-std::string find_first_touchscreen() {
+std::string findFirstTouchscreen() {
   for (int i = 0; i < 32; ++i) {
     std::string dev = "/dev/input/event" + std::to_string(i);
-    if (is_touchscreen(dev.c_str())) return dev;
+    if (isTouchscreen(dev.c_str())) return dev;
   }
   return {};
 }
 
-std::string find_first_mouse() {
+std::string findFirstMouse() {
   for (int i = 0; i < 32; ++i) {
     std::string dev = "/dev/input/event" + std::to_string(i);
-    if (is_mouse(dev.c_str())) return dev;
+    if (isMouse(dev.c_str())) return dev;
   }
   return {};
 }
 
-std::string find_first_keyboard() {
+std::string findFirstKeyboard() {
   for (int i = 0; i < 32; ++i) {
     std::string dev = "/dev/input/event" + std::to_string(i);
-    if (is_keyboard(dev.c_str())) return dev;
+    if (isKeyboard(dev.c_str())) return dev;
   }
   return {};
 }
 
-std::string find_device_path(DeviceId id) {
+std::string findDevicePath(DeviceId id) {
   switch (id) {
     case DeviceId::Touchpad:
-      return find_first_touchpad();
+      return findFirstTouchpad();
     case DeviceId::Touchscreen:
-      return find_first_touchscreen();
+      return findFirstTouchscreen();
     case DeviceId::Mouse:
-      return find_first_mouse();
+      return findFirstMouse();
     case DeviceId::Keyboard:
-      return find_first_keyboard();
+      return findFirstKeyboard();
     case DeviceId::Unknown:
       return "";
   }

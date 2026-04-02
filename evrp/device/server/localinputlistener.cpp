@@ -12,7 +12,7 @@ namespace evrp::device::server {
 
 namespace {
 
-DeviceId device_id_from_api_kind(api::DeviceKind k) {
+DeviceId deviceIdFromApiKind(api::DeviceKind k) {
   switch (k) {
     case api::DeviceKind::kTouchpad:
       return DeviceId::Touchpad;
@@ -27,7 +27,7 @@ DeviceId device_id_from_api_kind(api::DeviceKind k) {
   }
 }
 
-api::InputEvent to_api_input_event(api::DeviceKind device, const Event& ev) {
+api::InputEvent toApiInputEvent(api::DeviceKind device, const Event& ev) {
   api::InputEvent e;
   e.device = device;
   e.time_sec = ev.sec;
@@ -41,17 +41,17 @@ api::InputEvent to_api_input_event(api::DeviceKind device, const Event& ev) {
 }  // namespace
 
 void LocalInputListener::dispose() {
-  cancel_listening();
+  cancelListening();
   std::lock_guard<std::mutex> lock(mu_);
   disposed_ = true;
 }
 
 LocalInputListener::~LocalInputListener() { dispose(); }
 
-void LocalInputListener::close_devices() {
+void LocalInputListener::closeDevices() {
   for (auto& d : devices_) {
     if (d.fd >= 0) {
-      fs_.close_fd(d.fd);
+      fs_.closeFd(d.fd);
     }
     d.fd = -1;
   }
@@ -59,7 +59,7 @@ void LocalInputListener::close_devices() {
   poll_ready_indices_.clear();
 }
 
-bool LocalInputListener::start_listening(
+bool LocalInputListener::startListening(
     const std::vector<api::DeviceKind>& kinds) {
   std::lock_guard<std::mutex> lock(mu_);
   if (disposed_) {
@@ -76,18 +76,18 @@ bool LocalInputListener::start_listening(
     if (k == api::DeviceKind::kUnspecified) {
       continue;
     }
-    DeviceId id = device_id_from_api_kind(k);
+    DeviceId id = deviceIdFromApiKind(k);
     if (id == DeviceId::Unknown) {
       continue;
     }
-    std::string path = find_device_path(id);
+    std::string path = findDevicePath(id);
     if (path.empty()) {
       continue;
     }
     if (!opened_paths.insert(path).second) {
       continue;
     }
-    int fd = fs_.open_read_only(path.c_str(), true);
+    int fd = fs_.openReadOnly(path.c_str(), true);
     if (fd < 0) {
       continue;
     }
@@ -106,7 +106,7 @@ bool LocalInputListener::start_listening(
   return true;
 }
 
-std::vector<api::InputEvent> LocalInputListener::read_input_events() {
+std::vector<api::InputEvent> LocalInputListener::readInputEvents() {
   std::lock_guard<std::mutex> lock(mu_);
   if (disposed_) {
     return {};
@@ -134,7 +134,7 @@ std::vector<api::InputEvent> LocalInputListener::read_input_events() {
     if (!listening_active_) {
       return out;
     }
-    int ne = read_events(devices_[i].fd, evbuf, 64);
+    int ne = readEvents(devices_[i].fd, evbuf, 64);
     if (ne <= 0) {
       continue;
     }
@@ -145,14 +145,14 @@ std::vector<api::InputEvent> LocalInputListener::read_input_events() {
       if (evbuf[j].type == EV_SYN) {
         continue;
       }
-      out.push_back(to_api_input_event(devices_[i].kind, evbuf[j]));
+      out.push_back(toApiInputEvent(devices_[i].kind, evbuf[j]));
     }
   }
   poll_ready_indices_.clear();
   return out;
 }
 
-bool LocalInputListener::wait_for_input_event(int timeout_ms) {
+bool LocalInputListener::waitForInputEvent(int timeout_ms) {
   if (!listening_active_ || disposed_) {
     return false;
   }
@@ -173,7 +173,7 @@ bool LocalInputListener::wait_for_input_event(int timeout_ms) {
     fds[i] = devices_[i].fd;
   }
   bool ready[32]{};
-  int ret = fs_.poll_fds(fds, n_poll, timeout_ms, ready);
+  int ret = fs_.pollFds(fds, n_poll, timeout_ms, ready);
   if (!listening_active_ || disposed_) {
     return false;
   }
@@ -188,15 +188,15 @@ bool LocalInputListener::wait_for_input_event(int timeout_ms) {
   return !poll_ready_indices_.empty();
 }
 
-bool LocalInputListener::is_listening() const { return listening_active_; }
+bool LocalInputListener::isListening() const { return listening_active_; }
 
-void LocalInputListener::cancel_listening() {
+void LocalInputListener::cancelListening() {
   listening_active_ = false;
   std::lock_guard<std::mutex> lock(mu_);
   if (disposed_) {
     return;
   }
-  close_devices();
+  closeDevices();
 }
 
 }  // namespace evrp::device::server

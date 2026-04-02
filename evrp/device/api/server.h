@@ -14,7 +14,7 @@ namespace evrp::device::api {
 // GrpcPlaybackService。`InputDeviceService`：光标 /
 // Ping 等在 GrpcInputDeviceService 中暂未实现（返回 UNIMPLEMENTED，Ping 除外）。
 // 返回 0 表示正常退出，非 0 表示监听失败等。
-int run_device_server(const std::string& listen_address,
+int runDeviceServer(const std::string& listen_address,
                       IInputListener& input_listener,
                       IPlayback& playback);
 

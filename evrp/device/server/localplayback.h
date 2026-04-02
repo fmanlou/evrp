@@ -23,9 +23,9 @@ class LocalPlayback final : public api::IPlayback {
   bool playback(api::OperationResult* result_out,
                 evrp::CountingSemaphore* progress_notify = nullptr) override;
 
-  int playback_index() const override;
+  int playbackIndex() const override;
 
-  bool stop_playback() override;
+  bool stopPlayback() override;
 
  private:
   mutable std::mutex mu_;

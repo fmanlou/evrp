@@ -2,7 +2,7 @@
 
 #include <string>
 
-DeviceId device_id_from_label(const std::string &label) {
+DeviceId deviceIdFromLabel(const std::string &label) {
   if (label == "keyboard") return DeviceId::Keyboard;
   if (label == "mouse") return DeviceId::Mouse;
   if (label == "touchpad") return DeviceId::Touchpad;
@@ -10,7 +10,7 @@ DeviceId device_id_from_label(const std::string &label) {
   return DeviceId::Unknown;
 }
 
-std::string device_label(DeviceId id) {
+std::string deviceLabel(DeviceId id) {
   switch (id) {
     case DeviceId::Keyboard:
       return "keyboard";

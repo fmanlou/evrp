@@ -15,15 +15,15 @@ grpc::Status GrpcInputListenService::StartRecording(
     grpc::ServerContext* /*context*/,
     const evrp::device::v1::StartRecordingRequest* request,
     google::protobuf::Empty* /*response*/) {
-  if (listener_.is_listening()) {
+  if (listener_.isListening()) {
     return grpc::Status(grpc::StatusCode::ALREADY_EXISTS,
                         "recording session already active");
   }
   std::vector<api::DeviceKind> kinds;
-  api::FromProto(request->kinds(), &kinds);
-  if (!listener_.start_listening(kinds)) {
+  api::fromProto(request->kinds(), &kinds);
+  if (!listener_.startListening(kinds)) {
     return grpc::Status(grpc::StatusCode::FAILED_PRECONDITION,
-                        "start_listening failed (no devices or already listening)");
+                        "startListening failed (no devices or already listening)");
   }
   return grpc::Status::OK;
 }
@@ -36,12 +36,12 @@ grpc::Status GrpcInputListenService::WaitForInputEvent(
     return grpc::Status(grpc::StatusCode::INVALID_ARGUMENT,
                         "timeout_ms must be >= 0");
   }
-  if (!listener_.is_listening()) {
+  if (!listener_.isListening()) {
     response->set_ready(false);
     return grpc::Status::OK;
   }
   response->set_ready(
-      listener_.wait_for_input_event(request->timeout_ms()));
+      listener_.waitForInputEvent(request->timeout_ms()));
   return grpc::Status::OK;
 }
 
@@ -49,9 +49,9 @@ grpc::Status GrpcInputListenService::ReadInputEvents(
     grpc::ServerContext* /*context*/,
     const google::protobuf::Empty* /*request*/,
     evrp::device::v1::ReadInputEventsResponse* response) {
-  std::vector<api::InputEvent> batch = listener_.read_input_events();
+  std::vector<api::InputEvent> batch = listener_.readInputEvents();
   for (const api::InputEvent& e : batch) {
-    api::ToProto(e, response->add_events());
+    api::toProto(e, response->add_events());
   }
   return grpc::Status::OK;
 }
@@ -59,7 +59,7 @@ grpc::Status GrpcInputListenService::ReadInputEvents(
 grpc::Status GrpcInputListenService::StopRecording(
     grpc::ServerContext* /*context*/, const google::protobuf::Empty* /*request*/,
     google::protobuf::Empty* /*response*/) {
-  listener_.cancel_listening();
+  listener_.cancelListening();
   return grpc::Status::OK;
 }
 

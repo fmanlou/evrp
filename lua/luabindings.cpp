@@ -22,7 +22,7 @@ namespace {
 KeyboardEventWriter* g_keyboard = nullptr;
 MouseEventWriter* g_mouse = nullptr;
 
-static bool get_dry_run(lua_State* L) {
+static bool getDryRun(lua_State* L) {
   lua_getglobal(L, "evrp");
   lua_getfield(L, -1, "dry_run");
   bool dry_run = lua_toboolean(L, -1);
@@ -30,12 +30,12 @@ static bool get_dry_run(lua_State* L) {
   return dry_run;
 }
 
-int lua_press(lua_State* L) {
+int luaPress(lua_State* L) {
   lua_Integer code = luaL_checkinteger(L, 1);
   if (code < 0 || code > 0xFFFF) {
     return luaL_error(L, "invalid key code: %lld", (long long)code);
   }
-  if (get_dry_run(L)) {
+  if (getDryRun(L)) {
     lua_pushboolean(L, true);
     return 1;
   }
@@ -47,12 +47,12 @@ int lua_press(lua_State* L) {
   return 1;
 }
 
-int lua_release(lua_State* L) {
+int luaRelease(lua_State* L) {
   lua_Integer code = luaL_checkinteger(L, 1);
   if (code < 0 || code > 0xFFFF) {
     return luaL_error(L, "invalid key code: %lld", (long long)code);
   }
-  if (get_dry_run(L)) {
+  if (getDryRun(L)) {
     lua_pushboolean(L, true);
     return 1;
   }
@@ -64,12 +64,12 @@ int lua_release(lua_State* L) {
   return 1;
 }
 
-int lua_click(lua_State* L) {
+int luaClick(lua_State* L) {
   lua_Integer code = luaL_checkinteger(L, 1);
   if (code < 0 || code > 0xFFFF) {
     return luaL_error(L, "invalid key code: %lld", (long long)code);
   }
-  if (get_dry_run(L)) {
+  if (getDryRun(L)) {
     lua_pushboolean(L, true);
     return 1;
   }
@@ -82,10 +82,10 @@ int lua_click(lua_State* L) {
   return 1;
 }
 
-int lua_mouse_move(lua_State* L) {
+int luaMouseMove(lua_State* L) {
   lua_Integer dx = luaL_checkinteger(L, 1);
   lua_Integer dy = luaL_checkinteger(L, 2);
-  if (get_dry_run(L)) {
+  if (getDryRun(L)) {
     lua_pushboolean(L, true);
     return 1;
   }
@@ -97,24 +97,24 @@ int lua_mouse_move(lua_State* L) {
   return 1;
 }
 
-int lua_mouse_move_to_screen(lua_State* L) {
+int luaMouseMoveToScreen(lua_State* L) {
   lua_Integer x = luaL_checkinteger(L, 1);
   lua_Integer y = luaL_checkinteger(L, 2);
-  if (get_dry_run(L)) {
+  if (getDryRun(L)) {
     lua_pushboolean(L, true);
     return 1;
   }
   if (!g_mouse) {
     return luaL_error(L, "evrp mouse not initialized");
   }
-  bool ok = g_mouse->move_to_screen(static_cast<int>(x), static_cast<int>(y));
+  bool ok = g_mouse->moveToScreen(static_cast<int>(x), static_cast<int>(y));
   lua_pushboolean(L, ok);
   return 1;
 }
 
-int lua_mouse_get_position(lua_State* L) {
+int luaMouseGetPosition(lua_State* L) {
   int x = 0, y = 0;
-  bool ok = g_cursor && g_cursor->get_position(&x, &y);
+  bool ok = g_cursor && g_cursor->getPosition(&x, &y);
   if (!ok) {
     lua_pushnil(L);
     return 1;
@@ -124,125 +124,125 @@ int lua_mouse_get_position(lua_State* L) {
   return 2;
 }
 
-int lua_mouse_is_cursor_available(lua_State* L) {
-  lua_pushboolean(L, g_cursor && g_cursor->is_available());
+int luaMouseIsCursorAvailable(lua_State* L) {
+  lua_pushboolean(L, g_cursor && g_cursor->isAvailable());
   return 1;
 }
 
-int lua_mouse_move_to(lua_State* L) {
+int luaMouseMoveTo(lua_State* L) {
   lua_Integer x = luaL_checkinteger(L, 1);
   lua_Integer y = luaL_checkinteger(L, 2);
-  if (get_dry_run(L)) {
+  if (getDryRun(L)) {
     lua_pushboolean(L, true);
     return 1;
   }
   if (!g_mouse) {
     return luaL_error(L, "evrp mouse not initialized");
   }
-  bool ok = g_mouse->move_to(static_cast<int>(x), static_cast<int>(y));
+  bool ok = g_mouse->moveTo(static_cast<int>(x), static_cast<int>(y));
   lua_pushboolean(L, ok);
   return 1;
 }
 
-int lua_mouse_move_to_scaled(lua_State* L) {
+int luaMouseMoveToScaled(lua_State* L) {
   lua_Integer x = luaL_checkinteger(L, 1);
   lua_Integer y = luaL_checkinteger(L, 2);
   lua_Integer width = luaL_checkinteger(L, 3);
   lua_Integer height = luaL_checkinteger(L, 4);
-  if (get_dry_run(L)) {
+  if (getDryRun(L)) {
     lua_pushboolean(L, true);
     return 1;
   }
   if (!g_mouse) {
     return luaL_error(L, "evrp mouse not initialized");
   }
-  bool ok = g_mouse->move_to_scaled(static_cast<int>(x), static_cast<int>(y),
+  bool ok = g_mouse->moveToScaled(static_cast<int>(x), static_cast<int>(y),
                                     static_cast<int>(width),
                                     static_cast<int>(height));
   lua_pushboolean(L, ok);
   return 1;
 }
 
-int lua_mouse_scroll_v(lua_State* L) {
+int luaMouseScrollV(lua_State* L) {
   lua_Integer value = luaL_checkinteger(L, 1);
-  if (get_dry_run(L)) {
+  if (getDryRun(L)) {
     lua_pushboolean(L, true);
     return 1;
   }
   if (!g_mouse) {
     return luaL_error(L, "evrp mouse not initialized");
   }
-  bool ok = g_mouse->scroll_v(static_cast<int>(value));
+  bool ok = g_mouse->scrollV(static_cast<int>(value));
   lua_pushboolean(L, ok);
   return 1;
 }
 
-int lua_mouse_scroll_h(lua_State* L) {
+int luaMouseScrollH(lua_State* L) {
   lua_Integer value = luaL_checkinteger(L, 1);
-  if (get_dry_run(L)) {
+  if (getDryRun(L)) {
     lua_pushboolean(L, true);
     return 1;
   }
   if (!g_mouse) {
     return luaL_error(L, "evrp mouse not initialized");
   }
-  bool ok = g_mouse->scroll_h(static_cast<int>(value));
+  bool ok = g_mouse->scrollH(static_cast<int>(value));
   lua_pushboolean(L, ok);
   return 1;
 }
 
-int lua_mouse_button_down(lua_State* L) {
+int luaMouseButtonDown(lua_State* L) {
   lua_Integer btn = luaL_checkinteger(L, 1);
   if (btn < 0 || btn > 0xFFFF) {
     return luaL_error(L, "invalid button code: %lld", (long long)btn);
   }
-  if (get_dry_run(L)) {
+  if (getDryRun(L)) {
     lua_pushboolean(L, true);
     return 1;
   }
   if (!g_mouse) {
     return luaL_error(L, "evrp mouse not initialized");
   }
-  bool ok = g_mouse->button_down(static_cast<unsigned short>(btn));
+  bool ok = g_mouse->buttonDown(static_cast<unsigned short>(btn));
   lua_pushboolean(L, ok);
   return 1;
 }
 
-int lua_mouse_button_up(lua_State* L) {
+int luaMouseButtonUp(lua_State* L) {
   lua_Integer btn = luaL_checkinteger(L, 1);
   if (btn < 0 || btn > 0xFFFF) {
     return luaL_error(L, "invalid button code: %lld", (long long)btn);
   }
-  if (get_dry_run(L)) {
+  if (getDryRun(L)) {
     lua_pushboolean(L, true);
     return 1;
   }
   if (!g_mouse) {
     return luaL_error(L, "evrp mouse not initialized");
   }
-  bool ok = g_mouse->button_up(static_cast<unsigned short>(btn));
+  bool ok = g_mouse->buttonUp(static_cast<unsigned short>(btn));
   lua_pushboolean(L, ok);
   return 1;
 }
 
-int lua_mouse_button_click(lua_State* L) {
+int luaMouseButtonClick(lua_State* L) {
   lua_Integer btn = luaL_checkinteger(L, 1);
   if (btn < 0 || btn > 0xFFFF) {
     return luaL_error(L, "invalid button code: %lld", (long long)btn);
   }
-  if (get_dry_run(L)) {
+  if (getDryRun(L)) {
     lua_pushboolean(L, true);
     return 1;
   }
   if (!g_mouse) {
     return luaL_error(L, "evrp mouse not initialized");
   }
-  bool ok = g_mouse->button_click(static_cast<unsigned short>(btn));
+  bool ok = g_mouse->buttonClick(static_cast<unsigned short>(btn));
   lua_pushboolean(L, ok);
   return 1;
 }
 
-void register_evrp_table(lua_State* L) {
+void registerEvrpTable(lua_State* L) {
   lua_newtable(L);  // evrp
 
   lua_pushboolean(L, false);
@@ -250,11 +250,11 @@ void register_evrp_table(lua_State* L) {
 
   // evrp.keyboard
   lua_newtable(L);
-  lua_pushcfunction(L, lua_press);
+  lua_pushcfunction(L, luaPress);
   lua_setfield(L, -2, "press");
-  lua_pushcfunction(L, lua_release);
+  lua_pushcfunction(L, luaRelease);
   lua_setfield(L, -2, "release");
-  lua_pushcfunction(L, lua_click);
+  lua_pushcfunction(L, luaClick);
   lua_setfield(L, -2, "click");
 
   // Key code constants (from linux/input-event-codes.h)
@@ -329,27 +329,27 @@ void register_evrp_table(lua_State* L) {
 
   // mouse table
   lua_newtable(L);
-  lua_pushcfunction(L, lua_mouse_move);
+  lua_pushcfunction(L, luaMouseMove);
   lua_setfield(L, -2, "move");
-  lua_pushcfunction(L, lua_mouse_move_to_screen);
+  lua_pushcfunction(L, luaMouseMoveToScreen);
   lua_setfield(L, -2, "move_to_screen");
-  lua_pushcfunction(L, lua_mouse_move_to);
+  lua_pushcfunction(L, luaMouseMoveTo);
   lua_setfield(L, -2, "move_to");
-  lua_pushcfunction(L, lua_mouse_move_to_scaled);
+  lua_pushcfunction(L, luaMouseMoveToScaled);
   lua_setfield(L, -2, "move_to_scaled");
-  lua_pushcfunction(L, lua_mouse_get_position);
+  lua_pushcfunction(L, luaMouseGetPosition);
   lua_setfield(L, -2, "get_position");
-  lua_pushcfunction(L, lua_mouse_is_cursor_available);
+  lua_pushcfunction(L, luaMouseIsCursorAvailable);
   lua_setfield(L, -2, "is_cursor_available");
-  lua_pushcfunction(L, lua_mouse_scroll_v);
+  lua_pushcfunction(L, luaMouseScrollV);
   lua_setfield(L, -2, "scroll_v");
-  lua_pushcfunction(L, lua_mouse_scroll_h);
+  lua_pushcfunction(L, luaMouseScrollH);
   lua_setfield(L, -2, "scroll_h");
-  lua_pushcfunction(L, lua_mouse_button_down);
+  lua_pushcfunction(L, luaMouseButtonDown);
   lua_setfield(L, -2, "button_down");
-  lua_pushcfunction(L, lua_mouse_button_up);
+  lua_pushcfunction(L, luaMouseButtonUp);
   lua_setfield(L, -2, "button_up");
-  lua_pushcfunction(L, lua_mouse_button_click);
+  lua_pushcfunction(L, luaMouseButtonClick);
   lua_setfield(L, -2, "button_click");
   lua_pushinteger(L, BTN_LEFT);
   lua_setfield(L, -2, "BTN_LEFT");
@@ -364,38 +364,38 @@ void register_evrp_table(lua_State* L) {
 
 }  // namespace
 
-int run_script(const char* path) {
+int runScript(const char* path) {
   lua_State* L = luaL_newstate();
   if (!L) return -1;
   luaL_openlibs(L);
 
   FileSystem fs;
   InputEventWriter writer(&fs);
-  g_keyboard = writer.keyboard_writer();
-  g_mouse = writer.mouse_writer();
-  register_evrp_table(L);
+  g_keyboard = writer.keyboardWriter();
+  g_mouse = writer.mouseWriter();
+  registerEvrpTable(L);
 
   int err = luaL_dofile(L, path);
   g_keyboard = nullptr;
   g_mouse = nullptr;
 
   if (err != LUA_OK) {
-    log_error(std::string("Lua error: ") + lua_tostring(L, -1));
+    logError(std::string("Lua error: ") + lua_tostring(L, -1));
     lua_pop(L, 1);
   }
   lua_close(L);
   return err;
 }
 
-int execute_chunk(InputEventWriter* writer, const char* chunk) {
+int executeChunk(InputEventWriter* writer, const char* chunk) {
   if (!writer || !chunk) return LUA_ERRRUN;
   lua_State* L = luaL_newstate();
   if (!L) return LUA_ERRMEM;
   luaL_openlibs(L);
 
-  g_keyboard = writer->keyboard_writer();
-  g_mouse = writer->mouse_writer();
-  register_evrp_table(L);
+  g_keyboard = writer->keyboardWriter();
+  g_mouse = writer->mouseWriter();
+  registerEvrpTable(L);
 
   int err = luaL_loadbuffer(L, chunk, std::strlen(chunk), "=(playback)");
   if (err == LUA_OK) {
@@ -405,7 +405,7 @@ int execute_chunk(InputEventWriter* writer, const char* chunk) {
   g_mouse = nullptr;
 
   if (err != LUA_OK) {
-    log_error(std::string("Lua error: ") + lua_tostring(L, -1));
+    logError(std::string("Lua error: ") + lua_tostring(L, -1));
     lua_pop(L, 1);
   }
   lua_close(L);

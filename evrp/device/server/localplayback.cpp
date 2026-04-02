@@ -11,7 +11,7 @@ namespace evrp::device::server {
 
 namespace {
 
-DeviceId device_id_from_api_kind(api::DeviceKind k) {
+DeviceId deviceIdFromApiKind(api::DeviceKind k) {
   switch (k) {
     case api::DeviceKind::kTouchpad:
       return DeviceId::Touchpad;
@@ -40,7 +40,7 @@ bool LocalPlayback::upload(const std::vector<api::InputEvent>& events,
   return true;
 }
 
-int LocalPlayback::playback_index() const { return current_event_index_; }
+int LocalPlayback::playbackIndex() const { return current_event_index_; }
 
 bool LocalPlayback::playback(
     api::OperationResult* result_out,
@@ -83,7 +83,7 @@ bool LocalPlayback::playback(
     first = false;
     prev_us = t_us;
 
-    DeviceId id = device_id_from_api_kind(e.device);
+    DeviceId id = deviceIdFromApiKind(e.device);
     if (!writer.write(id, static_cast<unsigned short>(e.type),
                       static_cast<unsigned short>(e.code), static_cast<int>(e.value))) {
       {
@@ -113,7 +113,7 @@ bool LocalPlayback::playback(
   return true;
 }
 
-bool LocalPlayback::stop_playback() {
+bool LocalPlayback::stopPlayback() {
   stop_requested_ = true;
   std::lock_guard<std::mutex> lock(mu_);
   playing_ = false;

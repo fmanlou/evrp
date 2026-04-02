@@ -6,34 +6,34 @@ DispatchedInputListener::DispatchedInputListener(api::IInputListener& inner)
     : inner_(inner) {}
 
 void DispatchedInputListener::shutdown() {
-  sync_dispatch_.shutdown([this]() { inner_.cancel_listening(); });
+  sync_dispatch_.shutdown([this]() { inner_.cancelListening(); });
 }
 
 DispatchedInputListener::~DispatchedInputListener() { shutdown(); }
 
-bool DispatchedInputListener::start_listening(
+bool DispatchedInputListener::startListening(
     const std::vector<api::DeviceKind>& kinds) {
-  return sync_dispatch_.post_sync<bool>(
-      [this, kinds]() { return inner_.start_listening(kinds); });
+  return sync_dispatch_.postSync<bool>(
+      [this, kinds]() { return inner_.startListening(kinds); });
 }
 
-std::vector<api::InputEvent> DispatchedInputListener::read_input_events() {
-  return sync_dispatch_.post_sync<std::vector<api::InputEvent>>(
-      [this]() { return inner_.read_input_events(); });
+std::vector<api::InputEvent> DispatchedInputListener::readInputEvents() {
+  return sync_dispatch_.postSync<std::vector<api::InputEvent>>(
+      [this]() { return inner_.readInputEvents(); });
 }
 
-bool DispatchedInputListener::wait_for_input_event(int timeout_ms) {
-  return sync_dispatch_.post_sync<bool>([this, timeout_ms]() {
-    return inner_.wait_for_input_event(timeout_ms);
+bool DispatchedInputListener::waitForInputEvent(int timeout_ms) {
+  return sync_dispatch_.postSync<bool>([this, timeout_ms]() {
+    return inner_.waitForInputEvent(timeout_ms);
   });
 }
 
-void DispatchedInputListener::cancel_listening() {
-  sync_dispatch_.post_void([this]() { inner_.cancel_listening(); });
+void DispatchedInputListener::cancelListening() {
+  sync_dispatch_.postVoid([this]() { inner_.cancelListening(); });
 }
 
-bool DispatchedInputListener::is_listening() const {
-  return inner_.is_listening();
+bool DispatchedInputListener::isListening() const {
+  return inner_.isListening();
 }
 
 }  // namespace evrp::device::server

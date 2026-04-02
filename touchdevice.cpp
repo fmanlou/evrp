@@ -5,7 +5,7 @@
 #include <cctype>
 #include <string>
 
-static bool name_like_touchpad(const std::string &name) {
+static bool nameLikeTouchpad(const std::string &name) {
   std::string n = name;
   for (auto &c : n) c = static_cast<char>(std::tolower(c));
   return n.find("touchpad") != std::string::npos ||
@@ -14,38 +14,38 @@ static bool name_like_touchpad(const std::string &name) {
          n.find("elan") != std::string::npos;
 }
 
-bool is_touchpad_from_capabilities(const Capabilities &caps) {
+bool isTouchpadFromCapabilities(const Capabilities &caps) {
   bool has_abs = caps.ev_abs && (caps.abs_x || caps.abs_mt_position_x);
   bool has_finger_tool = caps.btn_tool_finger || caps.btn_tool_doubletap ||
                          caps.btn_tool_tripletap;
 
-  return has_abs && has_finger_tool && name_like_touchpad(caps.name);
+  return has_abs && has_finger_tool && nameLikeTouchpad(caps.name);
 }
 
-static bool name_like_touchscreen(const std::string &name) {
+static bool nameLikeTouchscreen(const std::string &name) {
   std::string n = name;
   for (auto &c : n) c = static_cast<char>(std::tolower(c));
   return n.find("touchscreen") != std::string::npos;
 }
 
-bool is_touchscreen_from_capabilities(const Capabilities &caps) {
-  if (is_touchpad_from_capabilities(caps)) return false;
+bool isTouchscreenFromCapabilities(const Capabilities &caps) {
+  if (isTouchpadFromCapabilities(caps)) return false;
   bool has_abs = caps.ev_abs && (caps.abs_x || caps.abs_mt_position_x);
-  return has_abs && name_like_touchscreen(caps.name);
+  return has_abs && nameLikeTouchscreen(caps.name);
 }
 
-static bool is_touching_now(const touch_segment_state &state) {
+static bool isTouchingNow(const touch_segment_state &state) {
   bool any_tool_active =
       state.tool_finger_active || state.tool_doubletap_active ||
       state.tool_tripletap_active || state.tool_quadtap_active;
   return state.active_mt_count > 0 || state.btn_touch_active || any_tool_active;
 }
 
-static bool update_touch_segment_state(const Event &ev,
+static bool updateTouchSegmentState(const Event &ev,
                                        touch_segment_state *state) {
   if (!state) return false;
 
-  bool was_touching = is_touching_now(*state);
+  bool was_touching = isTouchingNow(*state);
 
   if (ev.type == EV_ABS) {
     if (ev.code == ABS_MT_SLOT) {
@@ -89,11 +89,11 @@ static bool update_touch_segment_state(const Event &ev,
 #endif
   }
 
-  bool is_touching = is_touching_now(*state);
+  bool is_touching = isTouchingNow(*state);
   return was_touching && !is_touching;
 }
 
-touch_segment_decision process_touch_event_for_segment(
+touch_segment_decision processTouchEventForSegment(
     const Event &ev, touch_segment_state *state) {
   touch_segment_decision decision = {false, false};
   if (!state) return decision;
@@ -105,7 +105,7 @@ touch_segment_decision process_touch_event_for_segment(
     state->pending_segment_break = false;
   }
 
-  bool segment_ended = update_touch_segment_state(ev, state);
+  bool segment_ended = updateTouchSegmentState(ev, state);
   if (segment_ended) {
     state->pending_segment_break = true;
   }

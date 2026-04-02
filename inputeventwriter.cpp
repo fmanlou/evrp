@@ -22,35 +22,35 @@ InputEventWriter::InputEventWriter(FileSystem *fs)
 
 InputEventWriter::~InputEventWriter() {
   for (const auto &p : id_to_fd_) {
-    if (p.second >= 0) fs_->close_fd(p.second);
+    if (p.second >= 0) fs_->closeFd(p.second);
   }
 }
 
-int InputEventWriter::get_fd(DeviceId id) {
+int InputEventWriter::getFd(DeviceId id) {
   if (id == DeviceId::Unknown) return -1;
   auto it = id_to_fd_.find(id);
   if (it != id_to_fd_.end()) return it->second;
 
-  std::string dev_path = find_device_path(id);
+  std::string dev_path = findDevicePath(id);
   if (dev_path.empty()) {
-    log_warn(std::string("No ") + device_label(id) +
+    logWarn(std::string("No ") + deviceLabel(id) +
              " device found, skipping events.");
     id_to_fd_[id] = -1;
     return -1;
   }
 
-  int fd = fs_->open_read_write(dev_path.c_str());
+  int fd = fs_->openReadWrite(dev_path.c_str());
   if (fd < 0) {
     std::ostringstream oss;
     oss << "Failed to open " << dev_path << " for write (try: sudo)";
-    log_warn(oss.str());
+    logWarn(oss.str());
     std::perror(dev_path.c_str());
     id_to_fd_[id] = -1;
     return -1;
   }
 
   id_to_fd_[id] = fd;
-  log_info(std::string("Playing back ") + device_label(id) + " to " + dev_path);
+  logInfo(std::string("Playing back ") + deviceLabel(id) + " to " + dev_path);
   return fd;
 }
 
@@ -62,36 +62,36 @@ bool InputEventWriter::write(DeviceId id, unsigned short type,
   if (id == DeviceId::Mouse) {
     return mouse_writer_.write(type, code, value);
   }
-  return write_raw(id, type, code, value);
+  return writeRaw(id, type, code, value);
 }
 
-bool InputEventWriter::write_raw(DeviceId id, unsigned short type,
+bool InputEventWriter::writeRaw(DeviceId id, unsigned short type,
                                  unsigned short code, int value) {
-  int fd = get_fd(id);
+  int fd = getFd(id);
   if (fd < 0) return true;  // Skip when device not found
   if (type != EV_SYN) {
     struct timeval tv;
     gettimeofday(&tv, nullptr);
     Event ev = {tv.tv_sec, tv.tv_usec, type, code, value};
-    log_debug(format_event_line(id, ev, 0));
+    logDebug(formatEventLine(id, ev, 0));
   }
-  return write_event_with_sync(fd, type, code, value);
+  return writeEventWithSync(fd, type, code, value);
 }
 
-bool InputEventWriter::write_event(int fd, unsigned short type,
+bool InputEventWriter::writeEvent(int fd, unsigned short type,
                                    unsigned short code, int value) {
   struct input_event ev = {};
   gettimeofday(&ev.time, nullptr);
   ev.type = type;
   ev.code = code;
   ev.value = value;
-  long n = fs_->write_fd(fd, &ev, sizeof(ev));
+  long n = fs_->writeFd(fd, &ev, sizeof(ev));
   return n == static_cast<long>(sizeof(ev));
 }
 
-bool InputEventWriter::write_event_with_sync(int fd, unsigned short type,
+bool InputEventWriter::writeEventWithSync(int fd, unsigned short type,
                                              unsigned short code, int value) {
-  if (!write_event(fd, type, code, value)) {
+  if (!writeEvent(fd, type, code, value)) {
     std::perror("Failed to write event");
     return false;
   }
@@ -99,11 +99,11 @@ bool InputEventWriter::write_event_with_sync(int fd, unsigned short type,
     bool needs_mt =
         (type == EV_ABS && (code == ABS_MT_POSITION_Y ||
                             (code == ABS_MT_TRACKING_ID && value == -1)));
-    if (needs_mt && !write_event(fd, EV_SYN, SYN_MT_REPORT, 0)) {
+    if (needs_mt && !writeEvent(fd, EV_SYN, SYN_MT_REPORT, 0)) {
       std::perror("Failed to write SYN_MT_REPORT");
       return false;
     }
-    if (!write_event(fd, EV_SYN, SYN_REPORT, 0)) {
+    if (!writeEvent(fd, EV_SYN, SYN_REPORT, 0)) {
       std::perror("Failed to write SYN_REPORT");
       return false;
     }

@@ -8,7 +8,7 @@
 #include "deviceid.h"
 #include "keyboard/keyboarddevice.h"
 
-std::string parse_event_label(const std::string &line) {
+std::string parseEventLabel(const std::string &line) {
   std::size_t lb = line.find('[');
   if (lb == std::string::npos) return "";
   std::size_t rb = line.find(']', lb + 1);
@@ -16,7 +16,7 @@ std::string parse_event_label(const std::string &line) {
   return line.substr(lb + 1, rb - lb - 1);
 }
 
-bool parse_event_line(const std::string &line, long long *out_delta_us,
+bool parseEventLine(const std::string &line, long long *out_delta_us,
                       unsigned short *out_type, unsigned short *out_code,
                       int *out_value) {
   if (!out_type || !out_code || !out_value) return false;
@@ -78,11 +78,11 @@ bool parse_event_line(const std::string &line, long long *out_delta_us,
   return true;
 }
 
-static bool parse_labeled_duration_line(const std::string &line,
+static bool parseLabeledDurationLine(const std::string &line,
                                         const std::string &expected_label,
                                         long long *out_delta_us) {
   if (!out_delta_us) return false;
-  std::string label = parse_event_label(line);
+  std::string label = parseEventLabel(line);
   if (label != expected_label) return false;
   std::size_t bracket = line.find("] ");
   if (bracket == std::string::npos) return false;
@@ -103,15 +103,15 @@ static bool parse_labeled_duration_line(const std::string &line,
   return true;
 }
 
-bool parse_leading_line(const std::string &line, long long *out_delta_us) {
-  return parse_labeled_duration_line(line, "leading", out_delta_us);
+bool parseLeadingLine(const std::string &line, long long *out_delta_us) {
+  return parseLabeledDurationLine(line, "leading", out_delta_us);
 }
 
-bool parse_trailing_line(const std::string &line, long long *out_delta_us) {
-  return parse_labeled_duration_line(line, "trailing", out_delta_us);
+bool parseTrailingLine(const std::string &line, long long *out_delta_us) {
+  return parseLabeledDurationLine(line, "trailing", out_delta_us);
 }
 
-std::string event_type_name(unsigned short type) {
+std::string eventTypeName(unsigned short type) {
   switch (type) {
     case EV_SYN:
       return "EV_SYN";
@@ -128,7 +128,7 @@ std::string event_type_name(unsigned short type) {
   }
 }
 
-std::string event_code_name(unsigned short type, unsigned short code) {
+std::string eventCodeName(unsigned short type, unsigned short code) {
   if (type == EV_MSC) {
     switch (code) {
       case MSC_SCAN:
@@ -152,20 +152,20 @@ std::string event_code_name(unsigned short type, unsigned short code) {
   return "";
 }
 
-std::string format_event_line(DeviceId id, const Event &ev, long long delta_us) {
+std::string formatEventLine(DeviceId id, const Event &ev, long long delta_us) {
   std::ostringstream oss;
-  std::string code_name = event_code_name(ev.type, ev.code);
+  std::string code_name = eventCodeName(ev.type, ev.code);
   long long delta_sec = delta_us / 1000000LL;
   long long delta_usec = delta_us % 1000000LL;
   if (delta_usec < 0) {
     delta_sec -= 1;
     delta_usec += 1000000LL;
   }
-  oss << "[" << device_label(id) << "] " << delta_sec << ".";
+  oss << "[" << deviceLabel(id) << "] " << delta_sec << ".";
   oss.width(6);
   oss.fill('0');
   oss << delta_usec
-      << " type=" << ev.type << "(" << event_type_name(ev.type) << ")"
+      << " type=" << ev.type << "(" << eventTypeName(ev.type) << ")"
       << " code=" << ev.code;
   if (!code_name.empty()) {
     oss << "(" << code_name << ")";
@@ -173,8 +173,8 @@ std::string format_event_line(DeviceId id, const Event &ev, long long delta_us) 
   oss << " value=" << ev.value;
   if (id == DeviceId::Keyboard) {
     if (ev.type == EV_KEY) {
-      oss << " // key=" << keyboard_key_name_from_code(ev.code)
-          << " action=" << keyboard_key_action_from_value(ev.value);
+      oss << " // key=" << keyboardKeyNameFromCode(ev.code)
+          << " action=" << keyboardKeyActionFromValue(ev.value);
     } else {
       oss << " // key=N/A action=non-key-event";
     }
@@ -182,7 +182,7 @@ std::string format_event_line(DeviceId id, const Event &ev, long long delta_us) 
   return oss.str();
 }
 
-static std::string format_duration_line(const std::string &label,
+static std::string formatDurationLine(const std::string &label,
                                         long long delta_us) {
   std::ostringstream oss;
   long long delta_sec = delta_us / 1000000LL;
@@ -198,10 +198,10 @@ static std::string format_duration_line(const std::string &label,
   return oss.str();
 }
 
-std::string format_leading_line(long long delta_us) {
-  return format_duration_line("leading", delta_us);
+std::string formatLeadingLine(long long delta_us) {
+  return formatDurationLine("leading", delta_us);
 }
 
-std::string format_trailing_line(long long delta_us) {
-  return format_duration_line("trailing", delta_us);
+std::string formatTrailingLine(long long delta_us) {
+  return formatDurationLine("trailing", delta_us);
 }

@@ -15,16 +15,16 @@
 #define BIT(x) (1UL << OFF(x))
 #define TEST_BIT(bit, array) ((array[(bit) / BITS_PER_LONG] & BIT(bit)) != 0)
 
-bool open_and_get_capabilities(const char *path, Capabilities *caps) {
+bool openAndGetCapabilities(const char *path, Capabilities *caps) {
   FileSystem fs;
-  int fd = fs.open_read_only(path, true);
+  int fd = fs.openReadOnly(path, true);
   if (fd < 0) return false;
-  bool ok = get_capabilities(fd, caps);
-  fs.close_fd(fd);
+  bool ok = getCapabilities(fd, caps);
+  fs.closeFd(fd);
   return ok;
 }
 
-bool get_capabilities(int fd, Capabilities *caps) {
+bool getCapabilities(int fd, Capabilities *caps) {
   if (fd < 0 || !caps) return false;
 
   char name[256] = {0};
@@ -63,12 +63,12 @@ bool get_capabilities(int fd, Capabilities *caps) {
   return true;
 }
 
-int read_events(int fd, Event *events, int max_count) {
+int readEvents(int fd, Event *events, int max_count) {
   if (fd < 0 || !events || max_count <= 0) return -1;
   FileSystem fs;
 
   struct input_event raw[64];
-  long n = fs.read_fd(fd, raw, sizeof(raw));
+  long n = fs.readFd(fd, raw, sizeof(raw));
   if (n <= 0) return static_cast<int>(n);
   if (n % sizeof(struct input_event) != 0) return -1;
 
@@ -100,6 +100,6 @@ SigintGuard::SigintGuard() {
 
 SigintGuard::~SigintGuard() { sigaction(SIGINT, &old_sa_, nullptr); }
 
-bool SigintGuard::stop_requested() const { return stop_ != 0; }
+bool SigintGuard::stopRequested() const { return stop_ != 0; }
 
-bool errno_is_eintr() { return errno == EINTR; }
+bool errnoIsEintr() { return errno == EINTR; }

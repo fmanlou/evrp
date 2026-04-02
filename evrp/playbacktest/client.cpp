@@ -18,7 +18,7 @@ DEFINE_bool(progress, true,
 
 namespace {
 
-unsigned short key_code_for_char(char c) {
+unsigned short keyCodeForChar(char c) {
   switch (c) {
     case 'h':
       return KEY_H;
@@ -41,12 +41,12 @@ unsigned short key_code_for_char(char c) {
   }
 }
 
-std::vector<evrp::device::api::InputEvent> make_hello_world_key_events() {
+std::vector<evrp::device::api::InputEvent> makeHelloWorldKeyEvents() {
   const char kPhrase[] = "hello world";
   std::vector<evrp::device::api::InputEvent> v;
   int usec = 0;
   for (size_t i = 0; kPhrase[i] != '\0'; ++i) {
-    const unsigned short key = key_code_for_char(kPhrase[i]);
+    const unsigned short key = keyCodeForChar(kPhrase[i]);
     if (key == 0) {
       continue;
     }
@@ -75,8 +75,8 @@ int main(int argc, char** argv) {
       "evrp_playback_test_client — replay keyboard events for \"hello world\"");
   gflags::ParseCommandLineFlags(&argc, &argv, true);
 
-  const auto events = make_hello_world_key_events();
-  log_info("evrp_playback_test_client: will replay " + std::to_string(events.size()) +
+  const auto events = makeHelloWorldKeyEvents();
+  logInfo("evrp_playback_test_client: will replay " + std::to_string(events.size()) +
            " key events (EV_KEY press/release) for \"hello world\"");
 
   std::shared_ptr<grpc::Channel> channel =
@@ -85,7 +85,7 @@ int main(int argc, char** argv) {
 
   evrp::device::api::OperationResult up;
   if (!remote.upload(events, &up)) {
-    log_error("evrp_playback_test_client: upload failed code=" +
+    logError("evrp_playback_test_client: upload failed code=" +
               std::to_string(up.code) + " msg=" + up.message);
     return 1;
   }
@@ -98,8 +98,8 @@ int main(int argc, char** argv) {
     consumer = std::thread([&]() {
       for (int i = 0; i < n; ++i) {
         progress_sem.acquire();
-        log_info("evrp_playback_test_client: progress idx=" +
-                 std::to_string(remote.playback_index()));
+        logInfo("evrp_playback_test_client: progress idx=" +
+                 std::to_string(remote.playbackIndex()));
       }
     });
   }
@@ -113,12 +113,12 @@ int main(int argc, char** argv) {
   }
 
   if (!ok) {
-    log_error("evrp_playback_test_client: playback failed code=" +
+    logError("evrp_playback_test_client: playback failed code=" +
               std::to_string(play.code) + " msg=" + play.message);
     return 1;
   }
-  log_info("hello world");
-  log_info(
+  logInfo("hello world");
+  logInfo(
       "evrp_playback_test_client: playback finished (keyboard injection "
       "requires focus in a text field)");
   return 0;

@@ -15,7 +15,7 @@
 
 namespace evrp::device::api {
 
-int run_device_server(const std::string& listen_address,
+int runDeviceServer(const std::string& listen_address,
                       IInputListener& input_listener,
                       IPlayback& playback) {
   ::evrp::device::server::GrpcInputListenService listen_service(input_listener);
@@ -31,11 +31,11 @@ int run_device_server(const std::string& listen_address,
   builder.RegisterService(&playback_service);
   std::unique_ptr<grpc::Server> server(builder.BuildAndStart());
   if (!server) {
-    log_error("evrp-device: failed to listen on " + listen_address);
+    logError("evrp-device: failed to listen on " + listen_address);
     return 1;
   }
 
-  log_info("evrp-device listening on " + listen_address);
+  logInfo("evrp-device listening on " + listen_address);
   server->Wait();
   return 0;
 }

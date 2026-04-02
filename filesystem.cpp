@@ -10,7 +10,7 @@
 
 FileSystem::FileSystem() : out_(&std::cout), in_(nullptr) {}
 
-int FileSystem::open_read_only(const char *path, bool nonblocking) const {
+int FileSystem::openReadOnly(const char *path, bool nonblocking) const {
   int flags = O_RDONLY;
   if (nonblocking) {
     flags |= O_NONBLOCK;
@@ -18,28 +18,28 @@ int FileSystem::open_read_only(const char *path, bool nonblocking) const {
   return ::open(path, flags);
 }
 
-int FileSystem::open_read_write(const char *path) const {
+int FileSystem::openReadWrite(const char *path) const {
   return ::open(path, O_RDWR);
 }
 
-void FileSystem::close_fd(int fd) const {
+void FileSystem::closeFd(int fd) const {
   if (fd >= 0) {
     ::close(fd);
   }
 }
 
-long FileSystem::read_fd(int fd, void *buffer, unsigned long size) const {
+long FileSystem::readFd(int fd, void *buffer, unsigned long size) const {
   if (fd < 0 || !buffer || size == 0) return -1;
   return static_cast<long>(::read(fd, buffer, size));
 }
 
-long FileSystem::write_fd(int fd, const void *buffer,
+long FileSystem::writeFd(int fd, const void *buffer,
                           unsigned long size) const {
   if (fd < 0 || !buffer || size == 0) return -1;
   return static_cast<long>(::write(fd, buffer, size));
 }
 
-int FileSystem::poll_fds(int *fds, int nfds, int timeout_ms,
+int FileSystem::pollFds(int *fds, int nfds, int timeout_ms,
                          bool *ready) const {
   if (!fds || nfds <= 0 || !ready) return -1;
 
@@ -64,8 +64,8 @@ int FileSystem::poll_fds(int *fds, int nfds, int timeout_ms,
   return count;
 }
 
-bool FileSystem::open_output(const std::string &path) {
-  error_message_.clear();
+bool FileSystem::openOutput(const std::string &path) {
+  errorMessage_.clear();
 
   if (path.empty()) {
     owned_out_.reset();
@@ -75,7 +75,7 @@ bool FileSystem::open_output(const std::string &path) {
 
   std::unique_ptr<std::ofstream> file(new std::ofstream(path));
   if (!file->is_open()) {
-    error_message_ = "Failed to open output file: " + path;
+    errorMessage_ = "Failed to open output file: " + path;
     owned_out_.reset();
     out_ = &std::cout;
     return false;
@@ -86,15 +86,15 @@ bool FileSystem::open_output(const std::string &path) {
   return true;
 }
 
-std::ostream &FileSystem::output_stream() { return *out_; }
+std::ostream &FileSystem::outputStream() { return *out_; }
 
-const std::string &FileSystem::error_message() const { return error_message_; }
+const std::string &FileSystem::errorMessage() const { return errorMessage_; }
 
-bool FileSystem::open_input(const std::string &path) {
-  error_message_.clear();
+bool FileSystem::openInput(const std::string &path) {
+  errorMessage_.clear();
   std::unique_ptr<std::ifstream> file(new std::ifstream(path));
   if (!file->is_open()) {
-    error_message_ = "Failed to open input file: " + path;
+    errorMessage_ = "Failed to open input file: " + path;
     owned_in_.reset();
     in_ = nullptr;
     return false;
@@ -104,4 +104,4 @@ bool FileSystem::open_input(const std::string &path) {
   return true;
 }
 
-std::istream &FileSystem::input_stream() { return *in_; }
+std::istream &FileSystem::inputStream() { return *in_; }

@@ -22,7 +22,7 @@ DEFINE_bool(wait_trailing, true,
 
 namespace {
 
-void reset_arg_flags() {
+void resetArgFlags() {
   FLAGS_record = false;
   FLAGS_playback = "";
   FLAGS_output = "";
@@ -32,7 +32,7 @@ void reset_arg_flags() {
 }
 
 // Map legacy flags (-r/-p/-o, --log-level, --wait-*) to gflags names.
-void normalize_legacy_args(std::vector<std::string> *args) {
+void normalizeLegacyArgs(std::vector<std::string> *args) {
   auto &a = *args;
   for (size_t i = 1; i < a.size();) {
     if (a[i] == "-r") {
@@ -65,7 +65,7 @@ void normalize_legacy_args(std::vector<std::string> *args) {
 
 } // namespace
 
-void print_usage(const char *prog) {
+void printUsage(const char *prog) {
   std::cout
       << "Usage: " << prog
       << " --record|-r [-o FILE|--output=FILE] [--log_level=LEVEL|--log-level=LEVEL] "
@@ -86,8 +86,8 @@ void print_usage(const char *prog) {
       << "  --help: show gflags help.\n";
 }
 
-bool parse_kind(const std::string &s, DeviceId *out_id) {
-  DeviceId id = device_id_from_label(s);
+bool parseKind(const std::string &s, DeviceId *out_id) {
+  DeviceId id = deviceIdFromLabel(s);
   if (id != DeviceId::Unknown) {
     *out_id = id;
     return true;
@@ -95,15 +95,15 @@ bool parse_kind(const std::string &s, DeviceId *out_id) {
   return false;
 }
 
-run_options parse_options(int argc, char *argv[]) {
-  reset_arg_flags();
+run_options parseOptions(int argc, char *argv[]) {
+  resetArgFlags();
 
   std::vector<std::string> owned;
   owned.reserve(static_cast<size_t>(argc));
   for (int i = 0; i < argc; ++i) {
     owned.emplace_back(argv[i] ? argv[i] : "");
   }
-  normalize_legacy_args(&owned);
+  normalizeLegacyArgs(&owned);
   std::vector<char *> argv_ptrs;
   argv_ptrs.reserve(static_cast<size_t>(argc) + 1);
   for (auto &s : owned) {
@@ -121,7 +121,7 @@ run_options parse_options(int argc, char *argv[]) {
   options.playback = !FLAGS_playback.empty();
   options.playback_path = FLAGS_playback;
   options.output_path = FLAGS_output;
-  options.log_level = log_level_from_string(FLAGS_log_level);
+  options.log_level = logLevelFromString(FLAGS_log_level);
   options.execute_wait_before_first = FLAGS_wait_leading;
   options.execute_wait_after_last = FLAGS_wait_trailing;
 
@@ -130,7 +130,7 @@ run_options parse_options(int argc, char *argv[]) {
       continue;
     }
     DeviceId id;
-    if (parse_kind(argv_mut[i], &id)) {
+    if (parseKind(argv_mut[i], &id)) {
       options.kinds.push_back(id);
     }
   }

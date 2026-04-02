@@ -13,17 +13,17 @@ class MouseEventWriter {
   bool move(int dx, int dy);
   // Get current position via X11, then move by delta to reach (x, y).
   // Works with REL-only mice. Requires DISPLAY (X11/XWayland).
-  bool move_to_screen(int x, int y);
+  bool moveToScreen(int x, int y);
   // Absolute position. Coordinates typically 0-32767 (device range).
-  bool move_to(int x, int y);
+  bool moveTo(int x, int y);
   // Scale from (0,0)-(width,height) to device range (0-32767).
-  bool move_to_scaled(int x, int y, int width, int height);
-  bool scroll_v(int value);  // Vertical: positive=down, negative=up
-  bool scroll_h(int value);  // Horizontal: positive=right, negative=left
+  bool moveToScaled(int x, int y, int width, int height);
+  bool scrollV(int value);  // Vertical: positive=down, negative=up
+  bool scrollH(int value);  // Horizontal: positive=right, negative=left
 
-  bool button_down(unsigned short btn);
-  bool button_up(unsigned short btn);
-  bool button_click(unsigned short btn);
+  bool buttonDown(unsigned short btn);
+  bool buttonUp(unsigned short btn);
+  bool buttonClick(unsigned short btn);
 
   // Writes any mouse event (for playback passthrough).
   bool write(unsigned short type, unsigned short code, int value);

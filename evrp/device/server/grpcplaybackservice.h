@@ -36,7 +36,7 @@ class GrpcPlaybackService final
                     google::protobuf::Empty* response) override;
 
  private:
-  void mark_playback_stream_finished();
+  void markPlaybackStreamFinished();
 
   evrp::device::api::IPlayback& playback_;
 

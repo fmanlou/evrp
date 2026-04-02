@@ -15,18 +15,18 @@ class InputEventWriter {
 
   bool write(DeviceId id, unsigned short type, unsigned short code, int value);
 
-  KeyboardEventWriter *keyboard_writer() { return &keyboard_writer_; }
-  MouseEventWriter *mouse_writer() { return &mouse_writer_; }
+  KeyboardEventWriter *keyboardWriter() { return &keyboard_writer_; }
+  MouseEventWriter *mouseWriter() { return &mouse_writer_; }
 
  private:
   friend class KeyboardEventWriter;
   friend class MouseEventWriter;
-  bool write_raw(DeviceId id, unsigned short type, unsigned short code,
+  bool writeRaw(DeviceId id, unsigned short type, unsigned short code,
                  int value);
 
-  int get_fd(DeviceId id);
-  bool write_event(int fd, unsigned short type, unsigned short code, int value);
-  bool write_event_with_sync(int fd, unsigned short type, unsigned short code,
+  int getFd(DeviceId id);
+  bool writeEvent(int fd, unsigned short type, unsigned short code, int value);
+  bool writeEventWithSync(int fd, unsigned short type, unsigned short code,
                              int value);
 
   FileSystem *fs_;

@@ -18,6 +18,6 @@ struct run_options {
   bool execute_wait_after_last;
 };
 
-void print_usage(const char *prog);
-bool parse_kind(const std::string &s, DeviceId *out_id);
-run_options parse_options(int argc, char *argv[]);
+void printUsage(const char *prog);
+bool parseKind(const std::string &s, DeviceId *out_id);
+run_options parseOptions(int argc, char *argv[]);

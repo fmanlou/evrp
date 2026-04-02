@@ -11,7 +11,7 @@ namespace api = evrp::device::api;
 GrpcPlaybackService::GrpcPlaybackService(api::IPlayback& playback)
     : playback_(playback) {}
 
-void GrpcPlaybackService::mark_playback_stream_finished() {
+void GrpcPlaybackService::markPlaybackStreamFinished() {
   std::lock_guard<std::mutex> lock(prog_mu_);
   prog_playback_finished_ = true;
 }
@@ -21,13 +21,13 @@ grpc::Status GrpcPlaybackService::Upload(
     const evrp::device::v1::UploadRecordingRequest* request,
     evrp::device::v1::OperationResult* response) {
   api::OperationResult result;
-  std::vector<api::InputEvent> events = api::FromProto(request->events());
+  std::vector<api::InputEvent> events = api::fromProto(request->events());
   if (!playback_.upload(events, &result)) {
     return grpc::Status(
         grpc::StatusCode::INTERNAL,
         result.message.empty() ? "upload failed" : result.message);
   }
-  api::ToProto(result, response);
+  api::toProto(result, response);
   return grpc::Status::OK;
 }
 
@@ -35,7 +35,7 @@ grpc::Status GrpcPlaybackService::Playback(
     grpc::ServerContext* /*context*/,
     const evrp::device::v1::PlaybackRecordingRequest* /*request*/,
     evrp::device::v1::OperationResult* response) {
-  while (playback_progress_sem_.try_acquire()) {
+  while (playback_progress_sem_.tryAcquire()) {
   }
   {
     std::lock_guard<std::mutex> lock(prog_mu_);
@@ -45,7 +45,7 @@ grpc::Status GrpcPlaybackService::Playback(
   api::OperationResult result;
   const bool ok = playback_.playback(&result, &playback_progress_sem_);
 
-  mark_playback_stream_finished();
+  markPlaybackStreamFinished();
   playback_progress_sem_.release();
 
   if (!ok) {
@@ -53,7 +53,7 @@ grpc::Status GrpcPlaybackService::Playback(
         grpc::StatusCode::FAILED_PRECONDITION,
         result.message.empty() ? "playback failed" : result.message);
   }
-  api::ToProto(result, response);
+  api::toProto(result, response);
   return grpc::Status::OK;
 }
 
@@ -70,7 +70,7 @@ grpc::Status GrpcPlaybackService::SubscribePlayback(
     subscriber_active_ = true;
     prog_playback_finished_ = false;
   }
-  while (playback_progress_sem_.try_acquire()) {
+  while (playback_progress_sem_.tryAcquire()) {
   }
 
   grpc::Status status = grpc::Status::OK;
@@ -92,7 +92,7 @@ grpc::Status GrpcPlaybackService::SubscribePlayback(
     }
 
     evrp::device::v1::PlaybackProgress msg;
-    msg.set_event_index(playback_.playback_index());
+    msg.set_event_index(playback_.playbackIndex());
     if (!writer->Write(msg)) {
       status = grpc::Status(grpc::StatusCode::UNKNOWN, "progress write failed");
       break;
@@ -109,7 +109,7 @@ grpc::Status GrpcPlaybackService::SubscribePlayback(
 grpc::Status GrpcPlaybackService::Stop(
     grpc::ServerContext* /*context*/, const google::protobuf::Empty* /*request*/,
     google::protobuf::Empty* /*response*/) {
-  if (!playback_.stop_playback()) {
+  if (!playback_.stopPlayback()) {
     return grpc::Status(grpc::StatusCode::INTERNAL, "stop failed");
   }
   return grpc::Status::OK;

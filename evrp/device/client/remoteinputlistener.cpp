@@ -10,16 +10,16 @@ RemoteInputListener::RemoteInputListener(std::shared_ptr<grpc::Channel> channel)
     : channel_(std::move(channel)),
       stub_(evrp::device::v1::InputListenService::NewStub(channel_)) {}
 
-RemoteInputListener::~RemoteInputListener() { cancel_listening(); }
+RemoteInputListener::~RemoteInputListener() { cancelListening(); }
 
-bool RemoteInputListener::start_listening(
+bool RemoteInputListener::startListening(
     const std::vector<api::DeviceKind>& kinds) {
   if (listening_active_) {
     return false;
   }
 
   evrp::device::v1::StartRecordingRequest req;
-  api::ToProto(kinds, req.mutable_kinds());
+  api::toProto(kinds, req.mutable_kinds());
   if (req.kinds_size() == 0) {
     return false;
   }
@@ -35,7 +35,7 @@ bool RemoteInputListener::start_listening(
   return true;
 }
 
-std::vector<api::InputEvent> RemoteInputListener::read_input_events() {
+std::vector<api::InputEvent> RemoteInputListener::readInputEvents() {
   if (!listening_active_) {
     return {};
   }
@@ -48,10 +48,10 @@ std::vector<api::InputEvent> RemoteInputListener::read_input_events() {
     return {};
   }
 
-  return api::FromProto(resp.events());
+  return api::fromProto(resp.events());
 }
 
-bool RemoteInputListener::wait_for_input_event(int timeout_ms) {
+bool RemoteInputListener::waitForInputEvent(int timeout_ms) {
   if (timeout_ms < 0) {
     return false;
   }
@@ -70,7 +70,7 @@ bool RemoteInputListener::wait_for_input_event(int timeout_ms) {
   return resp.ready();
 }
 
-void RemoteInputListener::cancel_listening() {
+void RemoteInputListener::cancelListening() {
   bool need_stop = listening_active_;
   listening_active_ = false;
   if (!need_stop || !stub_) {
@@ -82,6 +82,6 @@ void RemoteInputListener::cancel_listening() {
   stub_->StopRecording(&ctx, req, &resp);
 }
 
-bool RemoteInputListener::is_listening() const { return listening_active_; }
+bool RemoteInputListener::isListening() const { return listening_active_; }
 
 }  // namespace evrp::device::client
