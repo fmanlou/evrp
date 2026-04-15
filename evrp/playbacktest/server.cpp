@@ -7,6 +7,7 @@
 #include "evrp/device/api/inputlistener.h"
 #include "evrp/device/server/localcursorposition.h"
 #include "evrp/device/server/localplayback.h"
+#include "evrp/device/server/localinputdevicekindsprovider.h"
 
 DEFINE_string(listen, "127.0.0.1:50051",
               "Listen address (host:port) for PlaybackService and other device RPCs");
@@ -42,7 +43,9 @@ int main(int argc, char** argv) {
 
   NoInputListener no_input;
   evrp::device::server::LocalCursorPosition cursor_position;
+  evrp::device::server::LocalInputDeviceKindsProvider device_kinds_provider;
   evrp::device::server::LocalPlayback playback;
   return evrp::device::api::runDeviceServer(FLAGS_listen, no_input,
-                                            cursor_position, playback);
+                                           cursor_position, device_kinds_provider,
+                                           playback);
 }

@@ -7,6 +7,7 @@
 #include "evrp/device/server/dispatchedinputlistener.h"
 #include "evrp/device/server/localcursorposition.h"
 #include "evrp/device/server/localinputlistener.h"
+#include "evrp/device/server/localinputdevicekindsprovider.h"
 #include "evrp/device/server/localplayback.h"
 #include "evrp/device/api/server.h"
 
@@ -23,7 +24,9 @@ int main(int argc, char** argv) {
   evrp::device::server::LocalInputListener local_listener;
   evrp::device::server::DispatchedInputListener input_listener(local_listener);
   evrp::device::server::LocalCursorPosition cursor_position;
+  evrp::device::server::LocalInputDeviceKindsProvider device_kinds_provider;
   evrp::device::server::LocalPlayback playback;
-  return evrp::device::api::runDeviceServer(FLAGS_listen, input_listener,
-                                            cursor_position, playback);
+  return evrp::device::api::runDeviceServer(
+      FLAGS_listen, input_listener, cursor_position, device_kinds_provider,
+      playback);
 }

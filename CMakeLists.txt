@@ -262,6 +262,13 @@ target_include_directories(localcursorposition
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(localcursorposition PUBLIC evrp_device_api cursorpos)
 
+add_library(localinputdevicekindsprovider STATIC
+            evrp/device/server/localinputdevicekindsprovider.cpp)
+target_include_directories(localinputdevicekindsprovider
+                           PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(localinputdevicekindsprovider
+                      PUBLIC evrp_device_api PRIVATE inputdevice)
+
 add_library(device_remote_inputlistener STATIC
             evrp/device/client/remoteinputlistener.cpp)
 target_include_directories(device_remote_inputlistener
@@ -290,13 +297,14 @@ add_library(
 target_include_directories(evrp_device_grpc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(evrp_device_grpc PUBLIC evrp_device_proto tofromproto
                                               countingsemaphore
-                       PRIVATE logger inputdevice)
+                       PRIVATE logger)
 
 add_executable(evrp-device evrp-device/main.cpp)
 target_link_libraries(
   evrp-device
   PRIVATE evrp_device_api evrp_device_grpc localinputlistener localplayback
-          localcursorposition gRPC::grpc++ gflags::gflags logger)
+          localcursorposition localinputdevicekindsprovider gRPC::grpc++
+          gflags::gflags logger)
 
 add_executable(evrp_inputlisten_test_server evrp/inputlistentest/server.cpp)
 target_include_directories(evrp_inputlisten_test_server
@@ -304,7 +312,8 @@ target_include_directories(evrp_inputlisten_test_server
 target_link_libraries(
   evrp_inputlisten_test_server
   PRIVATE evrp_device_api evrp_device_grpc localinputlistener localplayback
-          localcursorposition gRPC::grpc++ gflags::gflags logger)
+          localcursorposition localinputdevicekindsprovider gRPC::grpc++
+          gflags::gflags logger)
 
 add_executable(evrp_inputlisten_test_client evrp/inputlistentest/client.cpp)
 target_include_directories(evrp_inputlisten_test_client
@@ -320,7 +329,7 @@ target_include_directories(evrp_playback_test_server
 target_link_libraries(
   evrp_playback_test_server
   PRIVATE evrp_device_api evrp_device_grpc localplayback localcursorposition
-          gRPC::grpc++ gflags::gflags logger)
+          localinputdevicekindsprovider gRPC::grpc++ gflags::gflags logger)
 
 add_executable(evrp_playback_test_client evrp/playbacktest/client.cpp)
 target_include_directories(evrp_playback_test_client

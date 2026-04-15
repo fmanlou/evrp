@@ -1,14 +1,16 @@
 #include "evrp/device/server/grpcinputdeviceservice.h"
 
 #include "evrp/device/internal/tofromproto.h"
-#include "inputdevice.h"
 
 namespace api = evrp::device::api;
 
 namespace evrp::device::server {
 
-GrpcInputDeviceService::GrpcInputDeviceService(api::ICursorPosition& cursor_position)
-    : cursor_position_(cursor_position) {}
+GrpcInputDeviceService::GrpcInputDeviceService(
+    api::ICursorPosition& cursor_position,
+    api::IInputDeviceKindsProvider& device_kinds_provider)
+    : cursor_position_(cursor_position),
+      device_kinds_provider_(device_kinds_provider) {}
 
 grpc::Status GrpcInputDeviceService::GetCursorPositionAvailability(
     grpc::ServerContext* /*context*/,
@@ -40,16 +42,8 @@ grpc::Status GrpcInputDeviceService::GetCapabilities(
     grpc::ServerContext* /*context*/,
     const evrp::device::v1::GetCapabilitiesRequest* /*request*/,
     evrp::device::v1::GetCapabilitiesResponse* response) {
-  static const api::DeviceKind k_probe_order[] = {
-      api::DeviceKind::kTouchpad,
-      api::DeviceKind::kTouchscreen,
-      api::DeviceKind::kMouse,
-      api::DeviceKind::kKeyboard,
-  };
-  for (api::DeviceKind k : k_probe_order) {
-    if (!findDevicePath(k).empty()) {
-      response->add_supported_kinds(api::toProto(k));
-    }
+  for (api::DeviceKind k : device_kinds_provider_.kinds()) {
+    response->add_supported_kinds(api::toProto(k));
   }
   return grpc::Status::OK;
 }

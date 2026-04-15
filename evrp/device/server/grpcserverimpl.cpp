@@ -17,9 +17,12 @@ namespace evrp::device::api {
 
 int runDeviceServer(const std::string& listen_address,
                       IInputListener& input_listener,
-                      ICursorPosition& cursor_position, IPlayback& playback) {
+                      ICursorPosition& cursor_position,
+                      IInputDeviceKindsProvider& device_kinds_provider,
+                      IPlayback& playback) {
   ::evrp::device::server::GrpcInputListenService listen_service(input_listener);
-  ::evrp::device::server::GrpcInputDeviceService device_service(cursor_position);
+  ::evrp::device::server::GrpcInputDeviceService device_service(
+      cursor_position, device_kinds_provider);
   ::evrp::device::server::GrpcPlaybackService playback_service(playback);
 
   grpc::EnableDefaultHealthCheckService(true);

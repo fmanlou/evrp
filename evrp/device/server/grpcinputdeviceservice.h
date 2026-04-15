@@ -5,6 +5,7 @@
 #include <grpcpp/grpcpp.h>
 
 #include "evrp/device/api/cursorposition.h"
+#include "evrp/device/api/inputdevicekindsprovider.h"
 #include "evrp/device/v1/service/service.grpc.pb.h"
 
 namespace evrp::device::server {
@@ -12,7 +13,8 @@ namespace evrp::device::server {
 class GrpcInputDeviceService final
     : public evrp::device::v1::InputDeviceService::Service {
  public:
-  explicit GrpcInputDeviceService(evrp::device::api::ICursorPosition& cursor_position);
+  GrpcInputDeviceService(evrp::device::api::ICursorPosition& cursor_position,
+                         evrp::device::api::IInputDeviceKindsProvider& device_kinds_provider);
 
   GrpcInputDeviceService(const GrpcInputDeviceService&) = delete;
   GrpcInputDeviceService& operator=(const GrpcInputDeviceService&) = delete;
@@ -38,6 +40,7 @@ class GrpcInputDeviceService final
 
  private:
   evrp::device::api::ICursorPosition& cursor_position_;
+  evrp::device::api::IInputDeviceKindsProvider& device_kinds_provider_;
 };
 
 }  // namespace evrp::device::server
