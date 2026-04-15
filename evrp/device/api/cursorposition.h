@@ -8,7 +8,7 @@ class ICursorPosition {
 
   virtual bool getCursorPositionAvailability() = 0;
 
-  virtual bool readCursorPosition(int *x, int *y) = 0;
+  virtual bool readCursorPosition(int* outX, int* outY) = 0;
 };
 
 }  // namespace evrp::device::api

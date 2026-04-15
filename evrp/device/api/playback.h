@@ -12,10 +12,10 @@ class IPlayback {
   virtual ~IPlayback() = default;
 
   virtual bool upload(const std::vector<InputEvent>& events,
-                      OperationResult* result_out) = 0;
+                      OperationResult* resultOut) = 0;
 
-  virtual bool playback(OperationResult* result_out,
-                        evrp::CountingSemaphore* progress_notify = nullptr) = 0;
+  virtual bool playback(OperationResult* resultOut,
+                        evrp::CountingSemaphore* progressNotify = nullptr) = 0;
 
   virtual int playbackIndex() const = 0;
 

@@ -40,9 +40,9 @@ void SyncDispatchQueue::dispatchLoop() {
   }
 }
 
-void SyncDispatchQueue::shutdown(std::function<void()> final_task) {
+void SyncDispatchQueue::shutdown(std::function<void()> finalTask) {
   std::future<void> cleanup_done;
-  const bool has_final = static_cast<bool>(final_task);
+  const bool has_final = static_cast<bool>(finalTask);
   {
     std::lock_guard<std::mutex> lock(mu_);
     if (stop_) {
@@ -50,7 +50,7 @@ void SyncDispatchQueue::shutdown(std::function<void()> final_task) {
     }
     if (has_final) {
       auto pt =
-          std::make_shared<std::packaged_task<void()>>(std::move(final_task));
+          std::make_shared<std::packaged_task<void()>>(std::move(finalTask));
       cleanup_done = pt->get_future();
       q_.push([pt]() { (*pt)(); });
     }

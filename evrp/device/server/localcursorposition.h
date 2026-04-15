@@ -11,7 +11,7 @@ class LocalCursorPosition final : public api::ICursorPosition {
 
   bool getCursorPositionAvailability() override;
 
-  bool readCursorPosition(int *x, int *y) override;
+  bool readCursorPosition(int* outX, int* outY) override;
 
  private:
   CursorPos cursor_;

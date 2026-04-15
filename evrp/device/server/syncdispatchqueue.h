@@ -18,7 +18,7 @@ class SyncDispatchQueue {
   SyncDispatchQueue(const SyncDispatchQueue&) = delete;
   SyncDispatchQueue& operator=(const SyncDispatchQueue&) = delete;
 
-  void shutdown(std::function<void()> final_task = {});
+  void shutdown(std::function<void()> finalTask = {});
 
   template <typename R>
   R postSync(std::function<R()> fn);

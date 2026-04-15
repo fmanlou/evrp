@@ -6,8 +6,8 @@ bool LocalCursorPosition::getCursorPositionAvailability() {
   return cursor_.isAvailable();
 }
 
-bool LocalCursorPosition::readCursorPosition(int *x, int *y) {
-  return cursor_.getPosition(x, y);
+bool LocalCursorPosition::readCursorPosition(int* outX, int* outY) {
+  return cursor_.getPosition(outX, outY);
 }
 
 }  // namespace evrp::device::server

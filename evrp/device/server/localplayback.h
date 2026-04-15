@@ -18,10 +18,10 @@ class LocalPlayback final : public api::IPlayback {
   LocalPlayback& operator=(const LocalPlayback&) = delete;
 
   bool upload(const std::vector<api::InputEvent>& events,
-              api::OperationResult* result_out) override;
+              api::OperationResult* resultOut) override;
 
-  bool playback(api::OperationResult* result_out,
-                evrp::CountingSemaphore* progress_notify = nullptr) override;
+  bool playback(api::OperationResult* resultOut,
+                evrp::CountingSemaphore* progressNotify = nullptr) override;
 
   int playbackIndex() const override;
 

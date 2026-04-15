@@ -5,10 +5,10 @@
 namespace evrp::device::server {
 
 GrpcInputDeviceService::GrpcInputDeviceService(
-    api::ICursorPosition* cursor_position,
-    api::IInputDeviceKindsProvider* device_kinds_provider)
-    : cursorPosition_(cursor_position),
-      deviceKindsProvider_(device_kinds_provider) {}
+    api::ICursorPosition* cursorPosition,
+    api::IInputDeviceKindsProvider* deviceKindsProvider)
+    : cursorPosition_(cursorPosition),
+      deviceKindsProvider_(deviceKindsProvider) {}
 
 grpc::Status GrpcInputDeviceService::GetCursorPositionAvailability(
     grpc::ServerContext* /*context*/,

@@ -13,8 +13,8 @@ namespace evrp::device::server {
 class GrpcInputDeviceService final
     : public v1::InputDeviceService::Service {
  public:
-  GrpcInputDeviceService(api::ICursorPosition* cursor_position,
-                         api::IInputDeviceKindsProvider* device_kinds_provider);
+  GrpcInputDeviceService(api::ICursorPosition* cursorPosition,
+                         api::IInputDeviceKindsProvider* deviceKindsProvider);
 
   GrpcInputDeviceService(const GrpcInputDeviceService&) = delete;
   GrpcInputDeviceService& operator=(const GrpcInputDeviceService&) = delete;

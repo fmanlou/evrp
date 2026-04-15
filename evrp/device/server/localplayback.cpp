@@ -9,13 +9,13 @@
 namespace evrp::device::server {
 
 bool LocalPlayback::upload(const std::vector<api::InputEvent>& events,
-                           api::OperationResult* result_out) {
+                           api::OperationResult* resultOut) {
   std::lock_guard<std::mutex> lock(mu_);
   cached_ = events;
   playing_ = false;
-  if (result_out) {
-    result_out->code = 0;
-    result_out->message.clear();
+  if (resultOut) {
+    resultOut->code = 0;
+    resultOut->message.clear();
   }
   return true;
 }
@@ -23,15 +23,15 @@ bool LocalPlayback::upload(const std::vector<api::InputEvent>& events,
 int LocalPlayback::playbackIndex() const { return currentEventIndex_; }
 
 bool LocalPlayback::playback(
-    api::OperationResult* result_out,
-    evrp::CountingSemaphore* progress_notify) {
+    api::OperationResult* resultOut,
+    evrp::CountingSemaphore* progressNotify) {
   std::vector<api::InputEvent> batch;
   {
     std::lock_guard<std::mutex> lock(mu_);
     if (cached_.empty()) {
-      if (result_out) {
-        result_out->code = 1;
-        result_out->message = "no recording uploaded";
+      if (resultOut) {
+        resultOut->code = 1;
+        resultOut->message = "no recording uploaded";
       }
       return false;
     }
@@ -69,15 +69,15 @@ bool LocalPlayback::playback(
         std::lock_guard<std::mutex> lock(mu_);
         playing_ = false;
       }
-      if (result_out) {
-        result_out->code = 2;
-        result_out->message = "write event failed during playback";
+      if (resultOut) {
+        resultOut->code = 2;
+        resultOut->message = "write event failed during playback";
       }
       return false;
     }
     currentEventIndex_ = i;
-    if (progress_notify != nullptr) {
-      progress_notify->release();
+    if (progressNotify != nullptr) {
+      progressNotify->release();
     }
   }
 
@@ -85,9 +85,9 @@ bool LocalPlayback::playback(
     std::lock_guard<std::mutex> lock(mu_);
     playing_ = false;
   }
-  if (result_out) {
-    result_out->code = 0;
-    result_out->message.clear();
+  if (resultOut) {
+    resultOut->code = 0;
+    resultOut->message.clear();
   }
   return true;
 }

@@ -13,7 +13,7 @@ RemotePlayback::RemotePlayback(std::shared_ptr<grpc::Channel> channel)
 RemotePlayback::~RemotePlayback() = default;
 
 bool RemotePlayback::upload(const std::vector<api::InputEvent>& events,
-                            api::OperationResult* result_out) {
+                            api::OperationResult* resultOut) {
   std::lock_guard<std::mutex> lock(callMu_);
 
   v1::UploadRecordingRequest req;
@@ -23,23 +23,23 @@ bool RemotePlayback::upload(const std::vector<api::InputEvent>& events,
   v1::OperationResult resp;
   grpc::Status st = stub_->Upload(&ctx, req, &resp);
   if (!st.ok()) {
-    if (result_out) {
-      result_out->code = static_cast<int32_t>(st.error_code());
-      result_out->message = st.error_message();
+    if (resultOut) {
+      resultOut->code = static_cast<int32_t>(st.error_code());
+      resultOut->message = st.error_message();
     }
     return false;
   }
-  if (result_out) {
-    result_out->code = resp.code();
-    result_out->message = resp.message();
+  if (resultOut) {
+    resultOut->code = resp.code();
+    resultOut->message = resp.message();
   }
   return resp.code() == 0;
 }
 
 int RemotePlayback::playbackIndex() const { return reportedIndex_; }
 
-bool RemotePlayback::playback(api::OperationResult* result_out,
-                              evrp::CountingSemaphore* progress_notify) {
+bool RemotePlayback::playback(api::OperationResult* resultOut,
+                              evrp::CountingSemaphore* progressNotify) {
   std::lock_guard<std::mutex> lock(callMu_);
 
   reportedIndex_ = -1;
@@ -49,18 +49,18 @@ bool RemotePlayback::playback(api::OperationResult* result_out,
       reader;
   std::thread progress_thread;
 
-  if (progress_notify != nullptr) {
+  if (progressNotify != nullptr) {
     stream_ctx = std::make_unique<grpc::ClientContext>();
     google::protobuf::Empty sub_req;
     reader = stub_->SubscribePlayback(stream_ctx.get(), sub_req);
 
     grpc::ClientReader<v1::PlaybackProgress>* raw_reader =
         reader.get();
-    progress_thread = std::thread([raw_reader, progress_notify, this]() {
+    progress_thread = std::thread([raw_reader, progressNotify, this]() {
       v1::PlaybackProgress msg;
       while (raw_reader->Read(&msg)) {
         reportedIndex_ = msg.event_index();
-        progress_notify->release();
+        progressNotify->release();
       }
       grpc::Status fin = raw_reader->Finish();
       (void)fin;
@@ -76,13 +76,13 @@ bool RemotePlayback::playback(api::OperationResult* result_out,
     progress_thread.join();
   }
 
-  if (result_out) {
+  if (resultOut) {
     if (st.ok()) {
-      result_out->code = pb_result.code();
-      result_out->message = pb_result.message();
+      resultOut->code = pb_result.code();
+      resultOut->message = pb_result.message();
     } else {
-      result_out->code = static_cast<int32_t>(st.error_code());
-      result_out->message = st.error_message();
+      resultOut->code = static_cast<int32_t>(st.error_code());
+      resultOut->message = st.error_message();
     }
   }
   return st.ok() && pb_result.code() == 0;
