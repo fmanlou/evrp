@@ -1,5 +1,3 @@
-// evrp-device：`InputListenService` — 输入监听 / 录制读，与 `IInputListener` 对齐。消息见 `evrp/device/v1/types.proto`。
-
 syntax = "proto3";
 
 package evrp.device.v1;

@@ -1,5 +1,3 @@
-// evrp-device：`InputDeviceService` — 光标、保活等。监听见 `inputlisten.proto`；上传 / 回放见 `playback.proto`。
-
 syntax = "proto3";
 
 package evrp.device.v1;
