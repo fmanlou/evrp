@@ -5,6 +5,7 @@
 #include "logger.h"
 #include "evrp/device/api/server.h"
 #include "evrp/device/api/inputlistener.h"
+#include "evrp/device/server/localcursorposition.h"
 #include "evrp/device/server/localplayback.h"
 
 DEFINE_string(listen, "127.0.0.1:50051",
@@ -40,6 +41,8 @@ int main(int argc, char** argv) {
   gflags::ParseCommandLineFlags(&argc, &argv, true);
 
   NoInputListener no_input;
+  evrp::device::server::LocalCursorPosition cursor_position;
   evrp::device::server::LocalPlayback playback;
-  return evrp::device::api::runDeviceServer(FLAGS_listen, no_input, playback);
+  return evrp::device::api::runDeviceServer(FLAGS_listen, no_input,
+                                            cursor_position, playback);
 }

@@ -7,20 +7,33 @@ namespace api = evrp::device::api;
 
 namespace evrp::device::server {
 
+GrpcInputDeviceService::GrpcInputDeviceService(api::ICursorPosition& cursor_position)
+    : cursor_position_(cursor_position) {}
+
 grpc::Status GrpcInputDeviceService::GetCursorPositionAvailability(
     grpc::ServerContext* /*context*/,
     const evrp::device::v1::GetCursorPositionAvailabilityRequest* /*request*/,
-    evrp::device::v1::GetCursorPositionAvailabilityResponse* /*response*/) {
-  return grpc::Status(grpc::StatusCode::UNIMPLEMENTED,
-                      "get_cursor_position_availability not implemented");
+    evrp::device::v1::GetCursorPositionAvailabilityResponse* response) {
+  response->set_available(cursor_position_.getCursorPositionAvailability());
+  return grpc::Status::OK;
 }
 
 grpc::Status GrpcInputDeviceService::ReadCursorPosition(
     grpc::ServerContext* /*context*/,
     const evrp::device::v1::ReadCursorPositionRequest* /*request*/,
-    evrp::device::v1::ReadCursorPositionResponse* /*response*/) {
-  return grpc::Status(grpc::StatusCode::UNIMPLEMENTED,
-                      "read_cursor_position not implemented");
+    evrp::device::v1::ReadCursorPositionResponse* response) {
+  if (!cursor_position_.getCursorPositionAvailability()) {
+    return grpc::Status(grpc::StatusCode::FAILED_PRECONDITION,
+                        "cursor position not available");
+  }
+  int x = 0;
+  int y = 0;
+  if (!cursor_position_.readCursorPosition(&x, &y)) {
+    return grpc::Status(grpc::StatusCode::INTERNAL, "read_cursor_position failed");
+  }
+  response->set_x(x);
+  response->set_y(y);
+  return grpc::Status::OK;
 }
 
 grpc::Status GrpcInputDeviceService::GetCapabilities(

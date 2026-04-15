@@ -256,6 +256,12 @@ set_target_properties(
   localplayback
   PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
 
+add_library(localcursorposition STATIC
+            evrp/device/server/localcursorposition.cpp)
+target_include_directories(localcursorposition
+                           PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(localcursorposition PUBLIC evrp_device_api cursorpos)
+
 add_library(device_remote_inputlistener STATIC
             evrp/device/client/remoteinputlistener.cpp)
 target_include_directories(device_remote_inputlistener
@@ -287,9 +293,10 @@ target_link_libraries(evrp_device_grpc PUBLIC evrp_device_proto tofromproto
                        PRIVATE logger inputdevice)
 
 add_executable(evrp-device evrp-device/main.cpp)
-target_link_libraries(evrp-device PRIVATE evrp_device_api evrp_device_grpc
-                                          localinputlistener localplayback
-                                          gRPC::grpc++ gflags::gflags logger)
+target_link_libraries(
+  evrp-device
+  PRIVATE evrp_device_api evrp_device_grpc localinputlistener localplayback
+          localcursorposition gRPC::grpc++ gflags::gflags logger)
 
 add_executable(evrp_inputlisten_test_server evrp/inputlistentest/server.cpp)
 target_include_directories(evrp_inputlisten_test_server
@@ -297,7 +304,7 @@ target_include_directories(evrp_inputlisten_test_server
 target_link_libraries(
   evrp_inputlisten_test_server
   PRIVATE evrp_device_api evrp_device_grpc localinputlistener localplayback
-          gRPC::grpc++ gflags::gflags logger)
+          localcursorposition gRPC::grpc++ gflags::gflags logger)
 
 add_executable(evrp_inputlisten_test_client evrp/inputlistentest/client.cpp)
 target_include_directories(evrp_inputlisten_test_client
@@ -312,8 +319,8 @@ target_include_directories(evrp_playback_test_server
                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(
   evrp_playback_test_server
-  PRIVATE evrp_device_api evrp_device_grpc localplayback gRPC::grpc++
-          gflags::gflags logger)
+  PRIVATE evrp_device_api evrp_device_grpc localplayback localcursorposition
+          gRPC::grpc++ gflags::gflags logger)
 
 add_executable(evrp_playback_test_client evrp/playbacktest/client.cpp)
 target_include_directories(evrp_playback_test_client

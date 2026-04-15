@@ -4,6 +4,7 @@
 
 #include <grpcpp/grpcpp.h>
 
+#include "evrp/device/api/cursorposition.h"
 #include "evrp/device/v1/service/service.grpc.pb.h"
 
 namespace evrp::device::server {
@@ -11,7 +12,10 @@ namespace evrp::device::server {
 class GrpcInputDeviceService final
     : public evrp::device::v1::InputDeviceService::Service {
  public:
-  GrpcInputDeviceService() = default;
+  explicit GrpcInputDeviceService(evrp::device::api::ICursorPosition& cursor_position);
+
+  GrpcInputDeviceService(const GrpcInputDeviceService&) = delete;
+  GrpcInputDeviceService& operator=(const GrpcInputDeviceService&) = delete;
 
   grpc::Status GetCursorPositionAvailability(
       grpc::ServerContext* context,
@@ -31,6 +35,9 @@ class GrpcInputDeviceService final
   grpc::Status Ping(grpc::ServerContext* context,
                     const evrp::device::v1::PingRequest* request,
                     evrp::device::v1::PingResponse* response) override;
+
+ private:
+  evrp::device::api::ICursorPosition& cursor_position_;
 };
 
 }  // namespace evrp::device::server
