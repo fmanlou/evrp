@@ -1,5 +1,3 @@
-// IInputListener 端到端测试：DispatchedInputListener(LocalInputListener) + 完整 gRPC（与 evrp-device 等价）。
-
 #include <gflags/gflags.h>
 #include <string>
 
@@ -10,6 +8,7 @@
 #include "evrp/device/server/localinputlistener.h"
 #include "evrp/device/server/localinputdevicekindsprovider.h"
 #include "evrp/device/server/localplayback.h"
+#include "evrp/ioc.h"
 
 DEFINE_string(listen, "127.0.0.1:50051",
               "Listen address (host:port) for InputListenService and peers");
@@ -27,7 +26,12 @@ int main(int argc, char** argv) {
   evrp::device::server::LocalCursorPosition cursor_position;
   evrp::device::server::LocalInputDeviceKindsProvider device_kinds_provider;
   evrp::device::server::LocalPlayback playback;
-  return evrp::device::api::runDeviceServer(
-      FLAGS_listen, &input_listener, &cursor_position, &device_kinds_provider,
-      &playback);
+  evrp::Ioc ioc;
+  ioc.emplace(&local_listener);
+  ioc.emplace(static_cast<evrp::device::api::IInputListener*>(&input_listener));
+  ioc.emplace(static_cast<evrp::device::api::ICursorPosition*>(&cursor_position));
+  ioc.emplace(static_cast<evrp::device::api::IInputDeviceKindsProvider*>(
+      &device_kinds_provider));
+  ioc.emplace(static_cast<evrp::device::api::IPlayback*>(&playback));
+  return evrp::device::api::runDeviceServer(FLAGS_listen, ioc);
 }
