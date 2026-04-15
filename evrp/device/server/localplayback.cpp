@@ -20,7 +20,7 @@ bool LocalPlayback::upload(const std::vector<api::InputEvent>& events,
   return true;
 }
 
-int LocalPlayback::playbackIndex() const { return current_event_index_; }
+int LocalPlayback::playbackIndex() const { return currentEventIndex_; }
 
 bool LocalPlayback::playback(
     api::OperationResult* result_out,
@@ -38,8 +38,8 @@ bool LocalPlayback::playback(
     batch = cached_;
     playing_ = true;
   }
-  stop_requested_ = false;
-  current_event_index_ = -1;
+  stopRequested_ = false;
+  currentEventIndex_ = -1;
 
   FileSystem fs;
   InputEventWriter writer(&fs);
@@ -48,12 +48,12 @@ bool LocalPlayback::playback(
   int64_t prev_us = 0;
   for (int i = 0; i < static_cast<int>(batch.size()); ++i) {
     const api::InputEvent& e = batch[static_cast<size_t>(i)];
-    if (stop_requested_) {
+    if (stopRequested_) {
       break;
     }
 
-    int64_t t_us = static_cast<int64_t>(e.time_sec) * 1000000LL +
-                   static_cast<int64_t>(e.time_usec);
+    int64_t t_us = static_cast<int64_t>(e.timeSec) * 1000000LL +
+                   static_cast<int64_t>(e.timeUsec);
     if (!first) {
       int64_t delta = t_us - prev_us;
       if (delta > 0) {
@@ -75,7 +75,7 @@ bool LocalPlayback::playback(
       }
       return false;
     }
-    current_event_index_ = i;
+    currentEventIndex_ = i;
     if (progress_notify != nullptr) {
       progress_notify->release();
     }
@@ -93,7 +93,7 @@ bool LocalPlayback::playback(
 }
 
 bool LocalPlayback::stopPlayback() {
-  stop_requested_ = true;
+  stopRequested_ = true;
   std::lock_guard<std::mutex> lock(mu_);
   playing_ = false;
   return true;

@@ -14,8 +14,8 @@ namespace {
 api::InputEvent toApiInputEvent(api::DeviceKind device, const Event& ev) {
   api::InputEvent e;
   e.device = device;
-  e.time_sec = ev.sec;
-  e.time_usec = ev.usec;
+  e.timeSec = ev.sec;
+  e.timeUsec = ev.usec;
   e.type = static_cast<uint32_t>(ev.type);
   e.code = static_cast<uint32_t>(ev.code);
   e.value = ev.value;
@@ -40,7 +40,7 @@ void LocalInputListener::closeDevices() {
     d.fd = -1;
   }
   devices_.clear();
-  poll_ready_indices_.clear();
+  pollReadyIndices_.clear();
 }
 
 bool LocalInputListener::startListening(
@@ -49,7 +49,7 @@ bool LocalInputListener::startListening(
   if (disposed_) {
     return false;
   }
-  if (listening_active_) {
+  if (listeningActive_) {
     return false;
   }
 
@@ -82,7 +82,7 @@ bool LocalInputListener::startListening(
   }
 
   devices_ = std::move(new_devices);
-  listening_active_ = true;
+  listeningActive_ = true;
   return true;
 }
 
@@ -91,7 +91,7 @@ std::vector<api::InputEvent> LocalInputListener::readInputEvents() {
   if (disposed_) {
     return {};
   }
-  if (!listening_active_ || devices_.empty()) {
+  if (!listeningActive_ || devices_.empty()) {
     return {};
   }
 
@@ -100,18 +100,18 @@ std::vector<api::InputEvent> LocalInputListener::readInputEvents() {
     n = 32;
   }
 
-  if (poll_ready_indices_.empty()) {
+  if (pollReadyIndices_.empty()) {
     return {};
   }
 
   std::vector<api::InputEvent> out;
   Event evbuf[64];
 
-  for (size_t i : poll_ready_indices_) {
+  for (size_t i : pollReadyIndices_) {
     if (i >= n) {
       continue;
     }
-    if (!listening_active_) {
+    if (!listeningActive_) {
       return out;
     }
     int ne = readEvents(devices_[i].fd, evbuf, 64);
@@ -119,7 +119,7 @@ std::vector<api::InputEvent> LocalInputListener::readInputEvents() {
       continue;
     }
     for (int j = 0; j < ne; ++j) {
-      if (!listening_active_) {
+      if (!listeningActive_) {
         return out;
       }
       if (evbuf[j].type == EV_SYN) {
@@ -128,19 +128,19 @@ std::vector<api::InputEvent> LocalInputListener::readInputEvents() {
       out.push_back(toApiInputEvent(devices_[i].kind, evbuf[j]));
     }
   }
-  poll_ready_indices_.clear();
+  pollReadyIndices_.clear();
   return out;
 }
 
-bool LocalInputListener::waitForInputEvent(int timeout_ms) {
-  if (!listening_active_ || disposed_) {
+bool LocalInputListener::waitForInputEvent(int timeoutMs) {
+  if (!listeningActive_ || disposed_) {
     return false;
   }
-  if (timeout_ms < 0) {
+  if (timeoutMs < 0) {
     return false;
   }
   std::lock_guard<std::mutex> lock(mu_);
-  if (disposed_ || !listening_active_ || devices_.empty()) {
+  if (disposed_ || !listeningActive_ || devices_.empty()) {
     return false;
   }
   int fds[32];
@@ -153,8 +153,8 @@ bool LocalInputListener::waitForInputEvent(int timeout_ms) {
     fds[i] = devices_[i].fd;
   }
   bool ready[32]{};
-  int ret = fs_.pollFds(fds, n_poll, timeout_ms, ready);
-  if (!listening_active_ || disposed_) {
+  int ret = fs_.pollFds(fds, n_poll, timeoutMs, ready);
+  if (!listeningActive_ || disposed_) {
     return false;
   }
   if (ret <= 0) {
@@ -162,16 +162,16 @@ bool LocalInputListener::waitForInputEvent(int timeout_ms) {
   }
   for (int j = 0; j < n_poll; ++j) {
     if (ready[j]) {
-      poll_ready_indices_.insert(static_cast<size_t>(j));
+      pollReadyIndices_.insert(static_cast<size_t>(j));
     }
   }
-  return !poll_ready_indices_.empty();
+  return !pollReadyIndices_.empty();
 }
 
-bool LocalInputListener::isListening() const { return listening_active_; }
+bool LocalInputListener::isListening() const { return listeningActive_; }
 
 void LocalInputListener::cancelListening() {
-  listening_active_ = false;
+  listeningActive_ = false;
   std::lock_guard<std::mutex> lock(mu_);
   if (disposed_) {
     return;

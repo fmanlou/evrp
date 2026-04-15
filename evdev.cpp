@@ -42,23 +42,23 @@ bool getCapabilities(int fd, Capabilities *caps) {
   if (ioctl(fd, EVIOCGBIT(EV_ABS, sizeof(absbit)), absbit) < 0) return false;
   if (ioctl(fd, EVIOCGBIT(EV_REL, sizeof(relbit)), relbit) < 0) return false;
 
-  caps->ev_key = TEST_BIT(EV_KEY, evbit);
-  caps->ev_abs = TEST_BIT(EV_ABS, evbit);
-  caps->ev_rel = TEST_BIT(EV_REL, evbit);
-  caps->abs_x = TEST_BIT(ABS_X, absbit);
-  caps->abs_mt_position_x = TEST_BIT(ABS_MT_POSITION_X, absbit);
-  caps->rel_x = TEST_BIT(REL_X, relbit);
-  caps->rel_y = TEST_BIT(REL_Y, relbit);
-  caps->btn_left = TEST_BIT(BTN_LEFT, keybit);
-  caps->btn_right = TEST_BIT(BTN_RIGHT, keybit);
-  caps->btn_middle = TEST_BIT(BTN_MIDDLE, keybit);
-  caps->btn_tool_finger = TEST_BIT(BTN_TOOL_FINGER, keybit);
-  caps->btn_tool_doubletap = TEST_BIT(BTN_TOOL_DOUBLETAP, keybit);
-  caps->btn_tool_tripletap = TEST_BIT(BTN_TOOL_TRIPLETAP, keybit);
-  caps->key_enter = TEST_BIT(KEY_ENTER, keybit);
-  caps->key_space = TEST_BIT(KEY_SPACE, keybit);
-  caps->key_esc = TEST_BIT(KEY_ESC, keybit);
-  caps->key_a = TEST_BIT(KEY_A, keybit);
+  caps->evKey = TEST_BIT(EV_KEY, evbit);
+  caps->evAbs = TEST_BIT(EV_ABS, evbit);
+  caps->evRel = TEST_BIT(EV_REL, evbit);
+  caps->absX = TEST_BIT(ABS_X, absbit);
+  caps->absMtPositionX = TEST_BIT(ABS_MT_POSITION_X, absbit);
+  caps->relX = TEST_BIT(REL_X, relbit);
+  caps->relY = TEST_BIT(REL_Y, relbit);
+  caps->btnLeft = TEST_BIT(BTN_LEFT, keybit);
+  caps->btnRight = TEST_BIT(BTN_RIGHT, keybit);
+  caps->btnMiddle = TEST_BIT(BTN_MIDDLE, keybit);
+  caps->btnToolFinger = TEST_BIT(BTN_TOOL_FINGER, keybit);
+  caps->btnToolDoubletap = TEST_BIT(BTN_TOOL_DOUBLETAP, keybit);
+  caps->btnToolTripletap = TEST_BIT(BTN_TOOL_TRIPLETAP, keybit);
+  caps->keyEnter = TEST_BIT(KEY_ENTER, keybit);
+  caps->keySpace = TEST_BIT(KEY_SPACE, keybit);
+  caps->keyEsc = TEST_BIT(KEY_ESC, keybit);
+  caps->keyA = TEST_BIT(KEY_A, keybit);
 
   return true;
 }
@@ -95,10 +95,10 @@ SigintGuard::SigintGuard() {
   sa.sa_handler = handler;
   sigemptyset(&sa.sa_mask);
   sa.sa_flags = 0;
-  sigaction(SIGINT, &sa, &old_sa_);
+  sigaction(SIGINT, &sa, &oldSa_);
 }
 
-SigintGuard::~SigintGuard() { sigaction(SIGINT, &old_sa_, nullptr); }
+SigintGuard::~SigintGuard() { sigaction(SIGINT, &oldSa_, nullptr); }
 
 bool SigintGuard::stopRequested() const { return stop_ != 0; }
 

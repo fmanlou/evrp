@@ -18,8 +18,8 @@ class CursorPos {
   mutable CursorPosBackend *backend_ = nullptr;
 };
 
-extern CursorPos *g_cursor;
+extern CursorPos *gCursor;
 
 inline bool getCursorPosition(int *x, int *y) {
-  return g_cursor && g_cursor->getPosition(x, y);
+  return gCursor && gCursor->getPosition(x, y);
 }

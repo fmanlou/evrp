@@ -33,12 +33,12 @@ class SyncDispatchQueue {
   std::queue<std::function<void()>> q_;
   bool stop_{false};
   std::thread worker_;
-  std::atomic<bool> shutdown_done_{false};
+  std::atomic<bool> shutdownDone_{false};
 };
 
 template <typename R>
 R SyncDispatchQueue::postSync(std::function<R()> fn) {
-  if (shutdown_done_.load(std::memory_order_acquire)) {
+  if (shutdownDone_.load(std::memory_order_acquire)) {
     return R{};
   }
   auto task = std::make_shared<std::packaged_task<R()>>(std::move(fn));

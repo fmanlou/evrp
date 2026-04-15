@@ -114,7 +114,7 @@ int luaMouseMoveToScreen(lua_State* L) {
 
 int luaMouseGetPosition(lua_State* L) {
   int x = 0, y = 0;
-  bool ok = g_cursor && g_cursor->getPosition(&x, &y);
+  bool ok = gCursor && gCursor->getPosition(&x, &y);
   if (!ok) {
     lua_pushnil(L);
     return 1;
@@ -125,7 +125,7 @@ int luaMouseGetPosition(lua_State* L) {
 }
 
 int luaMouseIsCursorAvailable(lua_State* L) {
-  lua_pushboolean(L, g_cursor && g_cursor->isAvailable());
+  lua_pushboolean(L, gCursor && gCursor->isAvailable());
   return 1;
 }
 

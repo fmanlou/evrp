@@ -107,4 +107,4 @@ void Logger::trace(const std::string& msg) {
   log(LogLevel::Trace, msg);
 }
 
-Logger* g_logger = nullptr;
+Logger* gLogger = nullptr;

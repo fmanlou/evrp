@@ -40,7 +40,7 @@ TEST(ArgParser, ParseOptionsWithNoArgsDisablesRecording) {
   std::vector<std::string> storage = {"evrp"};
   std::vector<char *> argv = buildArgv(&storage);
 
-  run_options options =
+  RunOptions options =
       parseOptions(static_cast<int>(argv.size()), argv.data());
   EXPECT_FALSE(options.recording);
   EXPECT_FALSE(options.playback);
@@ -51,7 +51,7 @@ TEST(ArgParser, ParseOptionsEnableRecordingAndKinds) {
   std::vector<std::string> storage = {"evrp", "-r", "mouse", "keyboard"};
   std::vector<char *> argv = buildArgv(&storage);
 
-  run_options options =
+  RunOptions options =
       parseOptions(static_cast<int>(argv.size()), argv.data());
   EXPECT_TRUE(options.recording);
   ASSERT_EQ(options.kinds.size(), 2u);
@@ -64,11 +64,11 @@ TEST(ArgParser, ParseOptionsReadsOutputPath) {
                                       "touchpad"};
   std::vector<char *> argv = buildArgv(&storage);
 
-  run_options options =
+  RunOptions options =
       parseOptions(static_cast<int>(argv.size()), argv.data());
   EXPECT_TRUE(options.recording);
   EXPECT_FALSE(options.playback);
-  EXPECT_EQ(options.output_path, "events.log");
+  EXPECT_EQ(options.outputPath, "events.log");
   ASSERT_EQ(options.kinds.size(), 1u);
   EXPECT_EQ(options.kinds[0], api::DeviceKind::kTouchpad);
 }
@@ -77,11 +77,11 @@ TEST(ArgParser, ParseOptionsEnablePlaybackAndPath) {
   std::vector<std::string> storage = {"evrp", "-p", "events.log"};
   std::vector<char *> argv = buildArgv(&storage);
 
-  run_options options =
+  RunOptions options =
       parseOptions(static_cast<int>(argv.size()), argv.data());
   EXPECT_FALSE(options.recording);
   EXPECT_TRUE(options.playback);
-  EXPECT_EQ(options.playback_path, "events.log");
+  EXPECT_EQ(options.playbackPath, "events.log");
   EXPECT_TRUE(options.kinds.empty());
 }
 
@@ -89,7 +89,7 @@ TEST(ArgParser, ParseOptionsRecordDefaultsKindsWhenNoTypes) {
   std::vector<std::string> storage = {"evrp", "-r"};
   std::vector<char *> argv = buildArgv(&storage);
 
-  run_options options =
+  RunOptions options =
       parseOptions(static_cast<int>(argv.size()), argv.data());
   EXPECT_TRUE(options.recording);
   ASSERT_EQ(options.kinds.size(), 4u);
@@ -111,18 +111,18 @@ TEST(ArgParser, ParseOptionsLogLevel) {
   // Standalone --log-level
   std::vector<std::string> storage0 = {"evrp", "--log-level=debug"};
   std::vector<char *> argv0 = buildArgv(&storage0);
-  run_options opt0 =
+  RunOptions opt0 =
       parseOptions(static_cast<int>(argv0.size()), argv0.data());
-  EXPECT_EQ(opt0.log_level, LogLevel::Debug);
+  EXPECT_EQ(opt0.logLevel, LogLevel::Debug);
 
   // --log-level in -r block
   std::vector<std::string> storage1 = {"evrp", "-r", "--log-level=debug",
                                        "keyboard"};
   std::vector<char *> argv1 = buildArgv(&storage1);
-  run_options opt1 =
+  RunOptions opt1 =
       parseOptions(static_cast<int>(argv1.size()), argv1.data());
   EXPECT_TRUE(opt1.recording);
-  EXPECT_EQ(opt1.log_level, LogLevel::Debug);
+  EXPECT_EQ(opt1.logLevel, LogLevel::Debug);
   ASSERT_EQ(opt1.kinds.size(), 1u);
   EXPECT_EQ(opt1.kinds[0], api::DeviceKind::kKeyboard);
 }
@@ -132,9 +132,9 @@ TEST(ArgParser, ParseOptionsPlaybackWithLogLevel) {
                                       "--log-level=error"};
   std::vector<char *> argv = buildArgv(&storage);
 
-  run_options options =
+  RunOptions options =
       parseOptions(static_cast<int>(argv.size()), argv.data());
   EXPECT_TRUE(options.playback);
-  EXPECT_EQ(options.log_level, LogLevel::Error);
-  EXPECT_EQ(options.playback_path, "events.log");
+  EXPECT_EQ(options.logLevel, LogLevel::Error);
+  EXPECT_EQ(options.playbackPath, "events.log");
 }

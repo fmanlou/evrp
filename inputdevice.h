@@ -5,10 +5,10 @@
 #include "evrp/device/api/types.h"
 #include "evdev.h"
 
-bool isTouchpad(const char *dev_path);
-bool isTouchscreen(const char *dev_path);
-bool isMouse(const char *dev_path);
-bool isKeyboard(const char *dev_path);
+bool isTouchpad(const char *devPath);
+bool isTouchscreen(const char *devPath);
+bool isMouse(const char *devPath);
+bool isKeyboard(const char *devPath);
 
 bool isMouseFromCapabilities(const Capabilities &caps);
 Event makeEvent(unsigned short type, unsigned short code, int value);

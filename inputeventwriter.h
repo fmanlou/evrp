@@ -16,8 +16,8 @@ class InputEventWriter {
   bool write(evrp::device::api::DeviceKind device, unsigned short type,
              unsigned short code, int value);
 
-  KeyboardEventWriter *keyboardWriter() { return &keyboard_writer_; }
-  MouseEventWriter *mouseWriter() { return &mouse_writer_; }
+  KeyboardEventWriter *keyboardWriter() { return &keyboardWriter_; }
+  MouseEventWriter *mouseWriter() { return &mouseWriter_; }
 
  private:
   friend class KeyboardEventWriter;
@@ -31,7 +31,7 @@ class InputEventWriter {
                           int value);
 
   FileSystem *fs_;
-  std::map<evrp::device::api::DeviceKind, int> kind_to_fd_;
-  KeyboardEventWriter keyboard_writer_;
-  MouseEventWriter mouse_writer_;
+  std::map<evrp::device::api::DeviceKind, int> kindToFd_;
+  KeyboardEventWriter keyboardWriter_;
+  MouseEventWriter mouseWriter_;
 };

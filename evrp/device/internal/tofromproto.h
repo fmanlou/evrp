@@ -14,14 +14,14 @@ evrp::device::v1::DeviceKind toProto(DeviceKind k);
 
 DeviceKind fromProto(evrp::device::v1::DeviceKind k);
 
-void fromProto(const google::protobuf::RepeatedField<int>& proto_kinds,
+void fromProto(const google::protobuf::RepeatedField<int>& protoKinds,
                std::vector<DeviceKind>* out);
 
 std::vector<DeviceKind> fromProto(
-    const google::protobuf::RepeatedField<int>& proto_kinds);
+    const google::protobuf::RepeatedField<int>& protoKinds);
 
 void toProto(const std::vector<DeviceKind>& kinds,
-             google::protobuf::RepeatedField<int>* proto_kinds);
+             google::protobuf::RepeatedField<int>* protoKinds);
 
 void toProto(const InputEvent& e, evrp::device::v1::InputEvent* p);
 
@@ -33,12 +33,12 @@ void fromProto(const evrp::device::v1::InputEvent& p, InputEvent* e);
 
 void fromProto(
     const google::protobuf::RepeatedPtrField<evrp::device::v1::InputEvent>&
-        proto_events,
+        protoEvents,
     std::vector<InputEvent>* out);
 
 std::vector<InputEvent> fromProto(
     const google::protobuf::RepeatedPtrField<evrp::device::v1::InputEvent>&
-        proto_events);
+        protoEvents);
 
 void toProto(const OperationResult& r, evrp::device::v1::OperationResult* p);
 

@@ -8,7 +8,7 @@ SyncDispatchQueue::SyncDispatchQueue()
     : worker_([this]() { dispatchLoop(); }) {}
 
 void SyncDispatchQueue::postVoid(std::function<void()> fn) {
-  if (shutdown_done_.load(std::memory_order_acquire)) {
+  if (shutdownDone_.load(std::memory_order_acquire)) {
     return;
   }
   auto task = std::make_shared<std::packaged_task<void()>>(std::move(fn));
@@ -63,7 +63,7 @@ void SyncDispatchQueue::shutdown(std::function<void()> final_task) {
   if (worker_.joinable()) {
     worker_.join();
   }
-  shutdown_done_.store(true, std::memory_order_release);
+  shutdownDone_.store(true, std::memory_order_release);
 }
 
 SyncDispatchQueue::~SyncDispatchQueue() { shutdown(); }

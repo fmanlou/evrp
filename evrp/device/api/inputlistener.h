@@ -14,7 +14,7 @@ class IInputListener {
 
   virtual std::vector<InputEvent> readInputEvents() = 0;
 
-  virtual bool waitForInputEvent(int timeout_ms) = 0;
+  virtual bool waitForInputEvent(int timeoutMs) = 0;
 
   virtual void cancelListening() = 0;
 

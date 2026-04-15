@@ -14,7 +14,7 @@
 #include "logger.h"
 #include "touchdevice.h"
 
-Record::Record(const run_options &options) : options_(options) {}
+Record::Record(const RunOptions &options) : options_(options) {}
 
 std::vector<RecordTarget> Record::collectTargets() {
   std::vector<RecordTarget> result;
@@ -43,7 +43,7 @@ void Record::closeTargets() {
 void Record::recordEvents() {
   if (targets_.empty()) return;
 
-  g_logger->setLevel(options_.log_level);
+  gLogger->setLevel(options_.logLevel);
 
   std::vector<int> fds;
   fds.reserve(targets_.size());
@@ -56,40 +56,40 @@ void Record::recordEvents() {
   logInfo("(Ctrl+C to stop)");
 
   SigintGuard sigint;
-  std::ostream &event_out = fs_.outputStream();
-  struct timeval session_start = {};
-  gettimeofday(&session_start, nullptr);
-  long long baseline_us = -1;
-  long long last_timestamp_us = -1;
+  std::ostream &eventOut = fs_.outputStream();
+  struct timeval sessionStart = {};
+  gettimeofday(&sessionStart, nullptr);
+  long long baselineUs = -1;
+  long long lastTimestampUs = -1;
   auto writeLine = [&](const std::string &line) {
-    event_out << line << "\n";
+    eventOut << line << "\n";
     logDebug(line);
   };
   auto writeEventLine = [&](evrp::device::api::DeviceKind device,
                             const Event &ev) {
-    long long current_us = ev.sec * 1000000LL + ev.usec;
-    if (baseline_us < 0) {
-      baseline_us = current_us;
-      long long session_start_us =
-          session_start.tv_sec * 1000000LL + session_start.tv_usec;
-      long long leading_us = current_us - session_start_us;
-      if (leading_us > 0) {
-        writeLine(formatLeadingLine(leading_us));
+    long long currentUs = ev.sec * 1000000LL + ev.usec;
+    if (baselineUs < 0) {
+      baselineUs = currentUs;
+      long long sessionStart_us =
+          sessionStart.tv_sec * 1000000LL + sessionStart.tv_usec;
+      long long leadingUs = currentUs - sessionStart_us;
+      if (leadingUs > 0) {
+        writeLine(formatLeadingLine(leadingUs));
       }
     }
-    last_timestamp_us = current_us;
-    long long delta_us = current_us - baseline_us;
-    writeLine(formatEventLine(device, ev, delta_us));
+    lastTimestampUs = currentUs;
+    long long deltaUs = currentUs - baselineUs;
+    writeLine(formatEventLine(device, ev, deltaUs));
   };
   auto writeNewline = [&]() {
-    event_out << "\n";
+    eventOut << "\n";
     logDebug("");
   };
 
   Event events[64];
   bool ready[32];
-  std::vector<keyboard_filter_state> keyboard_states(fds.size());
-  std::vector<touch_segment_state> touch_states(fds.size());
+  std::vector<keyboard_filter_state> keyboardStates(fds.size());
+  std::vector<touch_segment_state> touchStates(fds.size());
   while (!sigint.stopRequested()) {
     int ret = fs_.pollFds(fds.data(), static_cast<int>(fds.size()), -1, ready);
     if (ret < 0) {
@@ -113,20 +113,20 @@ void Record::recordEvents() {
         if (ev.type == EV_SYN) continue;
 
         if (targets_[i].kind == evrp::device::api::DeviceKind::kKeyboard) {
-          std::vector<Event> emitted_events;
-          processKeyboardEventWithCtrlFilter(ev, &keyboard_states[i],
-                                                  &emitted_events);
-          for (const auto &out_ev : emitted_events) {
-            writeEventLine(targets_[i].kind, out_ev);
+          std::vector<Event> emittedEvents;
+          processKeyboardEventWithCtrlFilter(ev, &keyboardStates[i],
+                                                  &emittedEvents);
+          for (const auto &outEv : emittedEvents) {
+            writeEventLine(targets_[i].kind, outEv);
           }
           continue;
         }
 
         if (targets_[i].kind == evrp::device::api::DeviceKind::kTouchpad ||
             targets_[i].kind == evrp::device::api::DeviceKind::kTouchscreen) {
-          touch_segment_state &touch_state = touch_states[i];
+          touch_segment_state &touchState = touchStates[i];
           touch_segment_decision decision =
-              processTouchEventForSegment(ev, &touch_state);
+              processTouchEventForSegment(ev, &touchState);
           if (decision.emit_break_before_event) {
             writeNewline();
           }
@@ -143,28 +143,28 @@ void Record::recordEvents() {
     }
   }
 
-  for (size_t i = 0; i < touch_states.size(); ++i) {
-    if (touch_states[i].pending_segment_break) {
+  for (size_t i = 0; i < touchStates.size(); ++i) {
+    if (touchStates[i].pending_segment_break) {
       writeNewline();
-      touch_states[i].pending_segment_break = false;
+      touchStates[i].pending_segment_break = false;
     }
   }
 
-  if (last_timestamp_us >= 0) {
+  if (lastTimestampUs >= 0) {
     struct timeval t_end = {};
     gettimeofday(&t_end, nullptr);
-    long long end_us = t_end.tv_sec * 1000000LL + t_end.tv_usec;
-    long long trailing_us = end_us - last_timestamp_us;
-    if (trailing_us > 0) {
-      writeLine(formatTrailingLine(trailing_us));
+    long long endUs = t_end.tv_sec * 1000000LL + t_end.tv_usec;
+    long long trailingUs = endUs - lastTimestampUs;
+    if (trailingUs > 0) {
+      writeLine(formatTrailingLine(trailingUs));
     }
   }
 
-  event_out.flush();
+  eventOut.flush();
 }
 
 int Record::run() {
-  g_logger->setLevel(options_.log_level);
+  gLogger->setLevel(options_.logLevel);
   targets_ = collectTargets();
 
   if (targets_.empty()) {
@@ -172,7 +172,7 @@ int Record::run() {
     return 1;
   }
 
-  if (!fs_.openOutput(options_.output_path)) {
+  if (!fs_.openOutput(options_.outputPath)) {
     logError(fs_.errorMessage());
     closeTargets();
     return 1;

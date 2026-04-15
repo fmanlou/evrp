@@ -53,8 +53,8 @@ std::vector<evrp::device::api::InputEvent> makeHelloWorldKeyEvents() {
     for (int value : {1, 0}) {
       evrp::device::api::InputEvent e;
       e.device = evrp::device::api::DeviceKind::kKeyboard;
-      e.time_sec = 0;
-      e.time_usec = usec;
+      e.timeSec = 0;
+      e.timeUsec = usec;
       e.type = static_cast<uint32_t>(EV_KEY);
       e.code = static_cast<uint32_t>(key);
       e.value = value;
@@ -69,7 +69,7 @@ std::vector<evrp::device::api::InputEvent> makeHelloWorldKeyEvents() {
 
 int main(int argc, char** argv) {
   Logger logger;
-  g_logger = &logger;
+  gLogger = &logger;
 
   gflags::SetUsageMessage(
       "evrp_playback_test_client — replay keyboard events for \"hello world\"");

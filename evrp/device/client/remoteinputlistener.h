@@ -25,7 +25,7 @@ class RemoteInputListener final : public api::IInputListener {
 
   std::vector<api::InputEvent> readInputEvents() override;
 
-  bool waitForInputEvent(int timeout_ms) override;
+  bool waitForInputEvent(int timeoutMs) override;
 
   void cancelListening() override;
 
@@ -35,7 +35,7 @@ class RemoteInputListener final : public api::IInputListener {
   std::shared_ptr<grpc::Channel> channel_;
   std::unique_ptr<evrp::device::v1::InputListenService::Stub> stub_;
 
-  bool listening_active_{false};
+  bool listeningActive_{false};
 };
 
 }  // namespace evrp::device::client

@@ -41,20 +41,20 @@ class Logger {
   std::unique_ptr<logging::LogService> service_;
 };
 
-extern Logger* g_logger;
+extern Logger* gLogger;
 
 inline void logError(const std::string& msg) {
-  if (g_logger) g_logger->error(msg);
+  if (gLogger) gLogger->error(msg);
 }
 inline void logWarn(const std::string& msg) {
-  if (g_logger) g_logger->warn(msg);
+  if (gLogger) gLogger->warn(msg);
 }
 inline void logInfo(const std::string& msg) {
-  if (g_logger) g_logger->info(msg);
+  if (gLogger) gLogger->info(msg);
 }
 inline void logDebug(const std::string& msg) {
-  if (g_logger) g_logger->debug(msg);
+  if (gLogger) gLogger->debug(msg);
 }
 inline void logTrace(const std::string& msg) {
-  if (g_logger) g_logger->trace(msg);
+  if (gLogger) gLogger->trace(msg);
 }

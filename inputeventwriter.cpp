@@ -19,50 +19,50 @@
 namespace api = evrp::device::api;
 
 InputEventWriter::InputEventWriter(FileSystem *fs)
-    : fs_(fs), keyboard_writer_(this), mouse_writer_(this, g_cursor) {}
+    : fs_(fs), keyboardWriter_(this), mouseWriter_(this, gCursor) {}
 
 InputEventWriter::~InputEventWriter() {
-  for (const auto &p : kind_to_fd_) {
+  for (const auto &p : kindToFd_) {
     if (p.second >= 0) fs_->closeFd(p.second);
   }
 }
 
 int InputEventWriter::getFd(api::DeviceKind device) {
   if (device == api::DeviceKind::kUnspecified) return -1;
-  auto it = kind_to_fd_.find(device);
-  if (it != kind_to_fd_.end()) return it->second;
+  auto it = kindToFd_.find(device);
+  if (it != kindToFd_.end()) return it->second;
 
-  std::string dev_path = findDevicePath(device);
-  if (dev_path.empty()) {
+  std::string devPath = findDevicePath(device);
+  if (devPath.empty()) {
     logWarn(std::string("No ") + api::deviceKindLabel(device) +
             " device found, skipping events.");
-    kind_to_fd_[device] = -1;
+    kindToFd_[device] = -1;
     return -1;
   }
 
-  int fd = fs_->openReadWrite(dev_path.c_str());
+  int fd = fs_->openReadWrite(devPath.c_str());
   if (fd < 0) {
     std::ostringstream oss;
-    oss << "Failed to open " << dev_path << " for write (try: sudo)";
+    oss << "Failed to open " << devPath << " for write (try: sudo)";
     logWarn(oss.str());
-    std::perror(dev_path.c_str());
-    kind_to_fd_[device] = -1;
+    std::perror(devPath.c_str());
+    kindToFd_[device] = -1;
     return -1;
   }
 
-  kind_to_fd_[device] = fd;
+  kindToFd_[device] = fd;
   logInfo(std::string("Playing back ") + api::deviceKindLabel(device) + " to " +
-          dev_path);
+          devPath);
   return fd;
 }
 
 bool InputEventWriter::write(api::DeviceKind device, unsigned short type,
                              unsigned short code, int value) {
   if (device == api::DeviceKind::kKeyboard) {
-    return keyboard_writer_.write(type, code, value);
+    return keyboardWriter_.write(type, code, value);
   }
   if (device == api::DeviceKind::kMouse) {
-    return mouse_writer_.write(type, code, value);
+    return mouseWriter_.write(type, code, value);
   }
   return writeRaw(device, type, code, value);
 }

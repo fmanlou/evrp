@@ -86,16 +86,16 @@ void printUsage(const char *prog) {
       << "  --help: show gflags help.\n";
 }
 
-bool parseKind(const std::string &s, evrp::device::api::DeviceKind *out_kind) {
+bool parseKind(const std::string &s, evrp::device::api::DeviceKind *outKind) {
   evrp::device::api::DeviceKind k = evrp::device::api::deviceKindFromLabel(s);
   if (k != evrp::device::api::DeviceKind::kUnspecified) {
-    *out_kind = k;
+    *outKind = k;
     return true;
   }
   return false;
 }
 
-run_options parseOptions(int argc, char *argv[]) {
+RunOptions parseOptions(int argc, char *argv[]) {
   resetArgFlags();
 
   std::vector<std::string> owned;
@@ -112,25 +112,25 @@ run_options parseOptions(int argc, char *argv[]) {
   argv_ptrs.push_back(nullptr);
 
   // argc may shrink after merging -p/-o with their values.
-  int argc_mut = static_cast<int>(owned.size());
-  char **argv_mut = argv_ptrs.data();
-  google::ParseCommandLineFlags(&argc_mut, &argv_mut, true);
+  int argcMut = static_cast<int>(owned.size());
+  char **argvMut = argv_ptrs.data();
+  google::ParseCommandLineFlags(&argcMut, &argvMut, true);
 
-  run_options options;
+  RunOptions options;
   options.recording = FLAGS_record;
   options.playback = !FLAGS_playback.empty();
-  options.playback_path = FLAGS_playback;
-  options.output_path = FLAGS_output;
-  options.log_level = logLevelFromString(FLAGS_log_level);
-  options.execute_wait_before_first = FLAGS_wait_leading;
-  options.execute_wait_after_last = FLAGS_wait_trailing;
+  options.playbackPath = FLAGS_playback;
+  options.outputPath = FLAGS_output;
+  options.logLevel = logLevelFromString(FLAGS_log_level);
+  options.executeWaitBeforeFirst = FLAGS_wait_leading;
+  options.executeWaitAfterLast = FLAGS_wait_trailing;
 
-  for (int i = 1; i < argc_mut; ++i) {
-    if (!argv_mut[i]) {
+  for (int i = 1; i < argcMut; ++i) {
+    if (!argvMut[i]) {
       continue;
     }
     evrp::device::api::DeviceKind k;
-    if (parseKind(argv_mut[i], &k)) {
+    if (parseKind(argvMut[i], &k)) {
       options.kinds.push_back(k);
     }
   }

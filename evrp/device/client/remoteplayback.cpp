@@ -14,7 +14,7 @@ RemotePlayback::~RemotePlayback() = default;
 
 bool RemotePlayback::upload(const std::vector<api::InputEvent>& events,
                             api::OperationResult* result_out) {
-  std::lock_guard<std::mutex> lock(call_mu_);
+  std::lock_guard<std::mutex> lock(callMu_);
 
   evrp::device::v1::UploadRecordingRequest req;
   api::toProto(events, req.mutable_events());
@@ -36,13 +36,13 @@ bool RemotePlayback::upload(const std::vector<api::InputEvent>& events,
   return resp.code() == 0;
 }
 
-int RemotePlayback::playbackIndex() const { return reported_index_; }
+int RemotePlayback::playbackIndex() const { return reportedIndex_; }
 
 bool RemotePlayback::playback(api::OperationResult* result_out,
                               evrp::CountingSemaphore* progress_notify) {
-  std::lock_guard<std::mutex> lock(call_mu_);
+  std::lock_guard<std::mutex> lock(callMu_);
 
-  reported_index_ = -1;
+  reportedIndex_ = -1;
 
   std::unique_ptr<grpc::ClientContext> stream_ctx;
   std::unique_ptr<grpc::ClientReader<evrp::device::v1::PlaybackProgress>>
@@ -59,7 +59,7 @@ bool RemotePlayback::playback(api::OperationResult* result_out,
     progress_thread = std::thread([raw_reader, progress_notify, this]() {
       evrp::device::v1::PlaybackProgress msg;
       while (raw_reader->Read(&msg)) {
-        reported_index_ = msg.event_index();
+        reportedIndex_ = msg.event_index();
         progress_notify->release();
       }
       grpc::Status fin = raw_reader->Finish();
@@ -89,7 +89,7 @@ bool RemotePlayback::playback(api::OperationResult* result_out,
 }
 
 bool RemotePlayback::stopPlayback() {
-  std::lock_guard<std::mutex> lock(call_mu_);
+  std::lock_guard<std::mutex> lock(callMu_);
 
   grpc::ClientContext ctx;
   google::protobuf::Empty req;

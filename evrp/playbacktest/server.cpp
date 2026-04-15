@@ -36,7 +36,7 @@ class NoInputListener final : public evrp::device::api::IInputListener {
 
 int main(int argc, char** argv) {
   Logger logger;
-  g_logger = &logger;
+  gLogger = &logger;
 
   gflags::SetUsageMessage("evrp_playback_test_server — LocalPlayback + gRPC (playback only)");
   gflags::ParseCommandLineFlags(&argc, &argv, true);

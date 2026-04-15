@@ -15,7 +15,7 @@ class FileSystem {
   void closeFd(int fd) const;
   long readFd(int fd, void *buffer, unsigned long size) const;
   long writeFd(int fd, const void *buffer, unsigned long size) const;
-  int pollFds(int *fds, int nfds, int timeout_ms, bool *ready) const;
+  int pollFds(int *fds, int nfds, int timeoutMs, bool *ready) const;
 
   // Empty path means writing to stdout.
   bool openOutput(const std::string &path);
@@ -26,9 +26,9 @@ class FileSystem {
   std::istream &inputStream();
 
  private:
-  std::unique_ptr<std::ostream> owned_out_;
+  std::unique_ptr<std::ostream> ownedOut_;
   std::ostream *out_;
-  std::unique_ptr<std::ifstream> owned_in_;
+  std::unique_ptr<std::ifstream> ownedIn_;
   std::istream *in_;
   std::string errorMessage_;
 };

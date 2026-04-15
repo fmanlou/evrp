@@ -14,9 +14,9 @@ static bool nameLikeKeyboard(const std::string &name) {
 
 bool isKeyboardFromCapabilities(const Capabilities &caps) {
   bool has_keyboard_keys =
-      caps.key_enter || caps.key_space || caps.key_esc || caps.key_a;
+      caps.keyEnter || caps.keySpace || caps.keyEsc || caps.keyA;
 
-  return caps.ev_key && has_keyboard_keys && nameLikeKeyboard(caps.name);
+  return caps.evKey && has_keyboard_keys && nameLikeKeyboard(caps.name);
 }
 
 Event makeKeyEvent(unsigned short code, int value) {
@@ -75,8 +75,8 @@ std::string keyboardKeyActionFromValue(int value) {
 
 void processKeyboardEventWithCtrlFilter(
     const Event &ev, keyboard_filter_state *state,
-    std::vector<Event> *emitted_events) {
-  if (!state || !emitted_events) return;
+    std::vector<Event> *emittedEvents) {
+  if (!state || !emittedEvents) return;
 
   if (ev.type == EV_KEY) {
     bool is_ctrl_key = (ev.code == KEY_LEFTCTRL || ev.code == KEY_RIGHTCTRL);
@@ -94,7 +94,7 @@ void processKeyboardEventWithCtrlFilter(
       }
       if (is_release && state->ctrl_down_count == 0) {
         if (!state->saw_ctrl_c) {
-          emitted_events->insert(emitted_events->end(),
+          emittedEvents->insert(emittedEvents->end(),
                                  state->pending_events.begin(),
                                  state->pending_events.end());
         }
@@ -118,7 +118,7 @@ void processKeyboardEventWithCtrlFilter(
 
   if (!state->pending_events.empty() && state->ctrl_down_count == 0) {
     if (!state->saw_ctrl_c) {
-      emitted_events->insert(emitted_events->end(),
+      emittedEvents->insert(emittedEvents->end(),
                              state->pending_events.begin(),
                              state->pending_events.end());
     }
@@ -126,15 +126,15 @@ void processKeyboardEventWithCtrlFilter(
     state->pending_events.clear();
   }
 
-  emitted_events->push_back(ev);
+  emittedEvents->push_back(ev);
 }
 
 void flushKeyboardEventFilter(keyboard_filter_state *state,
-                                 std::vector<Event> *emitted_events) {
-  if (!state || !emitted_events) return;
+                                 std::vector<Event> *emittedEvents) {
+  if (!state || !emittedEvents) return;
   if (state->ctrl_down_count != 0) return;
   if (!state->saw_ctrl_c && !state->pending_events.empty()) {
-    emitted_events->insert(emitted_events->end(), state->pending_events.begin(),
+    emittedEvents->insert(emittedEvents->end(), state->pending_events.begin(),
                            state->pending_events.end());
   }
   state->saw_ctrl_c = false;

@@ -39,8 +39,8 @@ class GrpcInputDeviceService final
                     evrp::device::v1::PingResponse* response) override;
 
  private:
-  evrp::device::api::ICursorPosition& cursor_position_;
-  evrp::device::api::IInputDeviceKindsProvider& device_kinds_provider_;
+  evrp::device::api::ICursorPosition& cursorPosition_;
+  evrp::device::api::IInputDeviceKindsProvider& deviceKindsProvider_;
 };
 
 }  // namespace evrp::device::server

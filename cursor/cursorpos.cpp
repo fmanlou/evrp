@@ -5,7 +5,7 @@
 #include "cursorposx11.h"
 #endif
 
-CursorPos *g_cursor = nullptr;
+CursorPos *gCursor = nullptr;
 
 void CursorPos::ensureInitialized() const {
   if (initialized_) return;

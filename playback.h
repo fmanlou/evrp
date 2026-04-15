@@ -8,11 +8,11 @@
 
 class Playback {
  public:
-  explicit Playback(const run_options &options);
+  explicit Playback(const RunOptions &options);
   int run();
 
  private:
-  run_options options_;
+  RunOptions options_;
   FileSystem fs_;
-  InputEventWriter event_writer_;
+  InputEventWriter eventWriter_;
 };

@@ -7,6 +7,9 @@ alwaysApply: true
 
 - Follow Google C++ style as the baseline.
 - All function and method names use lower camelCase (`camelCase`).
+- Local variables, parameters, and struct / aggregate fields use lower camelCase (`localVar`, `playbackPath`).
+- Class data members use lower camelCase with a trailing underscore (`memberName_`).
+- Project globals use lower camelCase with a `g` prefix (`gLogger`, `gCursor`). Do not rename generated or third-party APIs (e.g. protobuf `time_sec()`, `FLAGS_log_level`).
 - Production file names use lowercase letters only and do not use underscores.
 - Unit test file names must be `<corresponding_file_name>_test.cpp`.
 - All header files use `#pragma once` only; do not use include guards.

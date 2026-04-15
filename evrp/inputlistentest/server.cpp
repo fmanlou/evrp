@@ -16,7 +16,7 @@ DEFINE_string(listen, "127.0.0.1:50051",
 
 int main(int argc, char** argv) {
   Logger logger;
-  g_logger = &logger;
+  gLogger = &logger;
 
   gflags::SetUsageMessage(
       "evrp_inputlisten_test_server — DispatchedInputListener + gRPC");

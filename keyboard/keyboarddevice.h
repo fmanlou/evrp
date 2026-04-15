@@ -16,7 +16,7 @@ std::string keyboardKeyNameFromCode(unsigned short code);
 std::string keyboardKeyActionFromValue(int value);
 void processKeyboardEventWithCtrlFilter(
     const Event &ev, keyboard_filter_state *state,
-    std::vector<Event> *emitted_events);
+    std::vector<Event> *emittedEvents);
 void flushKeyboardEventFilter(keyboard_filter_state *state,
-                                 std::vector<Event> *emitted_events);
+                                 std::vector<Event> *emittedEvents);
 bool isKeyboardFromCapabilities(const Capabilities &caps);

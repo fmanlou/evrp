@@ -16,7 +16,7 @@ struct RecordTarget {
 
 class Record {
  public:
-  explicit Record(const run_options &options);
+  explicit Record(const RunOptions &options);
   int run();
 
  private:
@@ -24,7 +24,7 @@ class Record {
   void closeTargets();
   void recordEvents();
 
-  run_options options_;
+  RunOptions options_;
   FileSystem fs_;
   std::vector<RecordTarget> targets_;
 };

@@ -25,7 +25,7 @@ class LocalInputListener final : public api::IInputListener {
 
   std::vector<api::InputEvent> readInputEvents() override;
 
-  bool waitForInputEvent(int timeout_ms) override;
+  bool waitForInputEvent(int timeoutMs) override;
 
   void cancelListening() override;
 
@@ -41,10 +41,10 @@ class LocalInputListener final : public api::IInputListener {
 
   FileSystem fs_;
   std::mutex mu_;
-  std::atomic<bool> listening_active_{false};
+  std::atomic<bool> listeningActive_{false};
   std::atomic<bool> disposed_{false};
   std::vector<TrackedDevice> devices_;
-  std::set<size_t> poll_ready_indices_;
+  std::set<size_t> pollReadyIndices_;
 };
 
 }

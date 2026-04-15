@@ -16,37 +16,37 @@ static bool nameLikeMouse(const std::string &name) {
          n.find("pointer") != std::string::npos;
 }
 
-bool isTouchpad(const char *dev_path) {
+bool isTouchpad(const char *devPath) {
   Capabilities caps;
-  if (!openAndGetCapabilities(dev_path, &caps)) return false;
+  if (!openAndGetCapabilities(devPath, &caps)) return false;
 
   return isTouchpadFromCapabilities(caps);
 }
 
-bool isTouchscreen(const char *dev_path) {
+bool isTouchscreen(const char *devPath) {
   Capabilities caps;
-  if (!openAndGetCapabilities(dev_path, &caps)) return false;
+  if (!openAndGetCapabilities(devPath, &caps)) return false;
 
   return isTouchscreenFromCapabilities(caps);
 }
 
-bool isMouse(const char *dev_path) {
+bool isMouse(const char *devPath) {
   Capabilities caps;
-  if (!openAndGetCapabilities(dev_path, &caps)) return false;
+  if (!openAndGetCapabilities(devPath, &caps)) return false;
 
   return isMouseFromCapabilities(caps);
 }
 
-bool isKeyboard(const char *dev_path) {
+bool isKeyboard(const char *devPath) {
   Capabilities caps;
-  if (!openAndGetCapabilities(dev_path, &caps)) return false;
+  if (!openAndGetCapabilities(devPath, &caps)) return false;
 
   return isKeyboardFromCapabilities(caps);
 }
 
 bool isMouseFromCapabilities(const Capabilities &caps) {
-  bool has_rel = caps.ev_rel && caps.rel_x && caps.rel_y;
-  bool has_buttons = caps.btn_left || caps.btn_right || caps.btn_middle;
+  bool has_rel = caps.evRel && caps.relX && caps.relY;
+  bool has_buttons = caps.btnLeft || caps.btnRight || caps.btnMiddle;
 
   return has_rel && has_buttons && nameLikeMouse(caps.name);
 }

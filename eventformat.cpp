@@ -15,7 +15,7 @@ std::string parseEventLabel(const std::string &line) {
   return line.substr(lb + 1, rb - lb - 1);
 }
 
-bool parseEventLine(const std::string &line, long long *out_delta_us,
+bool parseEventLine(const std::string &line, long long *out_deltaUs,
                       unsigned short *out_type, unsigned short *out_code,
                       int *out_value) {
   if (!out_type || !out_code || !out_value) return false;
@@ -38,7 +38,7 @@ bool parseEventLine(const std::string &line, long long *out_delta_us,
   } catch (...) {
     return false;
   }
-  if (out_delta_us) *out_delta_us = sec * 1000000LL + usec;
+  if (out_deltaUs) *out_deltaUs = sec * 1000000LL + usec;
 
   std::size_t type_pos = line.find("type=", ts_end);
   if (type_pos == std::string::npos) return false;
@@ -79,8 +79,8 @@ bool parseEventLine(const std::string &line, long long *out_delta_us,
 
 static bool parseLabeledDurationLine(const std::string &line,
                                         const std::string &expected_label,
-                                        long long *out_delta_us) {
-  if (!out_delta_us) return false;
+                                        long long *out_deltaUs) {
+  if (!out_deltaUs) return false;
   std::string label = parseEventLabel(line);
   if (label != expected_label) return false;
   std::size_t bracket = line.find("] ");
@@ -98,16 +98,16 @@ static bool parseLabeledDurationLine(const std::string &line,
   } catch (...) {
     return false;
   }
-  *out_delta_us = sec * 1000000LL + usec;
+  *out_deltaUs = sec * 1000000LL + usec;
   return true;
 }
 
-bool parseLeadingLine(const std::string &line, long long *out_delta_us) {
-  return parseLabeledDurationLine(line, "leading", out_delta_us);
+bool parseLeadingLine(const std::string &line, long long *out_deltaUs) {
+  return parseLabeledDurationLine(line, "leading", out_deltaUs);
 }
 
-bool parseTrailingLine(const std::string &line, long long *out_delta_us) {
-  return parseLabeledDurationLine(line, "trailing", out_delta_us);
+bool parseTrailingLine(const std::string &line, long long *out_deltaUs) {
+  return parseLabeledDurationLine(line, "trailing", out_deltaUs);
 }
 
 std::string eventTypeName(unsigned short type) {
@@ -152,20 +152,20 @@ std::string eventCodeName(unsigned short type, unsigned short code) {
 }
 
 std::string formatEventLine(evrp::device::api::DeviceKind device,
-                            const Event &ev, long long delta_us) {
+                            const Event &ev, long long deltaUs) {
   std::ostringstream oss;
   std::string code_name = eventCodeName(ev.type, ev.code);
-  long long delta_sec = delta_us / 1000000LL;
-  long long delta_usec = delta_us % 1000000LL;
-  if (delta_usec < 0) {
+  long long delta_sec = deltaUs / 1000000LL;
+  long long deltaUsec = deltaUs % 1000000LL;
+  if (deltaUsec < 0) {
     delta_sec -= 1;
-    delta_usec += 1000000LL;
+    deltaUsec += 1000000LL;
   }
   oss << "[" << evrp::device::api::deviceKindLabel(device) << "] " << delta_sec
       << ".";
   oss.width(6);
   oss.fill('0');
-  oss << delta_usec
+  oss << deltaUsec
       << " type=" << ev.type << "(" << eventTypeName(ev.type) << ")"
       << " code=" << ev.code;
   if (!code_name.empty()) {
@@ -184,25 +184,25 @@ std::string formatEventLine(evrp::device::api::DeviceKind device,
 }
 
 static std::string formatDurationLine(const std::string &label,
-                                        long long delta_us) {
+                                        long long deltaUs) {
   std::ostringstream oss;
-  long long delta_sec = delta_us / 1000000LL;
-  long long delta_usec = delta_us % 1000000LL;
-  if (delta_usec < 0) {
+  long long delta_sec = deltaUs / 1000000LL;
+  long long deltaUsec = deltaUs % 1000000LL;
+  if (deltaUsec < 0) {
     delta_sec -= 1;
-    delta_usec += 1000000LL;
+    deltaUsec += 1000000LL;
   }
   oss << "[" << label << "] " << delta_sec << ".";
   oss.width(6);
   oss.fill('0');
-  oss << delta_usec;
+  oss << deltaUsec;
   return oss.str();
 }
 
-std::string formatLeadingLine(long long delta_us) {
-  return formatDurationLine("leading", delta_us);
+std::string formatLeadingLine(long long deltaUs) {
+  return formatDurationLine("leading", deltaUs);
 }
 
-std::string formatTrailingLine(long long delta_us) {
-  return formatDurationLine("trailing", delta_us);
+std::string formatTrailingLine(long long deltaUs) {
+  return formatDurationLine("trailing", deltaUs);
 }

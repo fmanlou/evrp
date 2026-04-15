@@ -31,8 +31,8 @@ class LocalPlayback final : public api::IPlayback {
   mutable std::mutex mu_;
   std::vector<api::InputEvent> cached_;
   bool playing_{false};
-  std::atomic<bool> stop_requested_{false};
-  int current_event_index_{-1};
+  std::atomic<bool> stopRequested_{false};
+  int currentEventIndex_{-1};
 };
 
 }  // namespace evrp::device::server

@@ -88,8 +88,8 @@ void traceInputEvents(int round, const std::vector<evrp::device::api::InputEvent
     const evrp::device::api::InputEvent& e = batch[j];
     std::ostringstream line;
     line << "  event round=" << round << " index=" << j
-         << " device=" << deviceKindName(e.device) << " time=" << e.time_sec << "."
-         << std::setfill('0') << std::setw(6) << e.time_usec << std::setfill(' ')
+         << " device=" << deviceKindName(e.device) << " time=" << e.timeSec << "."
+         << std::setfill('0') << std::setw(6) << e.timeUsec << std::setfill(' ')
          << " type=0x" << std::hex << e.type << " code=0x" << e.code << std::dec
          << " value=" << e.value;
     logInfo(line.str());
@@ -100,7 +100,7 @@ void traceInputEvents(int round, const std::vector<evrp::device::api::InputEvent
 
 int main(int argc, char** argv) {
   Logger logger;
-  g_logger = &logger;
+  gLogger = &logger;
 
   gflags::SetUsageMessage(
       "evrp_inputlisten_test_client — RemoteInputListener against InputListenService");

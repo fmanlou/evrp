@@ -39,7 +39,7 @@ long FileSystem::writeFd(int fd, const void *buffer,
   return static_cast<long>(::write(fd, buffer, size));
 }
 
-int FileSystem::pollFds(int *fds, int nfds, int timeout_ms,
+int FileSystem::pollFds(int *fds, int nfds, int timeoutMs,
                          bool *ready) const {
   if (!fds || nfds <= 0 || !ready) return -1;
 
@@ -52,7 +52,7 @@ int FileSystem::pollFds(int *fds, int nfds, int timeout_ms,
     ready[i] = false;
   }
 
-  int ret = ::poll(pfds, static_cast<nfds_t>(n), timeout_ms);
+  int ret = ::poll(pfds, static_cast<nfds_t>(n), timeoutMs);
   if (ret < 0) return -1;
   if (ret == 0) return 0;
 
@@ -68,7 +68,7 @@ bool FileSystem::openOutput(const std::string &path) {
   errorMessage_.clear();
 
   if (path.empty()) {
-    owned_out_.reset();
+    ownedOut_.reset();
     out_ = &std::cout;
     return true;
   }
@@ -76,13 +76,13 @@ bool FileSystem::openOutput(const std::string &path) {
   std::unique_ptr<std::ofstream> file(new std::ofstream(path));
   if (!file->is_open()) {
     errorMessage_ = "Failed to open output file: " + path;
-    owned_out_.reset();
+    ownedOut_.reset();
     out_ = &std::cout;
     return false;
   }
 
   out_ = file.get();
-  owned_out_ = std::move(file);
+  ownedOut_ = std::move(file);
   return true;
 }
 
@@ -95,12 +95,12 @@ bool FileSystem::openInput(const std::string &path) {
   std::unique_ptr<std::ifstream> file(new std::ifstream(path));
   if (!file->is_open()) {
     errorMessage_ = "Failed to open input file: " + path;
-    owned_in_.reset();
+    ownedIn_.reset();
     in_ = nullptr;
     return false;
   }
   in_ = file.get();
-  owned_in_ = std::move(file);
+  ownedIn_ = std::move(file);
   return true;
 }
 

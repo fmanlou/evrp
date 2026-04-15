@@ -7,13 +7,13 @@
 
 int main(int argc, char *argv[]) {
   Logger logger;
-  g_logger = &logger;
+  gLogger = &logger;
 
   CursorPos cursor;
-  g_cursor = &cursor;
+  gCursor = &cursor;
 
-  run_options options = parseOptions(argc, argv);
-  g_logger->setLevel(options.log_level);
+  RunOptions options = parseOptions(argc, argv);
+  gLogger->setLevel(options.logLevel);
 
   int mode_count = (options.recording ? 1 : 0) + (options.playback ? 1 : 0);
   if (mode_count > 1) {
@@ -28,7 +28,7 @@ int main(int argc, char *argv[]) {
   }
 
   if (options.playback) {
-    if (options.playback_path.empty()) {
+    if (options.playbackPath.empty()) {
       logError("Playback (--playback) requires a file path.");
       printUsage(argv[0]);
       return 1;

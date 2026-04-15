@@ -15,9 +15,9 @@ static bool nameLikeTouchpad(const std::string &name) {
 }
 
 bool isTouchpadFromCapabilities(const Capabilities &caps) {
-  bool has_abs = caps.ev_abs && (caps.abs_x || caps.abs_mt_position_x);
-  bool has_finger_tool = caps.btn_tool_finger || caps.btn_tool_doubletap ||
-                         caps.btn_tool_tripletap;
+  bool has_abs = caps.evAbs && (caps.absX || caps.absMtPositionX);
+  bool has_finger_tool = caps.btnToolFinger || caps.btnToolDoubletap ||
+                         caps.btnToolTripletap;
 
   return has_abs && has_finger_tool && nameLikeTouchpad(caps.name);
 }
@@ -30,7 +30,7 @@ static bool nameLikeTouchscreen(const std::string &name) {
 
 bool isTouchscreenFromCapabilities(const Capabilities &caps) {
   if (isTouchpadFromCapabilities(caps)) return false;
-  bool has_abs = caps.ev_abs && (caps.abs_x || caps.abs_mt_position_x);
+  bool has_abs = caps.evAbs && (caps.absX || caps.absMtPositionX);
   return has_abs && nameLikeTouchscreen(caps.name);
 }
 

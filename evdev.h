@@ -5,23 +5,23 @@
 
 struct Capabilities {
   std::string name;
-  bool ev_key;
-  bool ev_abs;
-  bool ev_rel;
-  bool abs_x;
-  bool abs_mt_position_x;
-  bool rel_x;
-  bool rel_y;
-  bool btn_left;
-  bool btn_right;
-  bool btn_middle;
-  bool btn_tool_finger;
-  bool btn_tool_doubletap;
-  bool btn_tool_tripletap;
-  bool key_enter;
-  bool key_space;
-  bool key_esc;
-  bool key_a;
+  bool evKey;
+  bool evAbs;
+  bool evRel;
+  bool absX;
+  bool absMtPositionX;
+  bool relX;
+  bool relY;
+  bool btnLeft;
+  bool btnRight;
+  bool btnMiddle;
+  bool btnToolFinger;
+  bool btnToolDoubletap;
+  bool btnToolTripletap;
+  bool keyEnter;
+  bool keySpace;
+  bool keyEsc;
+  bool keyA;
 };
 
 struct Event {
@@ -51,7 +51,7 @@ class SigintGuard {
   bool stopRequested() const;
 
  private:
-  struct sigaction old_sa_;
+  struct sigaction oldSa_;
   static volatile sig_atomic_t stop_;
   static void handler(int);
 };

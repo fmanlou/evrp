@@ -12,8 +12,8 @@ GrpcPlaybackService::GrpcPlaybackService(api::IPlayback& playback)
     : playback_(playback) {}
 
 void GrpcPlaybackService::markPlaybackStreamFinished() {
-  std::lock_guard<std::mutex> lock(prog_mu_);
-  prog_playback_finished_ = true;
+  std::lock_guard<std::mutex> lock(progMu_);
+  progPlaybackFinished_ = true;
 }
 
 grpc::Status GrpcPlaybackService::Upload(
@@ -35,18 +35,18 @@ grpc::Status GrpcPlaybackService::Playback(
     grpc::ServerContext* /*context*/,
     const evrp::device::v1::PlaybackRecordingRequest* /*request*/,
     evrp::device::v1::OperationResult* response) {
-  while (playback_progress_sem_.tryAcquire()) {
+  while (playbackProgressSem_.tryAcquire()) {
   }
   {
-    std::lock_guard<std::mutex> lock(prog_mu_);
-    prog_playback_finished_ = false;
+    std::lock_guard<std::mutex> lock(progMu_);
+    progPlaybackFinished_ = false;
   }
 
   api::OperationResult result;
-  const bool ok = playback_.playback(&result, &playback_progress_sem_);
+  const bool ok = playback_.playback(&result, &playbackProgressSem_);
 
   markPlaybackStreamFinished();
-  playback_progress_sem_.release();
+  playbackProgressSem_.release();
 
   if (!ok) {
     return grpc::Status(
@@ -62,15 +62,15 @@ grpc::Status GrpcPlaybackService::SubscribePlayback(
     const google::protobuf::Empty* /*request*/,
     grpc::ServerWriter<evrp::device::v1::PlaybackProgress>* writer) {
   {
-    std::lock_guard<std::mutex> lock(prog_mu_);
-    if (subscriber_active_) {
+    std::lock_guard<std::mutex> lock(progMu_);
+    if (subscriberActive_) {
       return grpc::Status(grpc::StatusCode::RESOURCE_EXHAUSTED,
                           "subscribe_playback already active");
     }
-    subscriber_active_ = true;
-    prog_playback_finished_ = false;
+    subscriberActive_ = true;
+    progPlaybackFinished_ = false;
   }
-  while (playback_progress_sem_.tryAcquire()) {
+  while (playbackProgressSem_.tryAcquire()) {
   }
 
   grpc::Status status = grpc::Status::OK;
@@ -80,12 +80,12 @@ grpc::Status GrpcPlaybackService::SubscribePlayback(
       break;
     }
 
-    playback_progress_sem_.acquire();
+    playbackProgressSem_.acquire();
 
     bool finished = false;
     {
-      std::lock_guard<std::mutex> lock(prog_mu_);
-      finished = prog_playback_finished_;
+      std::lock_guard<std::mutex> lock(progMu_);
+      finished = progPlaybackFinished_;
     }
     if (finished) {
       break;
@@ -100,8 +100,8 @@ grpc::Status GrpcPlaybackService::SubscribePlayback(
   }
 
   {
-    std::lock_guard<std::mutex> lock(prog_mu_);
-    subscriber_active_ = false;
+    std::lock_guard<std::mutex> lock(progMu_);
+    subscriberActive_ = false;
   }
   return status;
 }

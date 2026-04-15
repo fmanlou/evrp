@@ -14,70 +14,70 @@ static Capabilities makeBaseCaps(const std::string &name) {
 
 TEST(InputDevice, DetectTouchpadFromCapabilities) {
   Capabilities caps = makeBaseCaps("Synaptics TouchPad");
-  caps.ev_abs = true;
-  caps.abs_x = true;
-  caps.btn_tool_finger = true;
+  caps.evAbs = true;
+  caps.absX = true;
+  caps.btnToolFinger = true;
   EXPECT_TRUE(isTouchpadFromCapabilities(caps));
 }
 
 TEST(InputDevice, RejectTouchpadWithoutFingerTool) {
   Capabilities caps = makeBaseCaps("TouchPad");
-  caps.ev_abs = true;
-  caps.abs_x = true;
+  caps.evAbs = true;
+  caps.absX = true;
   EXPECT_FALSE(isTouchpadFromCapabilities(caps));
 }
 
 TEST(InputDevice, DetectTouchscreenFromCapabilities) {
   Capabilities caps = makeBaseCaps("Goodix Touchscreen");
-  caps.ev_abs = true;
-  caps.abs_mt_position_x = true;
+  caps.evAbs = true;
+  caps.absMtPositionX = true;
   EXPECT_TRUE(isTouchscreenFromCapabilities(caps));
 }
 
 TEST(InputDevice, RejectTouchscreenWhenTouchpad) {
   Capabilities caps = makeBaseCaps("Synaptics TouchPad");
-  caps.ev_abs = true;
-  caps.abs_x = true;
-  caps.btn_tool_finger = true;
+  caps.evAbs = true;
+  caps.absX = true;
+  caps.btnToolFinger = true;
   EXPECT_FALSE(isTouchscreenFromCapabilities(caps));
 }
 
 TEST(InputDevice, DetectMouseFromCapabilities) {
   Capabilities caps = makeBaseCaps("USB Optical Mouse");
-  caps.ev_rel = true;
-  caps.rel_x = true;
-  caps.rel_y = true;
-  caps.btn_left = true;
+  caps.evRel = true;
+  caps.relX = true;
+  caps.relY = true;
+  caps.btnLeft = true;
   EXPECT_TRUE(isMouseFromCapabilities(caps));
 }
 
 TEST(InputDevice, RejectMouseWithoutButtons) {
   Capabilities caps = makeBaseCaps("USB Optical Mouse");
-  caps.ev_rel = true;
-  caps.rel_x = true;
-  caps.rel_y = true;
+  caps.evRel = true;
+  caps.relX = true;
+  caps.relY = true;
   EXPECT_FALSE(isMouseFromCapabilities(caps));
 }
 
 TEST(InputDevice, DetectKeyboardFromCapabilities) {
   Capabilities caps = makeBaseCaps("AT Translated Set 2 keyboard");
-  caps.ev_key = true;
-  caps.key_enter = true;
+  caps.evKey = true;
+  caps.keyEnter = true;
   EXPECT_TRUE(isKeyboardFromCapabilities(caps));
 }
 
 TEST(InputDevice, RejectKeyboardWithWrongName) {
   Capabilities caps = makeBaseCaps("generic input device");
-  caps.ev_key = true;
-  caps.key_enter = true;
+  caps.evKey = true;
+  caps.keyEnter = true;
   EXPECT_FALSE(isKeyboardFromCapabilities(caps));
 }
 
 TEST(InputDevice, NameMatchIsCaseInsensitive) {
   Capabilities caps = makeBaseCaps("sYnApTiCs tOuChPaD");
-  caps.ev_abs = true;
-  caps.abs_x = true;
-  caps.btn_tool_finger = true;
+  caps.evAbs = true;
+  caps.absX = true;
+  caps.btnToolFinger = true;
   EXPECT_TRUE(isTouchpadFromCapabilities(caps));
 }
 

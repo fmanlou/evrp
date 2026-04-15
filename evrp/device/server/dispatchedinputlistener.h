@@ -22,7 +22,7 @@ class DispatchedInputListener final : public api::IInputListener {
 
   std::vector<api::InputEvent> readInputEvents() override;
 
-  bool waitForInputEvent(int timeout_ms) override;
+  bool waitForInputEvent(int timeoutMs) override;
 
   void cancelListening() override;
 
@@ -30,7 +30,7 @@ class DispatchedInputListener final : public api::IInputListener {
 
  private:
   api::IInputListener& inner_;
-  SyncDispatchQueue sync_dispatch_;
+  SyncDispatchQueue syncDispatch_;
 };
 
 }  // namespace evrp::device::server

@@ -16,8 +16,8 @@ enum class DeviceKind {
 
 struct InputEvent {
   DeviceKind device = DeviceKind::kUnspecified;
-  int64_t time_sec = 0;
-  int64_t time_usec = 0;
+  int64_t timeSec = 0;
+  int64_t timeUsec = 0;
   uint32_t type = 0;
   uint32_t code = 0;
   int32_t value = 0;
