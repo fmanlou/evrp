@@ -63,9 +63,6 @@ add_library(filesystem STATIC filesystem.cpp)
 target_include_directories(filesystem PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(evdev PRIVATE filesystem)
 
-add_library(deviceid STATIC deviceid.cpp)
-target_include_directories(deviceid PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-
 option(EVRP_USE_X11_CURSOR "Enable X11 cursor position backend" ON)
 
 set(cursorpos_sources cursor/cursorpos.cpp)
@@ -84,7 +81,7 @@ endif()
 
 add_library(argparser STATIC argparser.cpp)
 target_include_directories(argparser PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(argparser PRIVATE deviceid logger gflags::gflags)
+target_link_libraries(argparser PRIVATE logger gflags::gflags)
 
 add_library(
   inputeventwriter STATIC inputeventwriter.cpp keyboard/keyboardeventwriter.cpp
@@ -92,8 +89,7 @@ add_library(
 target_include_directories(inputeventwriter PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(
   inputeventwriter
-  PRIVATE deviceid
-          evdev
+  PRIVATE evdev
           eventformat
           filesystem
           inputdevice
@@ -102,12 +98,12 @@ target_link_libraries(
 
 add_library(eventformat STATIC eventformat.cpp)
 target_include_directories(eventformat PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(eventformat PRIVATE deviceid evdev inputdevice)
+target_link_libraries(eventformat PRIVATE evdev inputdevice)
 
 add_library(inputdevice STATIC inputdevice.cpp keyboard/keyboarddevice.cpp
                                touchdevice.cpp)
 target_include_directories(inputdevice PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(inputdevice PUBLIC deviceid evdev filesystem)
+target_link_libraries(inputdevice PUBLIC evdev filesystem)
 
 add_library(record STATIC record.cpp)
 target_include_directories(record PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
@@ -288,7 +284,7 @@ add_library(
 target_include_directories(evrp_device_grpc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(evrp_device_grpc PUBLIC evrp_device_proto tofromproto
                                               countingsemaphore
-                       PRIVATE logger)
+                       PRIVATE logger inputdevice)
 
 add_executable(evrp-device evrp-device/main.cpp)
 target_link_libraries(evrp-device PRIVATE evrp_device_api evrp_device_grpc

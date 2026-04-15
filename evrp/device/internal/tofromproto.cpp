@@ -107,4 +107,5 @@ void toProto(const OperationResult& r, evrp::device::v1::OperationResult* p) {
   p->set_message(r.message);
 }
 
-}  // namespace evrp::device::api
+}
+

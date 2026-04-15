@@ -5,7 +5,7 @@
 
 #include <cstdio>
 
-#include "deviceid.h"
+#include "evrp/device/api/types.h"
 #include "evdev.h"
 #include "eventformat.h"
 #include "filesystem.h"
@@ -21,7 +21,7 @@ std::vector<RecordTarget> Record::collectTargets() {
   for (const auto &kind : options_.kinds) {
     std::string path = findDevicePath(kind);
     if (path.empty()) {
-      logWarn("No " + std::string(deviceLabel(kind)) +
+      logWarn("No " + std::string(evrp::device::api::deviceKindLabel(kind)) +
                " detected. Try running with sudo.");
       continue;
     }
@@ -48,8 +48,9 @@ void Record::recordEvents() {
   std::vector<int> fds;
   fds.reserve(targets_.size());
   for (const auto &t : targets_) {
-    logInfo("Recording " + std::string(deviceLabel(t.id)) + " from " +
-             t.path);
+    logInfo("Recording " +
+            std::string(evrp::device::api::deviceKindLabel(t.kind)) + " from " +
+            t.path);
     fds.push_back(t.fd);
   }
   logInfo("(Ctrl+C to stop)");
@@ -64,7 +65,8 @@ void Record::recordEvents() {
     event_out << line << "\n";
     logDebug(line);
   };
-  auto writeEventLine = [&](DeviceId id, const Event &ev) {
+  auto writeEventLine = [&](evrp::device::api::DeviceKind device,
+                            const Event &ev) {
     long long current_us = ev.sec * 1000000LL + ev.usec;
     if (baseline_us < 0) {
       baseline_us = current_us;
@@ -77,7 +79,7 @@ void Record::recordEvents() {
     }
     last_timestamp_us = current_us;
     long long delta_us = current_us - baseline_us;
-    writeLine(formatEventLine(id, ev, delta_us));
+    writeLine(formatEventLine(device, ev, delta_us));
   };
   auto writeNewline = [&]() {
     event_out << "\n";
@@ -110,18 +112,18 @@ void Record::recordEvents() {
         const auto &ev = events[j];
         if (ev.type == EV_SYN) continue;
 
-        if (targets_[i].id == DeviceId::Keyboard) {
+        if (targets_[i].kind == evrp::device::api::DeviceKind::kKeyboard) {
           std::vector<Event> emitted_events;
           processKeyboardEventWithCtrlFilter(ev, &keyboard_states[i],
                                                   &emitted_events);
           for (const auto &out_ev : emitted_events) {
-            writeEventLine(targets_[i].id, out_ev);
+            writeEventLine(targets_[i].kind, out_ev);
           }
           continue;
         }
 
-        if (targets_[i].id == DeviceId::Touchpad ||
-            targets_[i].id == DeviceId::Touchscreen) {
+        if (targets_[i].kind == evrp::device::api::DeviceKind::kTouchpad ||
+            targets_[i].kind == evrp::device::api::DeviceKind::kTouchscreen) {
           touch_segment_state &touch_state = touch_states[i];
           touch_segment_decision decision =
               processTouchEventForSegment(ev, &touch_state);
@@ -129,14 +131,14 @@ void Record::recordEvents() {
             writeNewline();
           }
 
-          writeEventLine(targets_[i].id, ev);
+          writeEventLine(targets_[i].kind, ev);
           if (decision.emit_break_after_event) {
             writeNewline();
           }
           continue;
         }
 
-        writeEventLine(targets_[i].id, ev);
+        writeEventLine(targets_[i].kind, ev);
       }
     }
   }

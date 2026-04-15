@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "deviceid.h"
+#include "evrp/device/api/types.h"
 #include "evdev.h"
 
 bool isTouchpad(const char *dev_path);
@@ -18,4 +18,4 @@ std::string findFirstTouchscreen();
 std::string findFirstMouse();
 std::string findFirstKeyboard();
 
-std::string findDevicePath(DeviceId id);
+std::string findDevicePath(evrp::device::api::DeviceKind kind);

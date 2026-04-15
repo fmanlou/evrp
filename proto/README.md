@@ -30,6 +30,7 @@
 |-----|------|
 | `GetCursorPositionAvailability` | 查询读光标坐标是否可用（响应仅 `available`） |
 | `ReadCursorPosition` | 当前光标屏幕坐标（`x` / `y`，像素） |
+| `GetCapabilities` | 当前可识别的输入设备类型列表 → `GetCapabilitiesResponse.supported_kinds`（无低层 evdev 能力位） |
 | `Ping` | 保活 |
 
 **evrp-app**：录制、落盘、Lua、发起上传与回放。

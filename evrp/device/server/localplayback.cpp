@@ -3,30 +3,10 @@
 #include <chrono>
 #include <thread>
 
-#include "deviceid.h"
 #include "filesystem.h"
 #include "inputeventwriter.h"
 
 namespace evrp::device::server {
-
-namespace {
-
-DeviceId deviceIdFromApiKind(api::DeviceKind k) {
-  switch (k) {
-    case api::DeviceKind::kTouchpad:
-      return DeviceId::Touchpad;
-    case api::DeviceKind::kTouchscreen:
-      return DeviceId::Touchscreen;
-    case api::DeviceKind::kMouse:
-      return DeviceId::Mouse;
-    case api::DeviceKind::kKeyboard:
-      return DeviceId::Keyboard;
-    default:
-      return DeviceId::Unknown;
-  }
-}
-
-}  // namespace
 
 bool LocalPlayback::upload(const std::vector<api::InputEvent>& events,
                            api::OperationResult* result_out) {
@@ -83,8 +63,7 @@ bool LocalPlayback::playback(
     first = false;
     prev_us = t_us;
 
-    DeviceId id = deviceIdFromApiKind(e.device);
-    if (!writer.write(id, static_cast<unsigned short>(e.type),
+    if (!writer.write(e.device, static_cast<unsigned short>(e.type),
                       static_cast<unsigned short>(e.code), static_cast<int>(e.value))) {
       {
         std::lock_guard<std::mutex> lock(mu_);

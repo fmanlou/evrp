@@ -12,5 +12,7 @@ service InputDeviceService {
 
   rpc ReadCursorPosition(ReadCursorPositionRequest) returns (ReadCursorPositionResponse);
 
+  rpc GetCapabilities(GetCapabilitiesRequest) returns (GetCapabilitiesResponse);
+
   rpc Ping(PingRequest) returns (PingResponse);
 }

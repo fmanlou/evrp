@@ -5,7 +5,6 @@
 #include <sstream>
 #include <string>
 
-#include "deviceid.h"
 #include "keyboard/keyboarddevice.h"
 
 std::string parseEventLabel(const std::string &line) {
@@ -152,7 +151,8 @@ std::string eventCodeName(unsigned short type, unsigned short code) {
   return "";
 }
 
-std::string formatEventLine(DeviceId id, const Event &ev, long long delta_us) {
+std::string formatEventLine(evrp::device::api::DeviceKind device,
+                            const Event &ev, long long delta_us) {
   std::ostringstream oss;
   std::string code_name = eventCodeName(ev.type, ev.code);
   long long delta_sec = delta_us / 1000000LL;
@@ -161,7 +161,8 @@ std::string formatEventLine(DeviceId id, const Event &ev, long long delta_us) {
     delta_sec -= 1;
     delta_usec += 1000000LL;
   }
-  oss << "[" << deviceLabel(id) << "] " << delta_sec << ".";
+  oss << "[" << evrp::device::api::deviceKindLabel(device) << "] " << delta_sec
+      << ".";
   oss.width(6);
   oss.fill('0');
   oss << delta_usec
@@ -171,7 +172,7 @@ std::string formatEventLine(DeviceId id, const Event &ev, long long delta_us) {
     oss << "(" << code_name << ")";
   }
   oss << " value=" << ev.value;
-  if (id == DeviceId::Keyboard) {
+  if (device == evrp::device::api::DeviceKind::kKeyboard) {
     if (ev.type == EV_KEY) {
       oss << " // key=" << keyboardKeyNameFromCode(ev.code)
           << " action=" << keyboardKeyActionFromValue(ev.value);

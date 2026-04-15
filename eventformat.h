@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "deviceid.h"
+#include "evrp/device/api/types.h"
 #include "evdev.h"
 
 std::string parseEventLabel(const std::string &line);
@@ -19,7 +19,8 @@ bool parseTrailingLine(const std::string &line, long long *out_delta_us);
 std::string eventTypeName(unsigned short type);
 std::string eventCodeName(unsigned short type, unsigned short code);
 // delta_us: relative interval in microseconds (0 for first event).
-std::string formatEventLine(DeviceId id, const Event &ev, long long delta_us);
+std::string formatEventLine(evrp::device::api::DeviceKind device,
+                            const Event &ev, long long delta_us);
 
 std::string formatLeadingLine(long long delta_us);
 std::string formatTrailingLine(long long delta_us);

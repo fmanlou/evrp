@@ -86,10 +86,10 @@ void printUsage(const char *prog) {
       << "  --help: show gflags help.\n";
 }
 
-bool parseKind(const std::string &s, DeviceId *out_id) {
-  DeviceId id = deviceIdFromLabel(s);
-  if (id != DeviceId::Unknown) {
-    *out_id = id;
+bool parseKind(const std::string &s, evrp::device::api::DeviceKind *out_kind) {
+  evrp::device::api::DeviceKind k = evrp::device::api::deviceKindFromLabel(s);
+  if (k != evrp::device::api::DeviceKind::kUnspecified) {
+    *out_kind = k;
     return true;
   }
   return false;
@@ -129,15 +129,17 @@ run_options parseOptions(int argc, char *argv[]) {
     if (!argv_mut[i]) {
       continue;
     }
-    DeviceId id;
-    if (parseKind(argv_mut[i], &id)) {
-      options.kinds.push_back(id);
+    evrp::device::api::DeviceKind k;
+    if (parseKind(argv_mut[i], &k)) {
+      options.kinds.push_back(k);
     }
   }
 
   if (options.recording && options.kinds.empty()) {
-    options.kinds = {DeviceId::Touchpad, DeviceId::Touchscreen, DeviceId::Mouse,
-                     DeviceId::Keyboard};
+    options.kinds = {evrp::device::api::DeviceKind::kTouchpad,
+                       evrp::device::api::DeviceKind::kTouchscreen,
+                       evrp::device::api::DeviceKind::kMouse,
+                       evrp::device::api::DeviceKind::kKeyboard};
   }
   return options;
 }

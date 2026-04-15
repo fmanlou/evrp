@@ -8,7 +8,6 @@
 #include <sstream>
 
 #include "cursor/cursorpos.h"
-#include "deviceid.h"
 #include "evdev.h"
 #include "eventformat.h"
 #include "filesystem.h"
@@ -17,25 +16,27 @@
 #include "logger.h"
 #include "mouse/mouseeventwriter.h"
 
+namespace api = evrp::device::api;
+
 InputEventWriter::InputEventWriter(FileSystem *fs)
     : fs_(fs), keyboard_writer_(this), mouse_writer_(this, g_cursor) {}
 
 InputEventWriter::~InputEventWriter() {
-  for (const auto &p : id_to_fd_) {
+  for (const auto &p : kind_to_fd_) {
     if (p.second >= 0) fs_->closeFd(p.second);
   }
 }
 
-int InputEventWriter::getFd(DeviceId id) {
-  if (id == DeviceId::Unknown) return -1;
-  auto it = id_to_fd_.find(id);
-  if (it != id_to_fd_.end()) return it->second;
+int InputEventWriter::getFd(api::DeviceKind device) {
+  if (device == api::DeviceKind::kUnspecified) return -1;
+  auto it = kind_to_fd_.find(device);
+  if (it != kind_to_fd_.end()) return it->second;
 
-  std::string dev_path = findDevicePath(id);
+  std::string dev_path = findDevicePath(device);
   if (dev_path.empty()) {
-    logWarn(std::string("No ") + deviceLabel(id) +
-             " device found, skipping events.");
-    id_to_fd_[id] = -1;
+    logWarn(std::string("No ") + api::deviceKindLabel(device) +
+            " device found, skipping events.");
+    kind_to_fd_[device] = -1;
     return -1;
   }
 
@@ -45,41 +46,42 @@ int InputEventWriter::getFd(DeviceId id) {
     oss << "Failed to open " << dev_path << " for write (try: sudo)";
     logWarn(oss.str());
     std::perror(dev_path.c_str());
-    id_to_fd_[id] = -1;
+    kind_to_fd_[device] = -1;
     return -1;
   }
 
-  id_to_fd_[id] = fd;
-  logInfo(std::string("Playing back ") + deviceLabel(id) + " to " + dev_path);
+  kind_to_fd_[device] = fd;
+  logInfo(std::string("Playing back ") + api::deviceKindLabel(device) + " to " +
+          dev_path);
   return fd;
 }
 
-bool InputEventWriter::write(DeviceId id, unsigned short type,
+bool InputEventWriter::write(api::DeviceKind device, unsigned short type,
                              unsigned short code, int value) {
-  if (id == DeviceId::Keyboard) {
+  if (device == api::DeviceKind::kKeyboard) {
     return keyboard_writer_.write(type, code, value);
   }
-  if (id == DeviceId::Mouse) {
+  if (device == api::DeviceKind::kMouse) {
     return mouse_writer_.write(type, code, value);
   }
-  return writeRaw(id, type, code, value);
+  return writeRaw(device, type, code, value);
 }
 
-bool InputEventWriter::writeRaw(DeviceId id, unsigned short type,
-                                 unsigned short code, int value) {
-  int fd = getFd(id);
+bool InputEventWriter::writeRaw(api::DeviceKind device, unsigned short type,
+                                unsigned short code, int value) {
+  int fd = getFd(device);
   if (fd < 0) return true;  // Skip when device not found
   if (type != EV_SYN) {
     struct timeval tv;
     gettimeofday(&tv, nullptr);
     Event ev = {tv.tv_sec, tv.tv_usec, type, code, value};
-    logDebug(formatEventLine(id, ev, 0));
+    logDebug(formatEventLine(device, ev, 0));
   }
   return writeEventWithSync(fd, type, code, value);
 }
 
 bool InputEventWriter::writeEvent(int fd, unsigned short type,
-                                   unsigned short code, int value) {
+                                  unsigned short code, int value) {
   struct input_event ev = {};
   gettimeofday(&ev.time, nullptr);
   ev.type = type;
@@ -90,7 +92,7 @@ bool InputEventWriter::writeEvent(int fd, unsigned short type,
 }
 
 bool InputEventWriter::writeEventWithSync(int fd, unsigned short type,
-                                             unsigned short code, int value) {
+                                          unsigned short code, int value) {
   if (!writeEvent(fd, type, code, value)) {
     std::perror("Failed to write event");
     return false;

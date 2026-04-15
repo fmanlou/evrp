@@ -4,28 +4,12 @@
 
 #include <unordered_set>
 
-#include "deviceid.h"
 #include "evdev.h"
 #include "inputdevice.h"
 
 namespace evrp::device::server {
 
 namespace {
-
-DeviceId deviceIdFromApiKind(api::DeviceKind k) {
-  switch (k) {
-    case api::DeviceKind::kTouchpad:
-      return DeviceId::Touchpad;
-    case api::DeviceKind::kTouchscreen:
-      return DeviceId::Touchscreen;
-    case api::DeviceKind::kMouse:
-      return DeviceId::Mouse;
-    case api::DeviceKind::kKeyboard:
-      return DeviceId::Keyboard;
-    default:
-      return DeviceId::Unknown;
-  }
-}
 
 api::InputEvent toApiInputEvent(api::DeviceKind device, const Event& ev) {
   api::InputEvent e;
@@ -76,11 +60,7 @@ bool LocalInputListener::startListening(
     if (k == api::DeviceKind::kUnspecified) {
       continue;
     }
-    DeviceId id = deviceIdFromApiKind(k);
-    if (id == DeviceId::Unknown) {
-      continue;
-    }
-    std::string path = findDevicePath(id);
+    std::string path = findDevicePath(k);
     if (path.empty()) {
       continue;
     }

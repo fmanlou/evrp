@@ -91,18 +91,19 @@ std::string findFirstKeyboard() {
   return {};
 }
 
-std::string findDevicePath(DeviceId id) {
-  switch (id) {
-    case DeviceId::Touchpad:
+std::string findDevicePath(evrp::device::api::DeviceKind kind) {
+  using evrp::device::api::DeviceKind;
+  switch (kind) {
+    case DeviceKind::kTouchpad:
       return findFirstTouchpad();
-    case DeviceId::Touchscreen:
+    case DeviceKind::kTouchscreen:
       return findFirstTouchscreen();
-    case DeviceId::Mouse:
+    case DeviceKind::kMouse:
       return findFirstMouse();
-    case DeviceId::Keyboard:
+    case DeviceKind::kKeyboard:
       return findFirstKeyboard();
-    case DeviceId::Unknown:
+    case DeviceKind::kUnspecified:
+    default:
       return "";
   }
-  return "";
 }

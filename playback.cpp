@@ -5,7 +5,7 @@
 #include <string>
 #include <thread>
 
-#include "deviceid.h"
+#include "evrp/device/api/types.h"
 #include "evdev.h"
 #include "eventformat.h"
 #include "filesystem.h"
@@ -64,11 +64,11 @@ int Playback::run() {
       continue;
     }
 
-    DeviceId device_id = deviceIdFromLabel(label);
+    evrp::device::api::DeviceKind device = evrp::device::api::deviceKindFromLabel(label);
     long long delta_us = 0;
     unsigned short type = 0, code = 0;
     int value = 0;
-    bool is_event = (device_id != DeviceId::Unknown) &&
+    bool is_event = (device != evrp::device::api::DeviceKind::kUnspecified) &&
                     parseEventLine(line, &delta_us, &type, &code, &value);
 
     if (!is_event) {
@@ -91,7 +91,7 @@ int Playback::run() {
     elapsed_us = delta_us;
     is_first_event = false;
 
-    if (!event_writer_.write(device_id, type, code, value)) return 1;
+    if (!event_writer_.write(device, type, code, value)) return 1;
   }
 
   if (options_.execute_wait_after_last && trailing_delta_us > 0) {

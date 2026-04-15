@@ -68,3 +68,9 @@ message ReadCursorPositionResponse {
 message PingRequest {}
 
 message PingResponse {}
+
+message GetCapabilitiesRequest {}
+
+message GetCapabilitiesResponse {
+  repeated DeviceKind supported_kinds = 1;
+}

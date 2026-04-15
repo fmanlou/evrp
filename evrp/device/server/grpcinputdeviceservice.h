@@ -23,6 +23,11 @@ class GrpcInputDeviceService final
       const evrp::device::v1::ReadCursorPositionRequest* request,
       evrp::device::v1::ReadCursorPositionResponse* response) override;
 
+  grpc::Status GetCapabilities(
+      grpc::ServerContext* context,
+      const evrp::device::v1::GetCapabilitiesRequest* request,
+      evrp::device::v1::GetCapabilitiesResponse* response) override;
+
   grpc::Status Ping(grpc::ServerContext* context,
                     const evrp::device::v1::PingRequest* request,
                     evrp::device::v1::PingResponse* response) override;

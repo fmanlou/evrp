@@ -5,12 +5,12 @@
 #include <vector>
 
 #include "argparser.h"
-#include "deviceid.h"
+#include "evrp/device/api/types.h"
 #include "filesystem.h"
 
 struct RecordTarget {
   int fd;
-  DeviceId id;
+  evrp::device::api::DeviceKind kind;
   std::string path;
 };
 

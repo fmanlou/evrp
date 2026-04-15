@@ -5,8 +5,10 @@
 #include <string>
 #include <vector>
 
-#include "deviceid.h"
+#include "evrp/device/api/types.h"
 #include "logger.h"
+
+namespace api = evrp::device::api;
 
 static std::vector<char *> buildArgv(std::vector<std::string> *storage) {
   std::vector<char *> argv;
@@ -17,21 +19,21 @@ static std::vector<char *> buildArgv(std::vector<std::string> *storage) {
 }
 
 TEST(ArgParser, ParseKindAcceptsKnownKinds) {
-  DeviceId id;
-  EXPECT_TRUE(parseKind("touchpad", &id));
-  EXPECT_EQ(id, DeviceId::Touchpad);
-  EXPECT_TRUE(parseKind("touchscreen", &id));
-  EXPECT_EQ(id, DeviceId::Touchscreen);
-  EXPECT_TRUE(parseKind("mouse", &id));
-  EXPECT_EQ(id, DeviceId::Mouse);
-  EXPECT_TRUE(parseKind("keyboard", &id));
-  EXPECT_EQ(id, DeviceId::Keyboard);
+  api::DeviceKind k;
+  EXPECT_TRUE(parseKind("touchpad", &k));
+  EXPECT_EQ(k, api::DeviceKind::kTouchpad);
+  EXPECT_TRUE(parseKind("touchscreen", &k));
+  EXPECT_EQ(k, api::DeviceKind::kTouchscreen);
+  EXPECT_TRUE(parseKind("mouse", &k));
+  EXPECT_EQ(k, api::DeviceKind::kMouse);
+  EXPECT_TRUE(parseKind("keyboard", &k));
+  EXPECT_EQ(k, api::DeviceKind::kKeyboard);
 }
 
 TEST(ArgParser, ParseKindRejectsUnknownKind) {
-  DeviceId id = DeviceId::Keyboard;
-  EXPECT_FALSE(parseKind("joystick", &id));
-  EXPECT_EQ(id, DeviceId::Keyboard);
+  api::DeviceKind k = api::DeviceKind::kKeyboard;
+  EXPECT_FALSE(parseKind("joystick", &k));
+  EXPECT_EQ(k, api::DeviceKind::kKeyboard);
 }
 
 TEST(ArgParser, ParseOptionsWithNoArgsDisablesRecording) {
@@ -53,8 +55,8 @@ TEST(ArgParser, ParseOptionsEnableRecordingAndKinds) {
       parseOptions(static_cast<int>(argv.size()), argv.data());
   EXPECT_TRUE(options.recording);
   ASSERT_EQ(options.kinds.size(), 2u);
-  EXPECT_EQ(options.kinds[0], DeviceId::Mouse);
-  EXPECT_EQ(options.kinds[1], DeviceId::Keyboard);
+  EXPECT_EQ(options.kinds[0], api::DeviceKind::kMouse);
+  EXPECT_EQ(options.kinds[1], api::DeviceKind::kKeyboard);
 }
 
 TEST(ArgParser, ParseOptionsReadsOutputPath) {
@@ -68,7 +70,7 @@ TEST(ArgParser, ParseOptionsReadsOutputPath) {
   EXPECT_FALSE(options.playback);
   EXPECT_EQ(options.output_path, "events.log");
   ASSERT_EQ(options.kinds.size(), 1u);
-  EXPECT_EQ(options.kinds[0], DeviceId::Touchpad);
+  EXPECT_EQ(options.kinds[0], api::DeviceKind::kTouchpad);
 }
 
 TEST(ArgParser, ParseOptionsEnablePlaybackAndPath) {
@@ -91,10 +93,10 @@ TEST(ArgParser, ParseOptionsRecordDefaultsKindsWhenNoTypes) {
       parseOptions(static_cast<int>(argv.size()), argv.data());
   EXPECT_TRUE(options.recording);
   ASSERT_EQ(options.kinds.size(), 4u);
-  EXPECT_EQ(options.kinds[0], DeviceId::Touchpad);
-  EXPECT_EQ(options.kinds[1], DeviceId::Touchscreen);
-  EXPECT_EQ(options.kinds[2], DeviceId::Mouse);
-  EXPECT_EQ(options.kinds[3], DeviceId::Keyboard);
+  EXPECT_EQ(options.kinds[0], api::DeviceKind::kTouchpad);
+  EXPECT_EQ(options.kinds[1], api::DeviceKind::kTouchscreen);
+  EXPECT_EQ(options.kinds[2], api::DeviceKind::kMouse);
+  EXPECT_EQ(options.kinds[3], api::DeviceKind::kKeyboard);
 }
 
 TEST(ArgParser, LogLevelFromString) {
@@ -122,7 +124,7 @@ TEST(ArgParser, ParseOptionsLogLevel) {
   EXPECT_TRUE(opt1.recording);
   EXPECT_EQ(opt1.log_level, LogLevel::Debug);
   ASSERT_EQ(opt1.kinds.size(), 1u);
-  EXPECT_EQ(opt1.kinds[0], DeviceId::Keyboard);
+  EXPECT_EQ(opt1.kinds[0], api::DeviceKind::kKeyboard);
 }
 
 TEST(ArgParser, ParseOptionsPlaybackWithLogLevel) {
