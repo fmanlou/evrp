@@ -1,6 +1,7 @@
 #include "evrp/device/server/grpcinputlisten.h"
 
 #include "evrp/device/internal/tofromproto.h"
+#include "evrp/ioc.h"
 
 #include <google/protobuf/empty.pb.h>
 
@@ -8,8 +9,8 @@
 
 namespace evrp::device::server {
 
-GrpcInputListenService::GrpcInputListenService(api::IInputListener* listener)
-    : listener_(listener) {}
+GrpcInputListenService::GrpcInputListenService(const evrp::Ioc& ioc)
+    : listener_(ioc.get<api::IInputListener*>()) {}
 
 grpc::Status GrpcInputListenService::StartRecording(
     grpc::ServerContext* /*context*/,

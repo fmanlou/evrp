@@ -9,12 +9,16 @@
 #include "evrp/device/api/playback.h"
 #include "evrp/device/v1/service/playback.grpc.pb.h"
 
+namespace evrp {
+class Ioc;
+}
+
 namespace evrp::device::server {
 
 class GrpcPlaybackService final
     : public v1::PlaybackService::Service {
  public:
-  explicit GrpcPlaybackService(api::IPlayback* playback);
+  explicit GrpcPlaybackService(const evrp::Ioc& ioc);
 
   grpc::Status Upload(
       grpc::ServerContext* context,

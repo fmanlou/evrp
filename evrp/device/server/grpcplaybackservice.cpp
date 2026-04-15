@@ -3,11 +3,12 @@
 #include <google/protobuf/empty.pb.h>
 
 #include "evrp/device/internal/tofromproto.h"
+#include "evrp/ioc.h"
 
 namespace evrp::device::server {
 
-GrpcPlaybackService::GrpcPlaybackService(api::IPlayback* playback)
-    : playback_(playback) {}
+GrpcPlaybackService::GrpcPlaybackService(const evrp::Ioc& ioc)
+    : playback_(ioc.get<api::IPlayback*>()) {}
 
 void GrpcPlaybackService::markPlaybackStreamFinished() {
   std::lock_guard<std::mutex> lock(progMu_);

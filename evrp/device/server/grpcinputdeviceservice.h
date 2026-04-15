@@ -8,13 +8,16 @@
 #include "evrp/device/api/inputdevicekindsprovider.h"
 #include "evrp/device/v1/service/service.grpc.pb.h"
 
+namespace evrp {
+class Ioc;
+}
+
 namespace evrp::device::server {
 
 class GrpcInputDeviceService final
     : public v1::InputDeviceService::Service {
  public:
-  GrpcInputDeviceService(api::ICursorPosition* cursorPosition,
-                         api::IInputDeviceKindsProvider* deviceKindsProvider);
+  explicit GrpcInputDeviceService(const evrp::Ioc& ioc);
 
   GrpcInputDeviceService(const GrpcInputDeviceService&) = delete;
   GrpcInputDeviceService& operator=(const GrpcInputDeviceService&) = delete;

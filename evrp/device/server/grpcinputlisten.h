@@ -7,12 +7,16 @@
 #include "evrp/device/api/inputlistener.h"
 #include "evrp/device/v1/service/inputlisten.grpc.pb.h"
 
+namespace evrp {
+class Ioc;
+}
+
 namespace evrp::device::server {
 
 class GrpcInputListenService final
     : public v1::InputListenService::Service {
  public:
-  explicit GrpcInputListenService(api::IInputListener* listener);
+  explicit GrpcInputListenService(const evrp::Ioc& ioc);
 
   grpc::Status StartRecording(
       grpc::ServerContext* context,

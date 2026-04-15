@@ -1,14 +1,13 @@
 #include "evrp/device/server/grpcinputdeviceservice.h"
 
 #include "evrp/device/internal/tofromproto.h"
+#include "evrp/ioc.h"
 
 namespace evrp::device::server {
 
-GrpcInputDeviceService::GrpcInputDeviceService(
-    api::ICursorPosition* cursorPosition,
-    api::IInputDeviceKindsProvider* deviceKindsProvider)
-    : cursorPosition_(cursorPosition),
-      deviceKindsProvider_(deviceKindsProvider) {}
+GrpcInputDeviceService::GrpcInputDeviceService(const evrp::Ioc& ioc)
+    : cursorPosition_(ioc.get<api::ICursorPosition*>()),
+      deviceKindsProvider_(ioc.get<api::IInputDeviceKindsProvider*>()) {}
 
 grpc::Status GrpcInputDeviceService::GetCursorPositionAvailability(
     grpc::ServerContext* /*context*/,
