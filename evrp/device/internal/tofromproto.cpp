@@ -1,31 +1,32 @@
 #include "evrp/device/internal/tofromproto.h"
 
 namespace evrp::device::api {
+namespace v1 = evrp::device::v1;
 
-evrp::device::v1::DeviceKind toProto(DeviceKind k) {
+v1::DeviceKind toProto(DeviceKind k) {
   switch (k) {
     case DeviceKind::kTouchpad:
-      return evrp::device::v1::DEVICE_KIND_TOUCHPAD;
+      return v1::DEVICE_KIND_TOUCHPAD;
     case DeviceKind::kTouchscreen:
-      return evrp::device::v1::DEVICE_KIND_TOUCHSCREEN;
+      return v1::DEVICE_KIND_TOUCHSCREEN;
     case DeviceKind::kMouse:
-      return evrp::device::v1::DEVICE_KIND_MOUSE;
+      return v1::DEVICE_KIND_MOUSE;
     case DeviceKind::kKeyboard:
-      return evrp::device::v1::DEVICE_KIND_KEYBOARD;
+      return v1::DEVICE_KIND_KEYBOARD;
     default:
-      return evrp::device::v1::DEVICE_KIND_UNSPECIFIED;
+      return v1::DEVICE_KIND_UNSPECIFIED;
   }
 }
 
-DeviceKind fromProto(evrp::device::v1::DeviceKind k) {
+DeviceKind fromProto(v1::DeviceKind k) {
   switch (k) {
-    case evrp::device::v1::DEVICE_KIND_TOUCHPAD:
+    case v1::DEVICE_KIND_TOUCHPAD:
       return DeviceKind::kTouchpad;
-    case evrp::device::v1::DEVICE_KIND_TOUCHSCREEN:
+    case v1::DEVICE_KIND_TOUCHSCREEN:
       return DeviceKind::kTouchscreen;
-    case evrp::device::v1::DEVICE_KIND_MOUSE:
+    case v1::DEVICE_KIND_MOUSE:
       return DeviceKind::kMouse;
-    case evrp::device::v1::DEVICE_KIND_KEYBOARD:
+    case v1::DEVICE_KIND_KEYBOARD:
       return DeviceKind::kKeyboard;
     default:
       return DeviceKind::kUnspecified;
@@ -37,7 +38,7 @@ void fromProto(const google::protobuf::RepeatedField<int>& protoKinds,
   const size_t base = out->size();
   out->reserve(base + static_cast<size_t>(protoKinds.size()));
   for (int k : protoKinds) {
-    out->push_back(fromProto(static_cast<evrp::device::v1::DeviceKind>(k)));
+    out->push_back(fromProto(static_cast<v1::DeviceKind>(k)));
   }
 }
 
@@ -55,7 +56,7 @@ void toProto(const std::vector<DeviceKind>& kinds,
   }
 }
 
-void toProto(const InputEvent& e, evrp::device::v1::InputEvent* p) {
+void toProto(const InputEvent& e, v1::InputEvent* p) {
   p->set_device(toProto(e.device));
   p->set_time_sec(e.timeSec);
   p->set_time_usec(e.timeUsec);
@@ -66,13 +67,13 @@ void toProto(const InputEvent& e, evrp::device::v1::InputEvent* p) {
 
 void toProto(
     const std::vector<InputEvent>& events,
-    google::protobuf::RepeatedPtrField<evrp::device::v1::InputEvent>* out) {
+    google::protobuf::RepeatedPtrField<v1::InputEvent>* out) {
   for (const InputEvent& e : events) {
     toProto(e, out->Add());
   }
 }
 
-void fromProto(const evrp::device::v1::InputEvent& p, InputEvent* e) {
+void fromProto(const v1::InputEvent& p, InputEvent* e) {
   e->device = fromProto(p.device());
   e->timeSec = p.time_sec();
   e->timeUsec = p.time_usec();
@@ -82,8 +83,7 @@ void fromProto(const evrp::device::v1::InputEvent& p, InputEvent* e) {
 }
 
 void fromProto(
-    const google::protobuf::RepeatedPtrField<evrp::device::v1::InputEvent>&
-        protoEvents,
+    const google::protobuf::RepeatedPtrField<v1::InputEvent>& protoEvents,
     std::vector<InputEvent>* out) {
   const size_t base = out->size();
   out->reserve(base + static_cast<size_t>(protoEvents.size()));
@@ -95,14 +95,13 @@ void fromProto(
 }
 
 std::vector<InputEvent> fromProto(
-    const google::protobuf::RepeatedPtrField<evrp::device::v1::InputEvent>&
-        protoEvents) {
+    const google::protobuf::RepeatedPtrField<v1::InputEvent>& protoEvents) {
   std::vector<InputEvent> events;
   fromProto(protoEvents, &events);
   return events;
 }
 
-void toProto(const OperationResult& r, evrp::device::v1::OperationResult* p) {
+void toProto(const OperationResult& r, v1::OperationResult* p) {
   p->set_code(r.code);
   p->set_message(r.message);
 }

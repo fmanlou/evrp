@@ -9,38 +9,40 @@
 #include "evrp/device/v1/service/service.grpc.pb.h"
 
 namespace evrp::device::server {
+namespace api = evrp::device::api;
+namespace v1 = evrp::device::v1;
 
 class GrpcInputDeviceService final
-    : public evrp::device::v1::InputDeviceService::Service {
+    : public v1::InputDeviceService::Service {
  public:
-  GrpcInputDeviceService(evrp::device::api::ICursorPosition& cursor_position,
-                         evrp::device::api::IInputDeviceKindsProvider& device_kinds_provider);
+  GrpcInputDeviceService(api::ICursorPosition* cursor_position,
+                         api::IInputDeviceKindsProvider* device_kinds_provider);
 
   GrpcInputDeviceService(const GrpcInputDeviceService&) = delete;
   GrpcInputDeviceService& operator=(const GrpcInputDeviceService&) = delete;
 
   grpc::Status GetCursorPositionAvailability(
       grpc::ServerContext* context,
-      const evrp::device::v1::GetCursorPositionAvailabilityRequest* request,
-      evrp::device::v1::GetCursorPositionAvailabilityResponse* response) override;
+      const v1::GetCursorPositionAvailabilityRequest* request,
+      v1::GetCursorPositionAvailabilityResponse* response) override;
 
   grpc::Status ReadCursorPosition(
       grpc::ServerContext* context,
-      const evrp::device::v1::ReadCursorPositionRequest* request,
-      evrp::device::v1::ReadCursorPositionResponse* response) override;
+      const v1::ReadCursorPositionRequest* request,
+      v1::ReadCursorPositionResponse* response) override;
 
   grpc::Status GetCapabilities(
       grpc::ServerContext* context,
-      const evrp::device::v1::GetCapabilitiesRequest* request,
-      evrp::device::v1::GetCapabilitiesResponse* response) override;
+      const v1::GetCapabilitiesRequest* request,
+      v1::GetCapabilitiesResponse* response) override;
 
   grpc::Status Ping(grpc::ServerContext* context,
-                    const evrp::device::v1::PingRequest* request,
-                    evrp::device::v1::PingResponse* response) override;
+                    const v1::PingRequest* request,
+                    v1::PingResponse* response) override;
 
  private:
-  evrp::device::api::ICursorPosition& cursorPosition_;
-  evrp::device::api::IInputDeviceKindsProvider& deviceKindsProvider_;
+  api::ICursorPosition* cursorPosition_;
+  api::IInputDeviceKindsProvider* deviceKindsProvider_;
 };
 
 }  // namespace evrp::device::server

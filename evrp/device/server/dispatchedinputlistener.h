@@ -6,8 +6,8 @@
 #include "evrp/device/server/syncdispatchqueue.h"
 
 namespace evrp::device::server {
+namespace api = evrp::device::api;
 
-// 装饰器：经 `SyncDispatchQueue` 在单线程上调用被包装的 `IInputListener`。
 class DispatchedInputListener final : public api::IInputListener {
  public:
   explicit DispatchedInputListener(api::IInputListener& inner);

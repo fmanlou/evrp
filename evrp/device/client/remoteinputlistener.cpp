@@ -5,10 +5,12 @@
 #include "evrp/device/internal/tofromproto.h"
 
 namespace evrp::device::client {
+namespace api = evrp::device::api;
+namespace v1 = evrp::device::v1;
 
 RemoteInputListener::RemoteInputListener(std::shared_ptr<grpc::Channel> channel)
     : channel_(std::move(channel)),
-      stub_(evrp::device::v1::InputListenService::NewStub(channel_)) {}
+      stub_(v1::InputListenService::NewStub(channel_)) {}
 
 RemoteInputListener::~RemoteInputListener() { cancelListening(); }
 
@@ -18,7 +20,7 @@ bool RemoteInputListener::startListening(
     return false;
   }
 
-  evrp::device::v1::StartRecordingRequest req;
+  v1::StartRecordingRequest req;
   api::toProto(kinds, req.mutable_kinds());
   if (req.kinds_size() == 0) {
     return false;
@@ -42,7 +44,7 @@ std::vector<api::InputEvent> RemoteInputListener::readInputEvents() {
 
   grpc::ClientContext ctx;
   google::protobuf::Empty req;
-  evrp::device::v1::ReadInputEventsResponse resp;
+  v1::ReadInputEventsResponse resp;
   grpc::Status st = stub_->ReadInputEvents(&ctx, req, &resp);
   if (!st.ok()) {
     return {};
@@ -60,9 +62,9 @@ bool RemoteInputListener::waitForInputEvent(int timeoutMs) {
   }
 
   grpc::ClientContext ctx;
-  evrp::device::v1::WaitForInputEventRequest req;
+  v1::WaitForInputEventRequest req;
   req.set_timeout_ms(timeoutMs);
-  evrp::device::v1::WaitForInputEventResponse resp;
+  v1::WaitForInputEventResponse resp;
   grpc::Status st = stub_->WaitForInputEvent(&ctx, req, &resp);
   if (!st.ok()) {
     return false;

@@ -5,10 +5,10 @@
 #include "evrp/device/internal/tofromproto.h"
 
 namespace evrp::device::server {
-
 namespace api = evrp::device::api;
+namespace v1 = evrp::device::v1;
 
-GrpcPlaybackService::GrpcPlaybackService(api::IPlayback& playback)
+GrpcPlaybackService::GrpcPlaybackService(api::IPlayback* playback)
     : playback_(playback) {}
 
 void GrpcPlaybackService::markPlaybackStreamFinished() {
@@ -18,11 +18,11 @@ void GrpcPlaybackService::markPlaybackStreamFinished() {
 
 grpc::Status GrpcPlaybackService::Upload(
     grpc::ServerContext* /*context*/,
-    const evrp::device::v1::UploadRecordingRequest* request,
-    evrp::device::v1::OperationResult* response) {
+    const v1::UploadRecordingRequest* request,
+    v1::OperationResult* response) {
   api::OperationResult result;
   std::vector<api::InputEvent> events = api::fromProto(request->events());
-  if (!playback_.upload(events, &result)) {
+  if (!playback_->upload(events, &result)) {
     return grpc::Status(
         grpc::StatusCode::INTERNAL,
         result.message.empty() ? "upload failed" : result.message);
@@ -33,8 +33,8 @@ grpc::Status GrpcPlaybackService::Upload(
 
 grpc::Status GrpcPlaybackService::Playback(
     grpc::ServerContext* /*context*/,
-    const evrp::device::v1::PlaybackRecordingRequest* /*request*/,
-    evrp::device::v1::OperationResult* response) {
+    const v1::PlaybackRecordingRequest* /*request*/,
+    v1::OperationResult* response) {
   while (playbackProgressSem_.tryAcquire()) {
   }
   {
@@ -43,7 +43,7 @@ grpc::Status GrpcPlaybackService::Playback(
   }
 
   api::OperationResult result;
-  const bool ok = playback_.playback(&result, &playbackProgressSem_);
+  const bool ok = playback_->playback(&result, &playbackProgressSem_);
 
   markPlaybackStreamFinished();
   playbackProgressSem_.release();
@@ -60,7 +60,7 @@ grpc::Status GrpcPlaybackService::Playback(
 grpc::Status GrpcPlaybackService::SubscribePlayback(
     grpc::ServerContext* context,
     const google::protobuf::Empty* /*request*/,
-    grpc::ServerWriter<evrp::device::v1::PlaybackProgress>* writer) {
+    grpc::ServerWriter<v1::PlaybackProgress>* writer) {
   {
     std::lock_guard<std::mutex> lock(progMu_);
     if (subscriberActive_) {
@@ -91,8 +91,8 @@ grpc::Status GrpcPlaybackService::SubscribePlayback(
       break;
     }
 
-    evrp::device::v1::PlaybackProgress msg;
-    msg.set_event_index(playback_.playbackIndex());
+    v1::PlaybackProgress msg;
+    msg.set_event_index(playback_->playbackIndex());
     if (!writer->Write(msg)) {
       status = grpc::Status(grpc::StatusCode::UNKNOWN, "progress write failed");
       break;
@@ -109,7 +109,7 @@ grpc::Status GrpcPlaybackService::SubscribePlayback(
 grpc::Status GrpcPlaybackService::Stop(
     grpc::ServerContext* /*context*/, const google::protobuf::Empty* /*request*/,
     google::protobuf::Empty* /*response*/) {
-  if (!playback_.stopPlayback()) {
+  if (!playback_->stopPlayback()) {
     return grpc::Status(grpc::StatusCode::INTERNAL, "stop failed");
   }
   return grpc::Status::OK;

@@ -10,26 +10,28 @@
 #include "evrp/device/v1/service/playback.grpc.pb.h"
 
 namespace evrp::device::server {
+namespace api = evrp::device::api;
+namespace v1 = evrp::device::v1;
 
 class GrpcPlaybackService final
-    : public evrp::device::v1::PlaybackService::Service {
+    : public v1::PlaybackService::Service {
  public:
-  explicit GrpcPlaybackService(evrp::device::api::IPlayback& playback);
+  explicit GrpcPlaybackService(api::IPlayback* playback);
 
   grpc::Status Upload(
       grpc::ServerContext* context,
-      const evrp::device::v1::UploadRecordingRequest* request,
-      evrp::device::v1::OperationResult* response) override;
+      const v1::UploadRecordingRequest* request,
+      v1::OperationResult* response) override;
 
   grpc::Status Playback(
       grpc::ServerContext* context,
-      const evrp::device::v1::PlaybackRecordingRequest* request,
-      evrp::device::v1::OperationResult* response) override;
+      const v1::PlaybackRecordingRequest* request,
+      v1::OperationResult* response) override;
 
   grpc::Status SubscribePlayback(
       grpc::ServerContext* context,
       const google::protobuf::Empty* request,
-      grpc::ServerWriter<evrp::device::v1::PlaybackProgress>* writer) override;
+      grpc::ServerWriter<v1::PlaybackProgress>* writer) override;
 
   grpc::Status Stop(grpc::ServerContext* context,
                     const google::protobuf::Empty* request,
@@ -38,7 +40,7 @@ class GrpcPlaybackService final
  private:
   void markPlaybackStreamFinished();
 
-  evrp::device::api::IPlayback& playback_;
+  api::IPlayback* playback_;
 
   evrp::CountingSemaphore playbackProgressSem_;
 

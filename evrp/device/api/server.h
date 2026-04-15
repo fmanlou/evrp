@@ -10,7 +10,7 @@
 namespace evrp::device::api {
 
 int runDeviceServer(const std::string& listen_address,
-                    IInputListener& input_listener, ICursorPosition& cursor_position,
-                    IInputDeviceKindsProvider& device_kinds_provider, IPlayback& playback);
+                    IInputListener* input_listener, ICursorPosition* cursor_position,
+                    IInputDeviceKindsProvider* device_kinds_provider, IPlayback* playback);
 
 }  // namespace evrp::device::api

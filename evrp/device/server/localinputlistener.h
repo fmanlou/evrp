@@ -9,6 +9,7 @@
 #include "filesystem.h"
 
 namespace evrp::device::server {
+namespace api = evrp::device::api;
 
 class LocalInputListener final : public api::IInputListener {
  public:

@@ -5,10 +5,12 @@
 #include "evrp/device/internal/tofromproto.h"
 
 namespace evrp::device::client {
+namespace api = evrp::device::api;
+namespace v1 = evrp::device::v1;
 
 RemotePlayback::RemotePlayback(std::shared_ptr<grpc::Channel> channel)
     : channel_(std::move(channel)),
-      stub_(evrp::device::v1::PlaybackService::NewStub(channel_)) {}
+      stub_(v1::PlaybackService::NewStub(channel_)) {}
 
 RemotePlayback::~RemotePlayback() = default;
 
@@ -16,11 +18,11 @@ bool RemotePlayback::upload(const std::vector<api::InputEvent>& events,
                             api::OperationResult* result_out) {
   std::lock_guard<std::mutex> lock(callMu_);
 
-  evrp::device::v1::UploadRecordingRequest req;
+  v1::UploadRecordingRequest req;
   api::toProto(events, req.mutable_events());
 
   grpc::ClientContext ctx;
-  evrp::device::v1::OperationResult resp;
+  v1::OperationResult resp;
   grpc::Status st = stub_->Upload(&ctx, req, &resp);
   if (!st.ok()) {
     if (result_out) {
@@ -45,7 +47,7 @@ bool RemotePlayback::playback(api::OperationResult* result_out,
   reportedIndex_ = -1;
 
   std::unique_ptr<grpc::ClientContext> stream_ctx;
-  std::unique_ptr<grpc::ClientReader<evrp::device::v1::PlaybackProgress>>
+  std::unique_ptr<grpc::ClientReader<v1::PlaybackProgress>>
       reader;
   std::thread progress_thread;
 
@@ -54,10 +56,10 @@ bool RemotePlayback::playback(api::OperationResult* result_out,
     google::protobuf::Empty sub_req;
     reader = stub_->SubscribePlayback(stream_ctx.get(), sub_req);
 
-    grpc::ClientReader<evrp::device::v1::PlaybackProgress>* raw_reader =
+    grpc::ClientReader<v1::PlaybackProgress>* raw_reader =
         reader.get();
     progress_thread = std::thread([raw_reader, progress_notify, this]() {
-      evrp::device::v1::PlaybackProgress msg;
+      v1::PlaybackProgress msg;
       while (raw_reader->Read(&msg)) {
         reportedIndex_ = msg.event_index();
         progress_notify->release();
@@ -68,8 +70,8 @@ bool RemotePlayback::playback(api::OperationResult* result_out,
   }
 
   grpc::ClientContext playback_ctx;
-  evrp::device::v1::PlaybackRecordingRequest play_req;
-  evrp::device::v1::OperationResult pb_result;
+  v1::PlaybackRecordingRequest play_req;
+  v1::OperationResult pb_result;
   grpc::Status st = stub_->Playback(&playback_ctx, play_req, &pb_result);
 
   if (progress_thread.joinable()) {

@@ -27,6 +27,6 @@ int main(int argc, char** argv) {
   evrp::device::server::LocalInputDeviceKindsProvider device_kinds_provider;
   evrp::device::server::LocalPlayback playback;
   return evrp::device::api::runDeviceServer(
-      FLAGS_listen, input_listener, cursor_position, device_kinds_provider,
-      playback);
+      FLAGS_listen, &input_listener, &cursor_position, &device_kinds_provider,
+      &playback);
 }

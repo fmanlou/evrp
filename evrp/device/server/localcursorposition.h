@@ -4,6 +4,7 @@
 #include "evrp/device/api/cursorposition.h"
 
 namespace evrp::device::server {
+namespace api = evrp::device::api;
 
 class LocalCursorPosition final : public api::ICursorPosition {
  public:

@@ -45,7 +45,6 @@ int main(int argc, char** argv) {
   evrp::device::server::LocalCursorPosition cursor_position;
   evrp::device::server::LocalInputDeviceKindsProvider device_kinds_provider;
   evrp::device::server::LocalPlayback playback;
-  return evrp::device::api::runDeviceServer(FLAGS_listen, no_input,
-                                           cursor_position, device_kinds_provider,
-                                           playback);
+  return evrp::device::api::runDeviceServer(
+      FLAGS_listen, &no_input, &cursor_position, &device_kinds_provider, &playback);
 }

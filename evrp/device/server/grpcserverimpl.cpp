@@ -14,16 +14,21 @@
 #include "logger.h"
 
 namespace evrp::device::api {
+namespace server = evrp::device::server;
 
 int runDeviceServer(const std::string& listen_address,
-                      IInputListener& input_listener,
-                      ICursorPosition& cursor_position,
-                      IInputDeviceKindsProvider& device_kinds_provider,
-                      IPlayback& playback) {
-  ::evrp::device::server::GrpcInputListenService listen_service(input_listener);
-  ::evrp::device::server::GrpcInputDeviceService device_service(
-      cursor_position, device_kinds_provider);
-  ::evrp::device::server::GrpcPlaybackService playback_service(playback);
+                      IInputListener* input_listener,
+                      ICursorPosition* cursor_position,
+                      IInputDeviceKindsProvider* device_kinds_provider,
+                      IPlayback* playback) {
+  if (!input_listener || !cursor_position || !device_kinds_provider || !playback) {
+    logError("evrp-device: runDeviceServer requires non-null dependencies");
+    return 1;
+  }
+  server::GrpcInputListenService listen_service(input_listener);
+  server::GrpcInputDeviceService device_service(cursor_position,
+                                                device_kinds_provider);
+  server::GrpcPlaybackService playback_service(playback);
 
   grpc::EnableDefaultHealthCheckService(true);
 

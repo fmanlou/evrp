@@ -8,33 +8,35 @@
 #include "evrp/device/v1/service/inputlisten.grpc.pb.h"
 
 namespace evrp::device::server {
+namespace api = evrp::device::api;
+namespace v1 = evrp::device::v1;
 
 class GrpcInputListenService final
-    : public evrp::device::v1::InputListenService::Service {
+    : public v1::InputListenService::Service {
  public:
-  explicit GrpcInputListenService(api::IInputListener& listener);
+  explicit GrpcInputListenService(api::IInputListener* listener);
 
   grpc::Status StartRecording(
       grpc::ServerContext* context,
-      const evrp::device::v1::StartRecordingRequest* request,
+      const v1::StartRecordingRequest* request,
       google::protobuf::Empty* response) override;
 
   grpc::Status WaitForInputEvent(
       grpc::ServerContext* context,
-      const evrp::device::v1::WaitForInputEventRequest* request,
-      evrp::device::v1::WaitForInputEventResponse* response) override;
+      const v1::WaitForInputEventRequest* request,
+      v1::WaitForInputEventResponse* response) override;
 
   grpc::Status ReadInputEvents(
       grpc::ServerContext* context,
       const google::protobuf::Empty* request,
-      evrp::device::v1::ReadInputEventsResponse* response) override;
+      v1::ReadInputEventsResponse* response) override;
 
   grpc::Status StopRecording(grpc::ServerContext* context,
                              const google::protobuf::Empty* request,
                              google::protobuf::Empty* response) override;
 
  private:
-  api::IInputListener& listener_;
+  api::IInputListener* listener_;
 };
 
 }  // namespace evrp::device::server

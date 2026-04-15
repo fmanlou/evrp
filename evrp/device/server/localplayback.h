@@ -8,6 +8,7 @@
 #include "evrp/device/api/types.h"
 
 namespace evrp::device::server {
+namespace api = evrp::device::api;
 
 // 进程内：`upload` 缓存事件序列；`playback` 通过 `InputEventWriter` 按录制时间间隔写回 evdev。
 class LocalPlayback final : public api::IPlayback {
