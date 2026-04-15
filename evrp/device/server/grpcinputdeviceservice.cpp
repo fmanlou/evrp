@@ -14,6 +14,10 @@ grpc::Status GrpcInputDeviceService::GetCursorPositionAvailability(
     grpc::ServerContext* /*context*/,
     const v1::GetCursorPositionAvailabilityRequest* /*request*/,
     v1::GetCursorPositionAvailabilityResponse* response) {
+  if (!cursorPosition_) {
+    return grpc::Status(grpc::StatusCode::FAILED_PRECONDITION,
+                        "cursor position not configured");
+  }
   response->set_available(cursorPosition_->getCursorPositionAvailability());
   return grpc::Status::OK;
 }
@@ -22,6 +26,10 @@ grpc::Status GrpcInputDeviceService::ReadCursorPosition(
     grpc::ServerContext* /*context*/,
     const v1::ReadCursorPositionRequest* /*request*/,
     v1::ReadCursorPositionResponse* response) {
+  if (!cursorPosition_) {
+    return grpc::Status(grpc::StatusCode::FAILED_PRECONDITION,
+                        "cursor position not configured");
+  }
   if (!cursorPosition_->getCursorPositionAvailability()) {
     return grpc::Status(grpc::StatusCode::FAILED_PRECONDITION,
                         "cursor position not available");
@@ -40,6 +48,10 @@ grpc::Status GrpcInputDeviceService::GetCapabilities(
     grpc::ServerContext* /*context*/,
     const v1::GetCapabilitiesRequest* /*request*/,
     v1::GetCapabilitiesResponse* response) {
+  if (!deviceKindsProvider_) {
+    return grpc::Status(grpc::StatusCode::FAILED_PRECONDITION,
+                        "device kinds provider not configured");
+  }
   for (api::DeviceKind k : deviceKindsProvider_->kinds()) {
     response->add_supported_kinds(api::toProto(k));
   }

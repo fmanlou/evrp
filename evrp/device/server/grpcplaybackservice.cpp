@@ -18,6 +18,10 @@ grpc::Status GrpcPlaybackService::Upload(
     grpc::ServerContext* /*context*/,
     const v1::UploadRecordingRequest* request,
     v1::OperationResult* response) {
+  if (!playback_) {
+    return grpc::Status(grpc::StatusCode::FAILED_PRECONDITION,
+                        "playback not configured");
+  }
   api::OperationResult result;
   std::vector<api::InputEvent> events = api::fromProto(request->events());
   if (!playback_->upload(events, &result)) {
@@ -59,6 +63,10 @@ grpc::Status GrpcPlaybackService::SubscribePlayback(
     grpc::ServerContext* context,
     const google::protobuf::Empty* /*request*/,
     grpc::ServerWriter<v1::PlaybackProgress>* writer) {
+  if (!playback_) {
+    return grpc::Status(grpc::StatusCode::FAILED_PRECONDITION,
+                        "playback not configured");
+  }
   {
     std::lock_guard<std::mutex> lock(progMu_);
     if (subscriberActive_) {
@@ -107,6 +115,10 @@ grpc::Status GrpcPlaybackService::SubscribePlayback(
 grpc::Status GrpcPlaybackService::Stop(
     grpc::ServerContext* /*context*/, const google::protobuf::Empty* /*request*/,
     google::protobuf::Empty* /*response*/) {
+  if (!playback_) {
+    return grpc::Status(grpc::StatusCode::FAILED_PRECONDITION,
+                        "playback not configured");
+  }
   if (!playback_->stopPlayback()) {
     return grpc::Status(grpc::StatusCode::INTERNAL, "stop failed");
   }
