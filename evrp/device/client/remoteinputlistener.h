@@ -1,17 +1,15 @@
 #pragma once
 
+#include <grpcpp/grpcpp.h>
+
 #include <memory>
 #include <vector>
-
-#include <grpcpp/grpcpp.h>
 
 #include "evrp/device/api/inputlistener.h"
 #include "evrp/device/v1/service/inputlisten.grpc.pb.h"
 
 namespace evrp::device::client {
 
-// 通过 gRPC `InputListenService` 映射 `IInputListener`：`StartRecording` /
-// `WaitForInputEvent` / `ReadInputEvents` / `StopRecording`。约定：虚函数在同一线程调用。
 class RemoteInputListener final : public api::IInputListener {
  public:
   explicit RemoteInputListener(std::shared_ptr<grpc::Channel> channel);
