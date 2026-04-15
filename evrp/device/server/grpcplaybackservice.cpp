@@ -8,7 +8,7 @@
 namespace evrp::device::server {
 
 GrpcPlaybackService::GrpcPlaybackService(const evrp::Ioc& ioc)
-    : playback_(ioc.get<api::IPlayback*>()) {}
+    : playback_(ioc.get<api::IPlayback>()) {}
 
 void GrpcPlaybackService::markPlaybackStreamFinished() {
   std::lock_guard<std::mutex> lock(progMu_);

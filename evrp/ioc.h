@@ -9,13 +9,14 @@ namespace evrp {
 
 class Ioc {
  public:
-  template <typename Ptr>
-  void emplace(Ptr p) {
-    by_type_[std::type_index(typeid(Ptr))] = std::make_any<Ptr>(p);
+  template <typename T>
+  void emplace(T* p) {
+    by_type_[std::type_index(typeid(T*))] = std::make_any<T*>(p);
   }
 
-  template <typename Ptr>
-  Ptr get() const {
+  template <typename T>
+  T* get() const {
+    using Ptr = T*;
     auto it = by_type_.find(std::type_index(typeid(Ptr)));
     if (it == by_type_.end()) {
       return nullptr;

@@ -6,8 +6,8 @@
 namespace evrp::device::server {
 
 GrpcInputDeviceService::GrpcInputDeviceService(const evrp::Ioc& ioc)
-    : cursorPosition_(ioc.get<api::ICursorPosition*>()),
-      deviceKindsProvider_(ioc.get<api::IInputDeviceKindsProvider*>()) {}
+    : cursorPosition_(ioc.get<api::ICursorPosition>()),
+      deviceKindsProvider_(ioc.get<api::IInputDeviceKindsProvider>()) {}
 
 grpc::Status GrpcInputDeviceService::GetCursorPositionAvailability(
     grpc::ServerContext* /*context*/,

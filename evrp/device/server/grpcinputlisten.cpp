@@ -10,7 +10,7 @@
 namespace evrp::device::server {
 
 GrpcInputListenService::GrpcInputListenService(const evrp::Ioc& ioc)
-    : listener_(ioc.get<api::IInputListener*>()) {}
+    : listener_(ioc.get<api::IInputListener>()) {}
 
 grpc::Status GrpcInputListenService::StartRecording(
     grpc::ServerContext* /*context*/,

@@ -28,11 +28,15 @@ int main(int argc, char** argv) {
   evrp::device::server::LocalInputDeviceKindsProvider device_kinds_provider;
   evrp::device::server::LocalPlayback playback;
   evrp::Ioc ioc;
-  ioc.emplace(&local_listener);
-  ioc.emplace(static_cast<evrp::device::api::IInputListener*>(&input_listener));
-  ioc.emplace(static_cast<evrp::device::api::ICursorPosition*>(&cursor_position));
-  ioc.emplace(static_cast<evrp::device::api::IInputDeviceKindsProvider*>(
-      &device_kinds_provider));
-  ioc.emplace(static_cast<evrp::device::api::IPlayback*>(&playback));
+  ioc.emplace<evrp::device::server::LocalInputListener>(&local_listener);
+  ioc.emplace<evrp::device::api::IInputListener>(
+      static_cast<evrp::device::api::IInputListener*>(&input_listener));
+  ioc.emplace<evrp::device::api::ICursorPosition>(
+      static_cast<evrp::device::api::ICursorPosition*>(&cursor_position));
+  ioc.emplace<evrp::device::api::IInputDeviceKindsProvider>(
+      static_cast<evrp::device::api::IInputDeviceKindsProvider*>(
+          &device_kinds_provider));
+  ioc.emplace<evrp::device::api::IPlayback>(
+      static_cast<evrp::device::api::IPlayback*>(&playback));
   return evrp::device::api::runDeviceServer(FLAGS_listen, ioc);
 }
