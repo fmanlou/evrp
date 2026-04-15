@@ -9,8 +9,6 @@
 #include "evrp/device/v1/service/inputlisten.grpc.pb.h"
 
 namespace evrp::device::client {
-namespace api = evrp::device::api;
-namespace v1 = evrp::device::v1;
 
 class RemoteInputListener final : public api::IInputListener {
  public:

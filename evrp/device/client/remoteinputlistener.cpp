@@ -5,8 +5,6 @@
 #include "evrp/device/internal/tofromproto.h"
 
 namespace evrp::device::client {
-namespace api = evrp::device::api;
-namespace v1 = evrp::device::v1;
 
 RemoteInputListener::RemoteInputListener(std::shared_ptr<grpc::Channel> channel)
     : channel_(std::move(channel)),

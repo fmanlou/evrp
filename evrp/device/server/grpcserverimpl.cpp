@@ -14,7 +14,6 @@
 #include "logger.h"
 
 namespace evrp::device::api {
-namespace server = evrp::device::server;
 
 int runDeviceServer(const std::string& listen_address,
                       IInputListener* input_listener,

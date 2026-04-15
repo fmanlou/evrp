@@ -1,7 +1,6 @@
 #include "evrp/device/internal/tofromproto.h"
 
 namespace evrp::device::api {
-namespace v1 = evrp::device::v1;
 
 v1::DeviceKind toProto(DeviceKind k) {
   switch (k) {

@@ -3,8 +3,6 @@
 #include "evrp/device/internal/tofromproto.h"
 
 namespace evrp::device::server {
-namespace api = evrp::device::api;
-namespace v1 = evrp::device::v1;
 
 GrpcInputDeviceService::GrpcInputDeviceService(
     api::ICursorPosition* cursor_position,

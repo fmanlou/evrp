@@ -9,7 +9,6 @@
 #include "evrp/device/v1/types.pb.h"
 
 namespace evrp::device::api {
-namespace v1 = evrp::device::v1;
 
 v1::DeviceKind toProto(DeviceKind k);
 

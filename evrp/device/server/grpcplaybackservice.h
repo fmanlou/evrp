@@ -10,8 +10,6 @@
 #include "evrp/device/v1/service/playback.grpc.pb.h"
 
 namespace evrp::device::server {
-namespace api = evrp::device::api;
-namespace v1 = evrp::device::v1;
 
 class GrpcPlaybackService final
     : public v1::PlaybackService::Service {

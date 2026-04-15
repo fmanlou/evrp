@@ -9,8 +9,6 @@
 #include "evrp/device/v1/service/service.grpc.pb.h"
 
 namespace evrp::device::server {
-namespace api = evrp::device::api;
-namespace v1 = evrp::device::v1;
 
 class GrpcInputDeviceService final
     : public v1::InputDeviceService::Service {

@@ -7,8 +7,6 @@
 #include <vector>
 
 namespace evrp::device::server {
-namespace api = evrp::device::api;
-namespace v1 = evrp::device::v1;
 
 GrpcInputListenService::GrpcInputListenService(api::IInputListener* listener)
     : listener_(listener) {}

@@ -6,7 +6,6 @@
 #include "evrp/device/server/syncdispatchqueue.h"
 
 namespace evrp::device::server {
-namespace api = evrp::device::api;
 
 class DispatchedInputListener final : public api::IInputListener {
  public:

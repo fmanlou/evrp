@@ -11,8 +11,6 @@
 #include "evrp/device/v1/service/playback.grpc.pb.h"
 
 namespace evrp::device::client {
-namespace api = evrp::device::api;
-namespace v1 = evrp::device::v1;
 
 class RemotePlayback final : public api::IPlayback {
  public:

@@ -8,8 +8,6 @@
 #include "evrp/device/v1/service/inputlisten.grpc.pb.h"
 
 namespace evrp::device::server {
-namespace api = evrp::device::api;
-namespace v1 = evrp::device::v1;
 
 class GrpcInputListenService final
     : public v1::InputListenService::Service {

@@ -2,8 +2,6 @@
 
 #include "inputdevice.h"
 
-namespace api = evrp::device::api;
-
 namespace evrp::device::server {
 
 std::vector<api::DeviceKind> LocalInputDeviceKindsProvider::kinds() {
