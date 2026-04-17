@@ -44,7 +44,7 @@ if fmt_installed; then
   echo "Skip fmt: already present under $PREFIX/fmt"
 else
   FMT_SRC="$BASE/fmt-src"
-  FMT_BUILD="$BASE/fmt-build"
+  FMT_BUILD="$BASE/fmt"
   rm -rf "$FMT_SRC" "$FMT_BUILD"
   git clone --depth 1 --branch "$FMT_REF" "$FMT_REPO" "$FMT_SRC"
   cmake -S "$FMT_SRC" -B "$FMT_BUILD" \
@@ -61,7 +61,7 @@ if spdlog_installed; then
   echo "Skip spdlog: already present under $PREFIX/spdlog"
 else
   SPDLOG_SRC="$BASE/spdlog-src"
-  SPDLOG_BUILD="$BASE/spdlog-build"
+  SPDLOG_BUILD="$BASE/spdlog"
   rm -rf "$SPDLOG_SRC" "$SPDLOG_BUILD"
   git clone --depth 1 --branch "$SPDLOG_REF" "$SPDLOG_REPO" "$SPDLOG_SRC"
   cmake -S "$SPDLOG_SRC" -B "$SPDLOG_BUILD" \
@@ -82,7 +82,7 @@ if log_installed; then
   exit 0
 fi
 
-LOG_BUILD="$BASE/log-build"
+LOG_BUILD="$BASE/log"
 rm -rf "$LOG_BUILD"
 cmake -S "$LOG_SRC" -B "$LOG_BUILD" \
   -DCMAKE_INSTALL_PREFIX="$PREFIX/log" \

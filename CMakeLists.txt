@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.14)
 project(evrp LANGUAGES C CXX)
 
 # --- library/ 与
-# Lua、GoogleTest、Protobuf、gRPC、gflags、fmt、spdlog、log（安装：scripts/install-third-party-to-library.sh）---
+# Lua、GoogleTest、Protobuf、gRPC、gflags、fmt、spdlog、log、Asio（安装：scripts/install-third-party-to-library.sh）---
 set(EVRP_LIBRARY_DIR
     "${CMAKE_SOURCE_DIR}/library"
     CACHE PATH "Third-party install prefix for this repo")
@@ -53,6 +53,37 @@ find_package(log CONFIG REQUIRED PATHS "${EVRP_LIBRARY_DIR}/log"
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+# Standalone Asio：library/asio/include + lib/libasio_separate.a（install-asio-to-library.sh 内编译）
+find_package(Threads REQUIRED)
+find_path(
+  EVRP_ASIO_INCLUDE_DIR
+  NAMES asio.hpp
+  PATHS "${EVRP_LIBRARY_DIR}/asio/include"
+  NO_DEFAULT_PATH)
+find_library(
+  EVRP_ASIO_STATIC_LIB
+  NAMES asio_separate libasio_separate
+  PATHS "${EVRP_LIBRARY_DIR}/asio/lib" "${EVRP_LIBRARY_DIR}/asio/lib64"
+  NO_DEFAULT_PATH)
+if(NOT EVRP_ASIO_INCLUDE_DIR OR NOT EVRP_ASIO_STATIC_LIB)
+  message(
+    FATAL_ERROR
+      "Asio not found under '${EVRP_LIBRARY_DIR}/asio' (need include/asio.hpp and lib/libasio_separate.a). Run: ./scripts/install-third-party-to-library.sh (or ./scripts/install-asio-to-library.sh)"
+  )
+endif()
+add_library(asio_separate STATIC IMPORTED GLOBAL)
+set_target_properties(
+  asio_separate
+  PROPERTIES IMPORTED_LOCATION "${EVRP_ASIO_STATIC_LIB}"
+             INTERFACE_INCLUDE_DIRECTORIES "${EVRP_ASIO_INCLUDE_DIR}"
+             INTERFACE_COMPILE_DEFINITIONS
+             "ASIO_STANDALONE;ASIO_SEPARATE_COMPILATION"
+             INTERFACE_LINK_LIBRARIES Threads::Threads)
+
+add_library(standalone_asio INTERFACE)
+add_library(asio::asio ALIAS standalone_asio)
+target_link_libraries(standalone_asio INTERFACE asio_separate)
 
 enable_testing()
 
@@ -296,7 +327,7 @@ add_library(
   evrp/device/server/grpcplaybackservice.cpp)
 target_include_directories(evrp_device_grpc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(evrp_device_grpc PUBLIC evrp_device_proto tofromproto
-                                              countingsemaphore
+                                              countingsemaphore asio::asio
                        PRIVATE logger)
 
 add_executable(evrp-device evrp-device/main.cpp)
