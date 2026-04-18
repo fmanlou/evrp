@@ -250,7 +250,7 @@ add_library(evrp_device_api INTERFACE)
 target_include_directories(evrp_device_api
                            INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_library(countingsemaphore STATIC evrp/countingsemaphore.cpp)
+add_library(countingsemaphore STATIC evrp/device/api/countingsemaphore.cpp)
 target_include_directories(countingsemaphore
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 set_target_properties(
@@ -271,7 +271,7 @@ add_library(
                            evrp/device/server/dispatch/dispatchedcursorposition.cpp
                            evrp/device/server/dispatch/dispatchedinputdevicekindsprovider.cpp
                            evrp/device/server/dispatch/dispatchedplayback.cpp
-                           evrp/device/server/dispatch/syncdispatchqueue.cpp
+                           evrp/sdk/syncdispatchqueue.cpp
                            evrp/device/server/deviceruntime.cpp)
 target_include_directories(localinputlistener
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

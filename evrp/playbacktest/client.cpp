@@ -6,7 +6,7 @@
 #include <thread>
 #include <vector>
 
-#include "evrp/countingsemaphore.h"
+#include "evrp/device/api/countingsemaphore.h"
 #include "evrp/device/api/types.h"
 #include "evrp/device/client/remoteplayback.h"
 #include "logger.h"

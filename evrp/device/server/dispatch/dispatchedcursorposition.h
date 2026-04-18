@@ -1,7 +1,7 @@
 #pragma once
 
 #include "evrp/device/api/cursorposition.h"
-#include "evrp/device/server/dispatch/syncdispatchqueue.h"
+#include "evrp/sdk/syncdispatchqueue.h"
 
 namespace evrp::device::server {
 

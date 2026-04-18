@@ -2,9 +2,9 @@
 
 #include <vector>
 
-#include "evrp/countingsemaphore.h"
+#include "evrp/device/api/countingsemaphore.h"
 #include "evrp/device/api/playback.h"
-#include "evrp/device/server/dispatch/syncdispatchqueue.h"
+#include "evrp/sdk/syncdispatchqueue.h"
 
 namespace evrp::device::server {
 

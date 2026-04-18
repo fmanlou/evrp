@@ -3,7 +3,7 @@
 #include <vector>
 
 #include "evrp/device/api/inputlistener.h"
-#include "evrp/device/server/dispatch/syncdispatchqueue.h"
+#include "evrp/sdk/syncdispatchqueue.h"
 
 namespace evrp::device::server {
 

@@ -8,7 +8,7 @@
 #include "evrp/device/server/localcursorposition.h"
 #include "evrp/device/server/localplayback.h"
 #include "evrp/device/server/localinputdevicekindsprovider.h"
-#include "evrp/ioc.h"
+#include "evrp/sdk/ioc.h"
 
 DEFINE_string(listen, "127.0.0.1:50051",
               "Listen address (host:port) for PlaybackService and other device RPCs");
