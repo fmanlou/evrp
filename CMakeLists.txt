@@ -267,7 +267,7 @@ set_target_properties(
 
 add_library(
   localinputlistener STATIC evrp/device/server/localinputlistener.cpp
-                           evrp/device/server/posted/iocontextpostedbase.cpp
+                           evrp/sdk/iocontextpostedbase.cpp
                            evrp/device/server/posted/postedinputlistener.cpp
                            evrp/device/server/posted/postedcursorposition.cpp
                            evrp/device/server/posted/postedinputdevicekindsprovider.cpp

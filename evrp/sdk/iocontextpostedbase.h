@@ -9,12 +9,12 @@ class IoContextPostedBase {
   explicit IoContextPostedBase(asio::io_context& ioContext);
   IoContextPostedBase(const IoContextPostedBase&) = delete;
   IoContextPostedBase& operator=(const IoContextPostedBase&) = delete;
-  virtual ~IoContextPostedBase() = default;
 
  protected:
+  ~IoContextPostedBase() = default;
+
   void shutdown();
 
- protected:
   SyncDispatchQueue syncDispatch_;
 };
 
