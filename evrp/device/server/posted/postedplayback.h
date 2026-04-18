@@ -8,13 +8,13 @@
 
 namespace evrp::device::server {
 
-class DispatchedPlayback final : public api::IPlayback {
+class PostedPlayback final : public api::IPlayback {
  public:
-  DispatchedPlayback(api::IPlayback& inner, asio::io_context& ioContext);
-  ~DispatchedPlayback() override;
+  PostedPlayback(api::IPlayback& inner, asio::io_context& ioContext);
+  ~PostedPlayback() override;
 
-  DispatchedPlayback(const DispatchedPlayback&) = delete;
-  DispatchedPlayback& operator=(const DispatchedPlayback&) = delete;
+  PostedPlayback(const PostedPlayback&) = delete;
+  PostedPlayback& operator=(const PostedPlayback&) = delete;
 
   void shutdown();
 
@@ -22,7 +22,7 @@ class DispatchedPlayback final : public api::IPlayback {
               api::OperationResult* resultOut) override;
 
   bool playback(api::OperationResult* resultOut,
-                  evrp::CountingSemaphore* progressNotify) override;
+                evrp::CountingSemaphore* progressNotify) override;
 
   int playbackIndex() const override;
 

@@ -267,10 +267,10 @@ set_target_properties(
 
 add_library(
   localinputlistener STATIC evrp/device/server/localinputlistener.cpp
-                           evrp/device/server/dispatch/dispatchedinputlistener.cpp
-                           evrp/device/server/dispatch/dispatchedcursorposition.cpp
-                           evrp/device/server/dispatch/dispatchedinputdevicekindsprovider.cpp
-                           evrp/device/server/dispatch/dispatchedplayback.cpp
+                           evrp/device/server/posted/postedinputlistener.cpp
+                           evrp/device/server/posted/postedcursorposition.cpp
+                           evrp/device/server/posted/postedinputdevicekindsprovider.cpp
+                           evrp/device/server/posted/postedplayback.cpp
                            evrp/sdk/syncdispatchqueue.cpp
                            evrp/device/server/deviceruntime.cpp)
 target_include_directories(localinputlistener

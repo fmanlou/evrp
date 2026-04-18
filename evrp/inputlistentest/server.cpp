@@ -14,7 +14,7 @@ int main(int argc, char** argv) {
   gLogger = &logger;
 
   gflags::SetUsageMessage(
-      "evrp_inputlisten_test_server — DispatchedInputListener + gRPC");
+      "evrp_inputlisten_test_server — PostedInputListener + gRPC");
   gflags::ParseCommandLineFlags(&argc, &argv, true);
 
   evrp::device::server::DeviceRuntime device;

@@ -13,18 +13,18 @@ DeviceRuntime::DeviceRuntime()
       localListener_(),
       inputListener_(localListener_, ioContext_),
       cursorPosition_(),
-      dispatchedCursor_(cursorPosition_, ioContext_),
+      postedCursor_(cursorPosition_, ioContext_),
       deviceKindsProvider_(),
-      dispatchedDeviceKinds_(deviceKindsProvider_, ioContext_),
+      postedDeviceKinds_(deviceKindsProvider_, ioContext_),
       playback_(),
-      dispatchedPlayback_(playback_, ioContext_),
+      postedPlayback_(playback_, ioContext_),
       worker_([this]() { ioContext_.run(); }) {}
 
 DeviceRuntime::~DeviceRuntime() {
   inputListener_.shutdown();
-  dispatchedCursor_.shutdown();
-  dispatchedDeviceKinds_.shutdown();
-  dispatchedPlayback_.shutdown();
+  postedCursor_.shutdown();
+  postedDeviceKinds_.shutdown();
+  postedPlayback_.shutdown();
   workGuard_.reset();
   ioContext_.stop();
   if (worker_.joinable()) {
@@ -36,11 +36,11 @@ void DeviceRuntime::registerWith(Ioc& ioc) {
   ioc.emplace<api::IInputListener>(
       static_cast<api::IInputListener*>(&inputListener_));
   ioc.emplace<api::ICursorPosition>(
-      static_cast<api::ICursorPosition*>(&dispatchedCursor_));
+      static_cast<api::ICursorPosition*>(&postedCursor_));
   ioc.emplace<api::IInputDeviceKindsProvider>(
-      static_cast<api::IInputDeviceKindsProvider*>(&dispatchedDeviceKinds_));
+      static_cast<api::IInputDeviceKindsProvider*>(&postedDeviceKinds_));
   ioc.emplace<api::IPlayback>(
-      static_cast<api::IPlayback*>(&dispatchedPlayback_));
+      static_cast<api::IPlayback*>(&postedPlayback_));
 }
 
 }  // namespace evrp::device::server

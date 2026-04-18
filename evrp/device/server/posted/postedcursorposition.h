@@ -5,13 +5,13 @@
 
 namespace evrp::device::server {
 
-class DispatchedCursorPosition final : public api::ICursorPosition {
+class PostedCursorPosition final : public api::ICursorPosition {
  public:
-  DispatchedCursorPosition(api::ICursorPosition& inner, asio::io_context& ioContext);
-  ~DispatchedCursorPosition() override;
+  PostedCursorPosition(api::ICursorPosition& inner, asio::io_context& ioContext);
+  ~PostedCursorPosition() override;
 
-  DispatchedCursorPosition(const DispatchedCursorPosition&) = delete;
-  DispatchedCursorPosition& operator=(const DispatchedCursorPosition&) = delete;
+  PostedCursorPosition(const PostedCursorPosition&) = delete;
+  PostedCursorPosition& operator=(const PostedCursorPosition&) = delete;
 
   void shutdown();
 

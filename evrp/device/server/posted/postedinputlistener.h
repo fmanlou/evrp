@@ -7,13 +7,13 @@
 
 namespace evrp::device::server {
 
-class DispatchedInputListener final : public api::IInputListener {
+class PostedInputListener final : public api::IInputListener {
  public:
-  DispatchedInputListener(api::IInputListener& inner, asio::io_context& ioContext);
-  ~DispatchedInputListener() override;
+  PostedInputListener(api::IInputListener& inner, asio::io_context& ioContext);
+  ~PostedInputListener() override;
 
-  DispatchedInputListener(const DispatchedInputListener&) = delete;
-  DispatchedInputListener& operator=(const DispatchedInputListener&) = delete;
+  PostedInputListener(const PostedInputListener&) = delete;
+  PostedInputListener& operator=(const PostedInputListener&) = delete;
 
   void shutdown();
 
