@@ -267,11 +267,11 @@ set_target_properties(
 
 add_library(
   localinputlistener STATIC evrp/device/server/localinputlistener.cpp
-                           evrp/device/server/dispatchedinputlistener.cpp
-                           evrp/device/server/dispatchedcursorposition.cpp
-                           evrp/device/server/dispatchedinputdevicekindsprovider.cpp
-                           evrp/device/server/dispatchedplayback.cpp
-                           evrp/device/server/syncdispatchqueue.cpp
+                           evrp/device/server/dispatch/dispatchedinputlistener.cpp
+                           evrp/device/server/dispatch/dispatchedcursorposition.cpp
+                           evrp/device/server/dispatch/dispatchedinputdevicekindsprovider.cpp
+                           evrp/device/server/dispatch/dispatchedplayback.cpp
+                           evrp/device/server/dispatch/syncdispatchqueue.cpp
                            evrp/device/server/deviceruntime.cpp)
 target_include_directories(localinputlistener
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

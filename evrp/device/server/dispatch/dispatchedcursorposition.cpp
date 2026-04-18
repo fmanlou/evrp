@@ -1,4 +1,4 @@
-#include "evrp/device/server/dispatchedcursorposition.h"
+#include "evrp/device/server/dispatch/dispatchedcursorposition.h"
 
 #include <asio/io_context.hpp>
 

@@ -1,4 +1,4 @@
-#include "evrp/device/server/syncdispatchqueue.h"
+#include "evrp/device/server/dispatch/syncdispatchqueue.h"
 
 #include <memory>
 
@@ -26,7 +26,7 @@ void SyncDispatchQueue::shutdown(std::function<void()> finalTask) {
   std::promise<void> barrier;
   std::future<void> done = barrier.get_future();
   asio::post(ioContext_, [this, ft = std::move(finalTask),
-                       p = std::move(barrier)]() mutable {
+                           p = std::move(barrier)]() mutable {
     if (ft) {
       ft();
     }

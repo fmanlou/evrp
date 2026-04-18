@@ -4,7 +4,7 @@
 
 #include "evrp/countingsemaphore.h"
 #include "evrp/device/api/playback.h"
-#include "evrp/device/server/syncdispatchqueue.h"
+#include "evrp/device/server/dispatch/syncdispatchqueue.h"
 
 namespace evrp::device::server {
 
@@ -22,7 +22,7 @@ class DispatchedPlayback final : public api::IPlayback {
               api::OperationResult* resultOut) override;
 
   bool playback(api::OperationResult* resultOut,
-                evrp::CountingSemaphore* progressNotify) override;
+                  evrp::CountingSemaphore* progressNotify) override;
 
   int playbackIndex() const override;
 

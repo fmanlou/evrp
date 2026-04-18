@@ -1,4 +1,4 @@
-#include "evrp/device/server/dispatchedinputdevicekindsprovider.h"
+#include "evrp/device/server/dispatch/dispatchedinputdevicekindsprovider.h"
 
 #include <asio/io_context.hpp>
 

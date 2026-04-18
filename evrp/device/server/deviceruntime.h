@@ -5,10 +5,10 @@
 #include <optional>
 #include <thread>
 
-#include "evrp/device/server/dispatchedcursorposition.h"
-#include "evrp/device/server/dispatchedinputdevicekindsprovider.h"
-#include "evrp/device/server/dispatchedinputlistener.h"
-#include "evrp/device/server/dispatchedplayback.h"
+#include "evrp/device/server/dispatch/dispatchedcursorposition.h"
+#include "evrp/device/server/dispatch/dispatchedinputdevicekindsprovider.h"
+#include "evrp/device/server/dispatch/dispatchedinputlistener.h"
+#include "evrp/device/server/dispatch/dispatchedplayback.h"
 #include "evrp/device/server/localcursorposition.h"
 #include "evrp/device/server/localinputdevicekindsprovider.h"
 #include "evrp/device/server/localinputlistener.h"
