@@ -6,14 +6,10 @@ namespace evrp::device::server {
 
 PostedInputDeviceKindsProvider::PostedInputDeviceKindsProvider(
     api::IInputDeviceKindsProvider& inner, asio::io_context& ioContext)
-    : inner_(inner), syncDispatch_(ioContext) {}
+    : IoContextPostedBase(ioContext), inner_(inner) {}
 
 PostedInputDeviceKindsProvider::~PostedInputDeviceKindsProvider() {
   shutdown();
-}
-
-void PostedInputDeviceKindsProvider::shutdown() {
-  syncDispatch_.shutdown();
 }
 
 std::vector<api::DeviceKind> PostedInputDeviceKindsProvider::kinds() {

@@ -3,11 +3,12 @@
 #include <vector>
 
 #include "evrp/device/api/inputlistener.h"
-#include "evrp/sdk/syncdispatchqueue.h"
+#include "evrp/device/server/posted/iocontextpostedbase.h"
 
 namespace evrp::device::server {
 
-class PostedInputListener final : public api::IInputListener {
+class PostedInputListener final : public api::IInputListener,
+                                  private IoContextPostedBase {
  public:
   PostedInputListener(api::IInputListener& inner, asio::io_context& ioContext);
   ~PostedInputListener() override;
@@ -29,7 +30,6 @@ class PostedInputListener final : public api::IInputListener {
 
  private:
   api::IInputListener& inner_;
-  SyncDispatchQueue syncDispatch_;
 };
 
 }  // namespace evrp::device::server

@@ -3,13 +3,16 @@
 #include <vector>
 
 #include "evrp/device/api/inputdevicekindsprovider.h"
-#include "evrp/sdk/syncdispatchqueue.h"
+#include "evrp/device/server/posted/iocontextpostedbase.h"
 
 namespace evrp::device::server {
 
 class PostedInputDeviceKindsProvider final
-    : public api::IInputDeviceKindsProvider {
+    : public api::IInputDeviceKindsProvider,
+      private IoContextPostedBase {
  public:
+  using IoContextPostedBase::shutdown;
+
   PostedInputDeviceKindsProvider(api::IInputDeviceKindsProvider& inner,
                                  asio::io_context& ioContext);
   ~PostedInputDeviceKindsProvider() override;
@@ -18,13 +21,10 @@ class PostedInputDeviceKindsProvider final
   PostedInputDeviceKindsProvider& operator=(
       const PostedInputDeviceKindsProvider&) = delete;
 
-  void shutdown();
-
   std::vector<api::DeviceKind> kinds() override;
 
  private:
   api::IInputDeviceKindsProvider& inner_;
-  mutable SyncDispatchQueue syncDispatch_;
 };
 
 }  // namespace evrp::device::server

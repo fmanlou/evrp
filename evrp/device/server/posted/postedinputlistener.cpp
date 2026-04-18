@@ -6,10 +6,11 @@ namespace evrp::device::server {
 
 PostedInputListener::PostedInputListener(api::IInputListener& inner,
                                          asio::io_context& ioContext)
-    : inner_(inner), syncDispatch_(ioContext) {}
+    : IoContextPostedBase(ioContext), inner_(inner) {}
 
 void PostedInputListener::shutdown() {
-  syncDispatch_.shutdown([this]() { inner_.cancelListening(); });
+  syncDispatch_.postVoid([this]() { inner_.cancelListening(); });
+  IoContextPostedBase::shutdown();
 }
 
 PostedInputListener::~PostedInputListener() { shutdown(); }

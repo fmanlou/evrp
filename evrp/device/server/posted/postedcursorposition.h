@@ -1,19 +1,20 @@
 #pragma once
 
 #include "evrp/device/api/cursorposition.h"
-#include "evrp/sdk/syncdispatchqueue.h"
+#include "evrp/device/server/posted/iocontextpostedbase.h"
 
 namespace evrp::device::server {
 
-class PostedCursorPosition final : public api::ICursorPosition {
+class PostedCursorPosition final : public api::ICursorPosition,
+                                   private IoContextPostedBase {
  public:
+  using IoContextPostedBase::shutdown;
+
   PostedCursorPosition(api::ICursorPosition& inner, asio::io_context& ioContext);
   ~PostedCursorPosition() override;
 
   PostedCursorPosition(const PostedCursorPosition&) = delete;
   PostedCursorPosition& operator=(const PostedCursorPosition&) = delete;
-
-  void shutdown();
 
   bool getCursorPositionAvailability() override;
 
@@ -21,7 +22,6 @@ class PostedCursorPosition final : public api::ICursorPosition {
 
  private:
   api::ICursorPosition& inner_;
-  mutable SyncDispatchQueue syncDispatch_;
 };
 
 }  // namespace evrp::device::server

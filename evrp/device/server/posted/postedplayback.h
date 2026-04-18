@@ -4,19 +4,20 @@
 
 #include "evrp/device/api/countingsemaphore.h"
 #include "evrp/device/api/playback.h"
-#include "evrp/sdk/syncdispatchqueue.h"
+#include "evrp/device/server/posted/iocontextpostedbase.h"
 
 namespace evrp::device::server {
 
-class PostedPlayback final : public api::IPlayback {
+class PostedPlayback final : public api::IPlayback,
+                             private IoContextPostedBase {
  public:
+  using IoContextPostedBase::shutdown;
+
   PostedPlayback(api::IPlayback& inner, asio::io_context& ioContext);
   ~PostedPlayback() override;
 
   PostedPlayback(const PostedPlayback&) = delete;
   PostedPlayback& operator=(const PostedPlayback&) = delete;
-
-  void shutdown();
 
   bool upload(const std::vector<api::InputEvent>& events,
               api::OperationResult* resultOut) override;
@@ -30,7 +31,6 @@ class PostedPlayback final : public api::IPlayback {
 
  private:
   api::IPlayback& inner_;
-  mutable SyncDispatchQueue syncDispatch_;
 };
 
 }  // namespace evrp::device::server

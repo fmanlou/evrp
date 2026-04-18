@@ -5,14 +5,12 @@
 namespace evrp::device::server {
 
 PostedPlayback::PostedPlayback(api::IPlayback& inner, asio::io_context& ioContext)
-    : inner_(inner), syncDispatch_(ioContext) {}
+    : IoContextPostedBase(ioContext), inner_(inner) {}
 
 PostedPlayback::~PostedPlayback() { shutdown(); }
 
-void PostedPlayback::shutdown() { syncDispatch_.shutdown(); }
-
 bool PostedPlayback::upload(const std::vector<api::InputEvent>& events,
-                            api::OperationResult* resultOut) {
+                              api::OperationResult* resultOut) {
   return syncDispatch_.postSync<bool>([this, events, resultOut]() {
     return inner_.upload(events, resultOut);
   });

@@ -6,11 +6,9 @@ namespace evrp::device::server {
 
 PostedCursorPosition::PostedCursorPosition(api::ICursorPosition& inner,
                                            asio::io_context& ioContext)
-    : inner_(inner), syncDispatch_(ioContext) {}
+    : IoContextPostedBase(ioContext), inner_(inner) {}
 
 PostedCursorPosition::~PostedCursorPosition() { shutdown(); }
-
-void PostedCursorPosition::shutdown() { syncDispatch_.shutdown(); }
 
 bool PostedCursorPosition::getCursorPositionAvailability() {
   return syncDispatch_.postSync<bool>(
