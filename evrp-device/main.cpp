@@ -4,11 +4,7 @@
 #include <string>
 
 #include "logger.h"
-#include "evrp/device/server/dispatchedinputlistener.h"
-#include "evrp/device/server/localcursorposition.h"
-#include "evrp/device/server/localinputlistener.h"
-#include "evrp/device/server/localinputdevicekindsprovider.h"
-#include "evrp/device/server/localplayback.h"
+#include "evrp/device/server/deviceruntime.h"
 #include "evrp/ioc.h"
 #include "evrp/device/api/server.h"
 
@@ -22,21 +18,8 @@ int main(int argc, char** argv) {
   gflags::SetUsageMessage("evrp-device");
   gflags::ParseCommandLineFlags(&argc, &argv, true);
 
-  evrp::device::server::LocalInputListener local_listener;
-  evrp::device::server::DispatchedInputListener input_listener(local_listener);
-  evrp::device::server::LocalCursorPosition cursor_position;
-  evrp::device::server::LocalInputDeviceKindsProvider device_kinds_provider;
-  evrp::device::server::LocalPlayback playback;
+  evrp::device::server::DeviceRuntime device;
   evrp::Ioc ioc;
-  ioc.emplace<evrp::device::server::LocalInputListener>(&local_listener);
-  ioc.emplace<evrp::device::api::IInputListener>(
-      static_cast<evrp::device::api::IInputListener*>(&input_listener));
-  ioc.emplace<evrp::device::api::ICursorPosition>(
-      static_cast<evrp::device::api::ICursorPosition*>(&cursor_position));
-  ioc.emplace<evrp::device::api::IInputDeviceKindsProvider>(
-      static_cast<evrp::device::api::IInputDeviceKindsProvider*>(
-          &device_kinds_provider));
-  ioc.emplace<evrp::device::api::IPlayback>(
-      static_cast<evrp::device::api::IPlayback*>(&playback));
+  device.registerWith(ioc);
   return evrp::device::api::runDeviceServer(FLAGS_listen, ioc);
 }

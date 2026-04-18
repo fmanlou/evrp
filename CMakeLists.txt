@@ -268,12 +268,16 @@ set_target_properties(
 add_library(
   localinputlistener STATIC evrp/device/server/localinputlistener.cpp
                            evrp/device/server/dispatchedinputlistener.cpp
-                           evrp/device/server/syncdispatchqueue.cpp)
+                           evrp/device/server/dispatchedcursorposition.cpp
+                           evrp/device/server/dispatchedinputdevicekindsprovider.cpp
+                           evrp/device/server/dispatchedplayback.cpp
+                           evrp/device/server/syncdispatchqueue.cpp
+                           evrp/device/server/deviceruntime.cpp)
 target_include_directories(localinputlistener
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(
   localinputlistener
-  PUBLIC evrp_device_api
+  PUBLIC evrp_device_api asio::asio
   PRIVATE inputdevice)
 set_target_properties(
   localinputlistener

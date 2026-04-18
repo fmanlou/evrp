@@ -46,9 +46,9 @@ class GrpcPlaybackService final
 
   evrp::CountingSemaphore playbackProgressSem_;
 
-  std::mutex progMu_;
+  std::mutex progressMutex_;
   bool subscriberActive_{false};
-  bool progPlaybackFinished_{false};
+  bool playbackProgressFinished_{false};
 };
 
 }  // namespace evrp::device::server

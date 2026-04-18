@@ -42,18 +42,18 @@ int main(int argc, char** argv) {
   gflags::SetUsageMessage("evrp_playback_test_server — LocalPlayback + gRPC (playback only)");
   gflags::ParseCommandLineFlags(&argc, &argv, true);
 
-  NoInputListener no_input;
-  evrp::device::server::LocalCursorPosition cursor_position;
-  evrp::device::server::LocalInputDeviceKindsProvider device_kinds_provider;
+  NoInputListener noInput;
+  evrp::device::server::LocalCursorPosition cursorPosition;
+  evrp::device::server::LocalInputDeviceKindsProvider deviceKindsProvider;
   evrp::device::server::LocalPlayback playback;
   evrp::Ioc ioc;
   ioc.emplace<evrp::device::api::IInputListener>(
-      static_cast<evrp::device::api::IInputListener*>(&no_input));
+      static_cast<evrp::device::api::IInputListener*>(&noInput));
   ioc.emplace<evrp::device::api::ICursorPosition>(
-      static_cast<evrp::device::api::ICursorPosition*>(&cursor_position));
+      static_cast<evrp::device::api::ICursorPosition*>(&cursorPosition));
   ioc.emplace<evrp::device::api::IInputDeviceKindsProvider>(
       static_cast<evrp::device::api::IInputDeviceKindsProvider*>(
-          &device_kinds_provider));
+          &deviceKindsProvider));
   ioc.emplace<evrp::device::api::IPlayback>(
       static_cast<evrp::device::api::IPlayback*>(&playback));
   return evrp::device::api::runDeviceServer(FLAGS_listen, ioc);

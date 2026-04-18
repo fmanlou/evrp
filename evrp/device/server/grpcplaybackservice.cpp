@@ -11,8 +11,8 @@ GrpcPlaybackService::GrpcPlaybackService(const evrp::Ioc& ioc)
     : playback_(ioc.get<api::IPlayback>()) {}
 
 void GrpcPlaybackService::markPlaybackStreamFinished() {
-  std::lock_guard<std::mutex> lock(progMu_);
-  progPlaybackFinished_ = true;
+  std::lock_guard<std::mutex> lock(progressMutex_);
+  playbackProgressFinished_ = true;
 }
 
 grpc::Status GrpcPlaybackService::Upload(
@@ -41,8 +41,8 @@ grpc::Status GrpcPlaybackService::Playback(
   while (playbackProgressSem_.tryAcquire()) {
   }
   {
-    std::lock_guard<std::mutex> lock(progMu_);
-    progPlaybackFinished_ = false;
+    std::lock_guard<std::mutex> lock(progressMutex_);
+    playbackProgressFinished_ = false;
   }
 
   api::OperationResult result;
@@ -69,13 +69,13 @@ grpc::Status GrpcPlaybackService::SubscribePlayback(
                         "playback not configured");
   }
   {
-    std::lock_guard<std::mutex> lock(progMu_);
+    std::lock_guard<std::mutex> lock(progressMutex_);
     if (subscriberActive_) {
       return grpc::Status(grpc::StatusCode::RESOURCE_EXHAUSTED,
                           "subscribe_playback already active");
     }
     subscriberActive_ = true;
-    progPlaybackFinished_ = false;
+    playbackProgressFinished_ = false;
   }
   while (playbackProgressSem_.tryAcquire()) {
   }
@@ -91,8 +91,8 @@ grpc::Status GrpcPlaybackService::SubscribePlayback(
 
     bool finished = false;
     {
-      std::lock_guard<std::mutex> lock(progMu_);
-      finished = progPlaybackFinished_;
+      std::lock_guard<std::mutex> lock(progressMutex_);
+      finished = playbackProgressFinished_;
     }
     if (finished) {
       break;
@@ -107,7 +107,7 @@ grpc::Status GrpcPlaybackService::SubscribePlayback(
   }
 
   {
-    std::lock_guard<std::mutex> lock(progMu_);
+    std::lock_guard<std::mutex> lock(progressMutex_);
     subscriberActive_ = false;
   }
   return status;

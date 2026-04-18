@@ -11,14 +11,14 @@ class Ioc {
  public:
   template <typename T>
   void emplace(T* p) {
-    by_type_[std::type_index(typeid(T*))] = std::make_any<T*>(p);
+    byType_[std::type_index(typeid(T*))] = std::make_any<T*>(p);
   }
 
   template <typename T>
   T* get() const {
     using Ptr = T*;
-    auto it = by_type_.find(std::type_index(typeid(Ptr)));
-    if (it == by_type_.end()) {
+    auto it = byType_.find(std::type_index(typeid(Ptr)));
+    if (it == byType_.end()) {
       return nullptr;
     }
     const std::any& a = it->second;
@@ -32,7 +32,7 @@ class Ioc {
   }
 
  private:
-  std::map<std::type_index, std::any> by_type_;
+  std::map<std::type_index, std::any> byType_;
 };
 
 }  // namespace evrp

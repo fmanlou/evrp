@@ -1,18 +1,18 @@
 #pragma once
 
+#include <asio/io_context.hpp>
+#include <asio/post.hpp>
 #include <atomic>
-#include <condition_variable>
 #include <functional>
 #include <future>
-#include <mutex>
-#include <queue>
-#include <thread>
+#include <memory>
 
 namespace evrp::device::server {
 
+// 在指定 io_context 所关联的线程上串行执行任务（由外部 run io_context）。
 class SyncDispatchQueue {
  public:
-  SyncDispatchQueue();
+  explicit SyncDispatchQueue(asio::io_context& ioContext);
   ~SyncDispatchQueue();
 
   SyncDispatchQueue(const SyncDispatchQueue&) = delete;
@@ -21,37 +21,24 @@ class SyncDispatchQueue {
   void shutdown(std::function<void()> finalTask = {});
 
   template <typename R>
-  R postSync(std::function<R()> fn);
+  R postSync(std::function<R()> fn) const;
 
-  void postVoid(std::function<void()> fn);
+  void postVoid(std::function<void()> fn) const;
 
  private:
-  void dispatchLoop();
-
-  std::mutex mu_;
-  std::condition_variable cv_;
-  std::queue<std::function<void()>> q_;
-  bool stop_{false};
-  std::thread worker_;
-  std::atomic<bool> shutdownDone_{false};
+  asio::io_context& ioContext_;
+  mutable std::atomic<bool> shutdownDone_{false};
 };
 
 template <typename R>
-R SyncDispatchQueue::postSync(std::function<R()> fn) {
+R SyncDispatchQueue::postSync(std::function<R()> fn) const {
   if (shutdownDone_.load(std::memory_order_acquire)) {
     return R{};
   }
   auto task = std::make_shared<std::packaged_task<R()>>(std::move(fn));
   std::future<R> fut = task->get_future();
-  {
-    std::lock_guard<std::mutex> lock(mu_);
-    if (stop_) {
-      return R{};
-    }
-    q_.push([task]() { (*task)(); });
-  }
-  cv_.notify_one();
+  asio::post(ioContext_, [task]() { (*task)(); });
   return fut.get();
 }
 
-}
+}  // namespace evrp::device::server

@@ -9,7 +9,7 @@ namespace evrp::device::server {
 
 class DispatchedInputListener final : public api::IInputListener {
  public:
-  explicit DispatchedInputListener(api::IInputListener& inner);
+  DispatchedInputListener(api::IInputListener& inner, asio::io_context& ioContext);
   ~DispatchedInputListener() override;
 
   DispatchedInputListener(const DispatchedInputListener&) = delete;

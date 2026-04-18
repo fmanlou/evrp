@@ -1,6 +1,6 @@
 # evrp-device
 
-设备端进程：入口 **`main.cpp`** 仅构造 **`LocalInputListener`** 并调用 **`run_device_server`**，**不包含** gRPC 头文件。
+设备端进程：入口 **`main.cpp`** 构造 **`DeviceRuntime`**（Asio `io_context` + 本地设备实现），写入 **`Ioc`** 后调用 **`runDeviceServer`**，**不包含** gRPC 头文件。
 
 传输与 proto 全部在 **`evrp/device/server/*.cpp`** 与 CMake 目标 **`evrp_device_grpc`** 中实现。
 
@@ -32,4 +32,4 @@ cmake --build build
 # 或 --listen=... ；查看帮助：./build/evrp-device -help
 ```
 
-当前首版仅 **`InputListenService`** 与 **`Ping`** 为可用实现；**`InputDeviceService`** / **`PlaybackService`** 的其余 RPC 多为 **UNIMPLEMENTED**（实现见 `evrp/device/server/*.cpp`）。
+设备 RPC 实现见 **`evrp/device/server/*.cpp`**（**`evrp_device_grpc`** 目标）。

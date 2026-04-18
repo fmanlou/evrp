@@ -1,9 +1,12 @@
 #include "evrp/device/server/dispatchedinputlistener.h"
 
+#include <asio/io_context.hpp>
+
 namespace evrp::device::server {
 
-DispatchedInputListener::DispatchedInputListener(api::IInputListener& inner)
-    : inner_(inner) {}
+DispatchedInputListener::DispatchedInputListener(api::IInputListener& inner,
+                                                 asio::io_context& ioContext)
+    : inner_(inner), syncDispatch_(ioContext) {}
 
 void DispatchedInputListener::shutdown() {
   syncDispatch_.shutdown([this]() { inner_.cancelListening(); });
@@ -33,7 +36,8 @@ void DispatchedInputListener::cancelListening() {
 }
 
 bool DispatchedInputListener::isListening() const {
-  return inner_.isListening();
+  return syncDispatch_.postSync<bool>(
+      [this]() { return inner_.isListening(); });
 }
 
 }  // namespace evrp::device::server
