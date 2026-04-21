@@ -2,7 +2,6 @@
 
 #include <cstdint>
 #include <string>
-#include <vector>
 
 namespace evrp::device::api {
 
@@ -28,7 +27,7 @@ struct OperationResult {
   std::string message;
 };
 
-inline DeviceKind deviceKindFromLabel(const std::string &label) {
+inline DeviceKind deviceKindFromLabel(const std::string& label) {
   if (label == "keyboard") return DeviceKind::kKeyboard;
   if (label == "mouse") return DeviceKind::kMouse;
   if (label == "touchpad") return DeviceKind::kTouchpad;
@@ -52,4 +51,4 @@ inline std::string deviceKindLabel(DeviceKind kind) {
   }
 }
 
-}
+}  // namespace evrp::device::api
