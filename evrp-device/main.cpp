@@ -7,8 +7,8 @@
 #include "evrp/sdk/ioc.h"
 #include "logger.h"
 
-DEFINE_string(listen, "127.0.0.1:50051",
-              "Listen address for the device service (e.g. host:port)");
+DEFINE_string(listen, "0.0.0.0:50051",
+              "Listen address for the device service (e.g. host:port; default all IPv4 interfaces)");
 
 int main(int argc, char** argv) {
   Logger logger;
