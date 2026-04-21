@@ -6,13 +6,10 @@
 
 namespace evrp::device::api {
 
-// Host-side client for evrp.device.v1.InputDeviceService (capabilities, ping,
-// cursor).
+// Host-side client for evrp.device.v1.InputDeviceService (capabilities, cursor).
 class IInputDeviceClient {
  public:
   virtual ~IInputDeviceClient() = default;
-
-  virtual bool ping() = 0;
 
   virtual bool getCapabilities(std::vector<DeviceKind>* out) = 0;
 

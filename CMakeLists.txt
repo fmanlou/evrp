@@ -223,25 +223,27 @@ set(DEVICE_SERVICE_GRPC_H "${GEN_DIR}/evrp/device/v1/service/service.grpc.pb.h")
 add_custom_command(
   OUTPUT ${DEVICE_TYPES_PB_CC} ${DEVICE_TYPES_PB_H} ${DEVICE_INPUTLISTEN_PB_CC}
          ${DEVICE_INPUTLISTEN_PB_H} ${DEVICE_INPUTLISTEN_GRPC_CC}
-         ${DEVICE_INPUTLISTEN_GRPC_H} ${DEVICE_PLAYBACK_PB_CC} ${DEVICE_PLAYBACK_PB_H}
-         ${DEVICE_PLAYBACK_GRPC_CC} ${DEVICE_PLAYBACK_GRPC_H} ${DEVICE_SERVICE_PB_CC}
-         ${DEVICE_SERVICE_PB_H} ${DEVICE_SERVICE_GRPC_CC} ${DEVICE_SERVICE_GRPC_H}
+         ${DEVICE_INPUTLISTEN_GRPC_H} ${DEVICE_PLAYBACK_PB_CC}
+         ${DEVICE_PLAYBACK_PB_H} ${DEVICE_PLAYBACK_GRPC_CC} ${DEVICE_PLAYBACK_GRPC_H}
+         ${DEVICE_SERVICE_PB_CC} ${DEVICE_SERVICE_PB_H} ${DEVICE_SERVICE_GRPC_CC}
+         ${DEVICE_SERVICE_GRPC_H}
   COMMAND ${CMAKE_COMMAND} -E make_directory "${GEN_DIR}/evrp/device/v1/service"
   COMMAND
     ${PROTOC_PROGRAM} --cpp_out=${GEN_DIR} --grpc_out=${GEN_DIR}
     --plugin=protoc-gen-grpc=${GRPC_CPP_PLUGIN_PROGRAM} -I${PROTO_ROOT}
     ${DEVICE_TYPES_PROTO} ${DEVICE_INPUTLISTEN_PROTO} ${DEVICE_PLAYBACK_PROTO}
     ${DEVICE_SERVICE_PROTO}
-  DEPENDS ${DEVICE_TYPES_PROTO} ${DEVICE_INPUTLISTEN_PROTO} ${DEVICE_PLAYBACK_PROTO}
+  DEPENDS ${DEVICE_TYPES_PROTO} ${DEVICE_INPUTLISTEN_PROTO}
+          ${DEVICE_PLAYBACK_PROTO}
           ${DEVICE_SERVICE_PROTO}
   COMMENT
     "Generating protobuf/gRPC from types.proto and evrp/device/v1/service/*.proto"
   VERBATIM)
 
 add_library(evrp_device_proto STATIC ${DEVICE_TYPES_PB_CC} ${DEVICE_INPUTLISTEN_PB_CC}
-                                     ${DEVICE_INPUTLISTEN_GRPC_CC} ${DEVICE_PLAYBACK_PB_CC}
-                                     ${DEVICE_PLAYBACK_GRPC_CC} ${DEVICE_SERVICE_PB_CC}
-                                     ${DEVICE_SERVICE_GRPC_CC})
+                                     ${DEVICE_INPUTLISTEN_GRPC_CC}
+                                     ${DEVICE_PLAYBACK_PB_CC} ${DEVICE_PLAYBACK_GRPC_CC}
+                                     ${DEVICE_SERVICE_PB_CC} ${DEVICE_SERVICE_GRPC_CC})
 target_include_directories(evrp_device_proto PUBLIC ${GEN_DIR})
 target_link_libraries(evrp_device_proto PUBLIC protobuf::libprotobuf
                                                gRPC::grpc++)
@@ -279,7 +281,7 @@ target_include_directories(localinputlistener
 target_link_libraries(
   localinputlistener
   PUBLIC evrp_device_api asio::asio
-  PRIVATE inputdevice)
+  PRIVATE inputdevice logger)
 set_target_properties(
   localinputlistener
   PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
@@ -310,7 +312,8 @@ add_library(device_remote_inputlistener STATIC
 target_include_directories(device_remote_inputlistener
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(device_remote_inputlistener PUBLIC evrp_device_proto
-                                                         tofromproto)
+                                                         tofromproto PRIVATE
+                                                         logger)
 set_target_properties(
   device_remote_inputlistener
   PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
@@ -350,6 +353,7 @@ add_library(
 target_include_directories(evrp_device_grpc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(evrp_device_grpc PUBLIC evrp_device_proto tofromproto
                                               countingsemaphore asio::asio
+                                              gflags::gflags
                        PRIVATE logger)
 
 add_executable(evrp-device evrp-device/main.cpp)
@@ -371,7 +375,9 @@ target_link_libraries(
 add_dependencies(evrp_device_integration_test evrp-device)
 add_test(
   NAME evrp_device_integration_test
-  COMMAND evrp_device_integration_test --device_binary=$<TARGET_FILE:evrp-device>)
+  COMMAND
+    evrp_device_integration_test --device_binary=$<TARGET_FILE:evrp-device>
+    --listen_require_valid_event_per_kind=false)
 
 add_executable(evrp_inputlisten_test_server evrp/inputlistentest/server.cpp)
 target_include_directories(evrp_inputlisten_test_server

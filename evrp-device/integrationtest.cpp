@@ -3,10 +3,12 @@
 #include <linux/input-event-codes.h>
 #include <linux/input.h>
 
+#include <algorithm>
 #include <chrono>
 #include <cstdlib>
 #include <cstring>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <thread>
 #include <vector>
@@ -38,14 +40,27 @@ DEFINE_string(device_binary, "",
               "connection. Or set EVRP_DEVICE_BINARY.");
 DEFINE_int32(
     rpc_wait_ms, 15000,
-    "Maximum time to wait for Ping after connect attempts begin (ms)");
+    "Maximum time to wait for GetCapabilities after connect attempts begin (ms)");
 DEFINE_bool(test_input_listen, true,
             "Exercise InputListenService (StartRecording / Wait / Read / Stop)");
 DEFINE_bool(test_playback, true,
             "Exercise PlaybackService when device reports keyboard capability");
 DEFINE_int32(listen_wait_ms, 400,
-             "WaitForInputEvent timeout (ms) while testing InputListen; must "
-             "be >= 0");
+             "WaitForInputEvent timeout (ms) per poll while testing "
+             "InputListen; must be >= 0");
+DEFINE_int32(
+    listen_per_kind_timeout_ms, 120000,
+    "When --listen_require_valid_event_per_kind=true: max wall time (ms) per "
+    "supported kind to receive at least one non-EV_SYN event");
+DEFINE_int32(
+    listen_between_kinds_ms, 80,
+    "After StopRecording, wait this many ms before the next StartRecording "
+    "(strict per-kind mode; helps server drain session)");
+DEFINE_bool(
+    listen_require_valid_event_per_kind, true,
+    "If true, InputListen requires a non-SYN evdev event per supported kind "
+    "(sequential sessions); if false, one short listen round without requiring "
+    "events (CI / no hardware)");
 
 namespace {
 
@@ -107,14 +122,15 @@ std::string remoteTargetFromFlags(bool* ok) {
   return FLAGS_host + ":" + std::to_string(FLAGS_port);
 }
 
-bool waitForPing(const std::shared_ptr<grpc::Channel>& channel,
-                 int totalTimeoutMs) {
+bool waitUntilGetCapabilitiesOk(const std::shared_ptr<grpc::Channel>& channel,
+                                  int totalTimeoutMs) {
   const std::unique_ptr<evrp::device::api::IInputDeviceClient> device =
       evrp::device::api::makeRemoteInputDeviceClient(channel);
   const auto overall =
       std::chrono::steady_clock::now() + std::chrono::milliseconds(totalTimeoutMs);
   while (std::chrono::steady_clock::now() < overall) {
-    if (device->ping()) {
+    std::vector<evrp::device::api::DeviceKind> kinds;
+    if (device->getCapabilities(&kinds)) {
       return true;
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(40));
@@ -158,6 +174,32 @@ bool deviceHasKeyboard(
   return false;
 }
 
+std::vector<evrp::device::api::DeviceKind> dedupeKindsPreserveOrder(
+    const std::vector<evrp::device::api::DeviceKind>& kinds) {
+  std::vector<evrp::device::api::DeviceKind> out;
+  for (evrp::device::api::DeviceKind k : kinds) {
+    if (k == evrp::device::api::DeviceKind::kUnspecified) {
+      continue;
+    }
+    if (std::find(out.begin(), out.end(), k) == out.end()) {
+      out.push_back(k);
+    }
+  }
+  return out;
+}
+
+bool isValidListenProbeEvent(
+    evrp::device::api::DeviceKind expectedKind,
+    const evrp::device::api::InputEvent& e) {
+  if (e.device != expectedKind) {
+    return false;
+  }
+  if (e.type == static_cast<uint32_t>(EV_SYN)) {
+    return false;
+  }
+  return true;
+}
+
 std::vector<evrp::device::api::InputEvent> minimalKeyTapEvents() {
   std::vector<evrp::device::api::InputEvent> v;
   int usec = 0;
@@ -182,8 +224,8 @@ bool testInputListen(
     logInfo("InputListen: skipped (--test_input_listen=false)");
     return true;
   }
-  const std::vector<evrp::device::api::DeviceKind> kinds =
-      kindsForRecording(caps);
+  std::vector<evrp::device::api::DeviceKind> kinds =
+      dedupeKindsPreserveOrder(kindsForRecording(caps));
   if (kinds.empty()) {
     logInfo(
         "InputListen: skip (no input device kinds on device; recording N/A)");
@@ -194,20 +236,87 @@ bool testInputListen(
     return false;
   }
 
-  const std::unique_ptr<evrp::device::api::IInputListener> listener =
-      evrp::device::api::makeRemoteInputListener(channel);
-  if (!listener->startListening(kinds)) {
+  if (!FLAGS_listen_require_valid_event_per_kind) {
+    const std::unique_ptr<evrp::device::api::IInputListener> listener =
+        evrp::device::api::makeRemoteInputListener(channel);
+    if (!listener->startListening(kinds)) {
+      logError(
+          "InputListen: StartRecording failed (no matching devices or error)");
+      return false;
+    }
+    (void)listener->waitForInputEvent(FLAGS_listen_wait_ms);
+    const std::vector<evrp::device::api::InputEvent> batch =
+        listener->readInputEvents();
+    logInfo("InputListen: ReadInputEvents count=" +
+            std::to_string(batch.size()) + " (--listen_require_valid_event_"
+            "per_kind=false)");
+    listener->cancelListening();
+    logInfo("InputListen: StopRecording ok");
+    return true;
+  }
+
+  if (FLAGS_listen_per_kind_timeout_ms < 1) {
     logError(
-        "InputListen: StartRecording failed (no matching devices or error)");
+        "--listen_per_kind_timeout_ms must be >= 1 when "
+        "--listen_require_valid_event_per_kind=true");
     return false;
   }
-  (void)listener->waitForInputEvent(FLAGS_listen_wait_ms);
-  const std::vector<evrp::device::api::InputEvent> batch =
-      listener->readInputEvents();
-  logInfo("InputListen: ReadInputEvents count=" +
-          std::to_string(batch.size()));
-  listener->cancelListening();
-  logInfo("InputListen: StopRecording ok");
+
+  for (size_t ki = 0; ki < kinds.size(); ++ki) {
+    const evrp::device::api::DeviceKind kind = kinds[ki];
+    const std::string kindLabel = evrp::device::api::deviceKindLabel(kind);
+    if (ki > 0 && FLAGS_listen_between_kinds_ms > 0) {
+      std::this_thread::sleep_for(
+          std::chrono::milliseconds(FLAGS_listen_between_kinds_ms));
+    }
+    const std::unique_ptr<evrp::device::api::IInputListener> listener =
+        evrp::device::api::makeRemoteInputListener(channel);
+    if (!listener->startListening({kind})) {
+      logError(
+          "InputListen: StartRecording failed for kind " + kindLabel +
+          " (client log shows gRPC error; evrp-device log shows "
+          "LocalInputListener path/open details)");
+      return false;
+    }
+    const auto deadline = std::chrono::steady_clock::now() +
+                          std::chrono::milliseconds(
+                              FLAGS_listen_per_kind_timeout_ms);
+    bool gotValid = false;
+    while (std::chrono::steady_clock::now() < deadline && !gotValid) {
+      const auto remaining = std::chrono::duration_cast<std::chrono::milliseconds>(
+          deadline - std::chrono::steady_clock::now());
+      int slice = FLAGS_listen_wait_ms;
+      if (remaining.count() < slice) {
+        slice = static_cast<int>(std::max<int64_t>(remaining.count(), 0));
+      }
+      (void)listener->waitForInputEvent(slice);
+      const std::vector<evrp::device::api::InputEvent> batch =
+          listener->readInputEvents();
+      for (const evrp::device::api::InputEvent& e : batch) {
+        if (isValidListenProbeEvent(kind, e)) {
+          gotValid = true;
+          std::ostringstream line;
+          line << "InputListen: valid event on " << kindLabel
+               << " type=0x" << std::hex << e.type << " code=0x" << e.code
+               << std::dec << " value=" << e.value;
+          logInfo(line.str());
+          break;
+        }
+      }
+    }
+    listener->cancelListening();
+    if (!gotValid) {
+      logError(
+          "InputListen: timeout waiting for non-EV_SYN event on kind " +
+          kindLabel + " within " +
+          std::to_string(FLAGS_listen_per_kind_timeout_ms) +
+          " ms (operate that device or use "
+          "--listen_require_valid_event_per_kind=false for CI)");
+      return false;
+    }
+  }
+  logInfo("InputListen: all " + std::to_string(kinds.size()) +
+          " kind(s) produced at least one valid event; StopRecording ok");
   return true;
 }
 
@@ -290,7 +399,7 @@ int main(int argc, char** argv) {
   gLogger = &logger;
 
   gflags::SetUsageMessage(
-      "Host-side check: Ping, GetCapabilities, InputListen, Playback against "
+      "Host-side check: GetCapabilities, InputListen, Playback against "
       "evrp-device (--target or --host/--port; optional --device_binary for "
       "CI)");
   gflags::ParseCommandLineFlags(&argc, &argv, true);
@@ -340,11 +449,11 @@ int main(int argc, char** argv) {
   const std::shared_ptr<grpc::Channel> channel =
       evrp::device::api::makeDeviceChannel(target);
 
-  if (!waitForPing(channel, FLAGS_rpc_wait_ms)) {
-    logError("Timed out waiting for Ping on " + target);
+  if (!waitUntilGetCapabilitiesOk(channel, FLAGS_rpc_wait_ms)) {
+    logError("Timed out waiting for GetCapabilities on " + target);
     return 1;
   }
-  logInfo("Ping ok on " + target);
+  logInfo("InputDeviceService (GetCapabilities) ok on " + target);
 
   std::vector<evrp::device::api::DeviceKind> caps;
   if (!fetchCapabilities(channel, &caps)) {

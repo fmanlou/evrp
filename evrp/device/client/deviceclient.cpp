@@ -9,10 +9,21 @@
 
 namespace evrp::device::api {
 
+namespace {
+
+constexpr int kKeepaliveTimeMs = 30000;
+constexpr int kKeepaliveTimeoutMs = 10000;
+
+}  // namespace
+
 std::shared_ptr<grpc::Channel> makeDeviceChannel(
     const std::string& targetHostPort) {
   grpc::ChannelArguments args;
   args.SetInt(GRPC_ARG_ENABLE_HTTP_PROXY, 0);
+  args.SetInt(GRPC_ARG_KEEPALIVE_TIME_MS, kKeepaliveTimeMs);
+  args.SetInt(GRPC_ARG_KEEPALIVE_TIMEOUT_MS, kKeepaliveTimeoutMs);
+  args.SetInt(GRPC_ARG_KEEPALIVE_PERMIT_WITHOUT_CALLS, 1);
+  args.SetInt(GRPC_ARG_HTTP2_MAX_PINGS_WITHOUT_DATA, 0);
   return grpc::CreateCustomChannel(targetHostPort,
                                    grpc::InsecureChannelCredentials(), args);
 }

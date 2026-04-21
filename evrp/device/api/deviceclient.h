@@ -14,7 +14,8 @@ class Channel;
 namespace evrp::device::api {
 
 // Insecure channel to evrp-device; disables HTTP proxy so localhost / device
-// IPs are not sent to http_proxy.
+// IPs are not sent to http_proxy. Enables HTTP/2 keepalive (see
+// deviceclient.cpp; server uses matching args in grpcserverimpl.cpp).
 std::shared_ptr<grpc::Channel> makeDeviceChannel(const std::string& targetHostPort);
 
 std::unique_ptr<IInputListener> makeRemoteInputListener(

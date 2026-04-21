@@ -65,10 +65,6 @@ message ReadCursorPositionResponse {
   int32 y = 2;
 }
 
-message PingRequest {}
-
-message PingResponse {}
-
 message GetCapabilitiesRequest {}
 
 message GetCapabilitiesResponse {

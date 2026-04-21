@@ -3,12 +3,12 @@
 #include <google/protobuf/empty.pb.h>
 
 #include "evrp/device/internal/tofromproto.h"
+#include "logger.h"
 
 namespace evrp::device::client {
 
 RemoteInputListener::RemoteInputListener(std::shared_ptr<grpc::Channel> channel)
-    : channel_(std::move(channel)),
-      stub_(v1::InputListenService::NewStub(channel_)) {}
+    : stub_(v1::InputListenService::NewStub(std::move(channel))) {}
 
 RemoteInputListener::~RemoteInputListener() { cancelListening(); }
 
@@ -28,6 +28,9 @@ bool RemoteInputListener::startListening(
   google::protobuf::Empty resp;
   grpc::Status st = stub_->StartRecording(&ctx, req, &resp);
   if (!st.ok()) {
+    logError("RemoteInputListener: StartRecording gRPC code=" +
+             std::to_string(static_cast<int>(st.error_code())) + " " +
+             st.error_message());
     return false;
   }
 

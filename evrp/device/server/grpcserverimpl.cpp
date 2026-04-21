@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 
+#include <grpc/grpc.h>
 #include <grpcpp/grpcpp.h>
 #include <grpcpp/health_check_service_interface.h>
 
@@ -22,6 +23,12 @@ int runDeviceServer(const std::string& listen_address, const evrp::Ioc& ioc) {
 
   grpc::ServerBuilder builder;
   builder.AddListeningPort(listen_address, grpc::InsecureServerCredentials());
+  // HTTP/2 keepalive (align with makeDeviceChannel on the client).
+  builder.AddChannelArgument(GRPC_ARG_KEEPALIVE_TIME_MS, 30000);
+  builder.AddChannelArgument(GRPC_ARG_KEEPALIVE_TIMEOUT_MS, 10000);
+  builder.AddChannelArgument(GRPC_ARG_KEEPALIVE_PERMIT_WITHOUT_CALLS, 1);
+  builder.AddChannelArgument(
+      GRPC_ARG_HTTP2_MIN_RECV_PING_INTERVAL_WITHOUT_DATA_MS, 10000);
   builder.RegisterService(&listen_service);
   builder.RegisterService(&device_service);
   builder.RegisterService(&playback_service);

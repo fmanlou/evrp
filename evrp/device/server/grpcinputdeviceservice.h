@@ -1,6 +1,6 @@
 #pragma once
 
-// 设备端 `InputDeviceService` 实现（光标、保活等）；由 grpcserverimpl.cpp 注册。业务代码勿直接 include。
+// 设备端 `InputDeviceService` 实现（光标、能力等）；由 grpcserverimpl.cpp 注册。业务代码勿直接 include。
 
 #include <grpcpp/grpcpp.h>
 
@@ -36,10 +36,6 @@ class GrpcInputDeviceService final
       grpc::ServerContext* context,
       const v1::GetCapabilitiesRequest* request,
       v1::GetCapabilitiesResponse* response) override;
-
-  grpc::Status Ping(grpc::ServerContext* context,
-                    const v1::PingRequest* request,
-                    v1::PingResponse* response) override;
 
  private:
   api::ICursorPosition* cursorPosition_;

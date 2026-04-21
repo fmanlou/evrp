@@ -11,14 +11,6 @@ RemoteInputDeviceClient::RemoteInputDeviceClient(
     : channel_(std::move(channel)),
       stub_(v1::InputDeviceService::NewStub(channel_)) {}
 
-bool RemoteInputDeviceClient::ping() {
-  grpc::ClientContext ctx;
-  ctx.set_deadline(std::chrono::system_clock::now() + std::chrono::seconds(5));
-  v1::PingRequest req;
-  v1::PingResponse resp;
-  return stub_->Ping(&ctx, req, &resp).ok();
-}
-
 bool RemoteInputDeviceClient::getCapabilities(
     std::vector<api::DeviceKind>* out) {
   out->clear();

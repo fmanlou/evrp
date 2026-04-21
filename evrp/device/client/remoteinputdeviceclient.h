@@ -16,8 +16,6 @@ class RemoteInputDeviceClient final : public api::IInputDeviceClient {
   RemoteInputDeviceClient(const RemoteInputDeviceClient&) = delete;
   RemoteInputDeviceClient& operator=(const RemoteInputDeviceClient&) = delete;
 
-  bool ping() override;
-
   bool getCapabilities(std::vector<api::DeviceKind>* out) override;
 
   bool getCursorPositionAvailability(bool* available) override;

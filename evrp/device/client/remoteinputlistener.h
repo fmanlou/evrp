@@ -30,7 +30,6 @@ class RemoteInputListener final : public api::IInputListener {
   bool isListening() const override;
 
  private:
-  std::shared_ptr<grpc::Channel> channel_;
   std::unique_ptr<v1::InputListenService::Stub> stub_;
 
   bool listeningActive_{false};

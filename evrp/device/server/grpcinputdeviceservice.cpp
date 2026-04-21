@@ -61,10 +61,4 @@ grpc::Status GrpcInputDeviceService::GetCapabilities(
   return grpc::Status::OK;
 }
 
-grpc::Status GrpcInputDeviceService::Ping(grpc::ServerContext* /*context*/,
-                                          const v1::PingRequest* /*request*/,
-                                          v1::PingResponse* /*response*/) {
-  return grpc::Status::OK;
-}
-
-}
+}  // namespace evrp::device::server

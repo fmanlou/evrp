@@ -2,10 +2,14 @@
 
 #include <linux/input-event-codes.h>
 
+#include <cerrno>
+#include <cstring>
 #include <unordered_set>
 
 #include "evdev.h"
+#include "evrp/device/api/types.h"
 #include "inputdevice.h"
+#include "logger.h"
 
 namespace evrp::device::server {
 
@@ -50,6 +54,9 @@ bool LocalInputListener::startListening(
     return false;
   }
   if (listeningActive_) {
+    logWarn(
+        "LocalInputListener: startListening refused: listeningActive_ is "
+        "still true (StopRecording may not have completed yet)");
     return false;
   }
 
@@ -60,15 +67,22 @@ bool LocalInputListener::startListening(
     if (k == api::DeviceKind::kUnspecified) {
       continue;
     }
+    const std::string kindLabel = api::deviceKindLabel(k);
     std::string path = findDevicePath(k);
     if (path.empty()) {
+      logWarn("LocalInputListener: kind " + kindLabel +
+              " has no matching /dev/input node (findDevicePath empty)");
       continue;
     }
     if (!opened_paths.insert(path).second) {
+      logInfo("LocalInputListener: skip kind " + kindLabel + " path " + path +
+              " (same node already opened for this session)");
       continue;
     }
     int fd = fs_.openReadOnly(path.c_str(), true);
     if (fd < 0) {
+      logWarn("LocalInputListener: kind " + kindLabel + " path " + path +
+              " open(O_RDONLY) failed: " + std::string(std::strerror(errno)));
       continue;
     }
     new_devices.push_back(TrackedDevice{fd, k});
@@ -78,6 +92,9 @@ bool LocalInputListener::startListening(
   }
 
   if (new_devices.empty()) {
+    logWarn(
+        "LocalInputListener: startListening failed: no evdev fds opened for "
+        "requested kind(s) (see per-kind messages above)");
     return false;
   }
 

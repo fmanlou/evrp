@@ -1,8 +1,11 @@
 #pragma once
 
-// 设备端 `InputListenService` 实现；由 grpcserverimpl.cpp 注册。业务代码勿直接 include。
+// 设备端 `InputListenService`（unary）。业务代码勿直接 include。
 
+#include <atomic>
+#include <cstdint>
 #include <grpcpp/grpcpp.h>
+#include <thread>
 
 #include "evrp/device/api/inputlistener.h"
 #include "evrp/device/v1/service/inputlisten.grpc.pb.h"
@@ -17,6 +20,12 @@ class GrpcInputListenService final
     : public v1::InputListenService::Service {
  public:
   explicit GrpcInputListenService(const evrp::Ioc& ioc);
+  ~GrpcInputListenService();
+
+  GrpcInputListenService(const GrpcInputListenService&) = delete;
+  GrpcInputListenService& operator=(const GrpcInputListenService&) = delete;
+  GrpcInputListenService(GrpcInputListenService&&) = delete;
+  GrpcInputListenService& operator=(GrpcInputListenService&&) = delete;
 
   grpc::Status StartRecording(
       grpc::ServerContext* context,
@@ -38,7 +47,13 @@ class GrpcInputListenService final
                              google::protobuf::Empty* response) override;
 
  private:
+  void recordingActivityBump();
+  void watchdogLoop();
+
   api::IInputListener* listener_;
+  std::atomic<int64_t> lastRecordingActivityNs_{0};
+  std::atomic<bool> watchdogStop_{false};
+  std::thread watchdogThread_;
 };
 
 }  // namespace evrp::device::server
