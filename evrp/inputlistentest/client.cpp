@@ -1,15 +1,14 @@
-// IInputListener 端到端测试：连接远端 InputListenService，走 RemoteInputListener。
-
 #include <gflags/gflags.h>
-#include <grpcpp/grpcpp.h>
+
 #include <cstdlib>
+#include <memory>
 #include <iomanip>
 #include <sstream>
 #include <string>
 #include <vector>
 
+#include "evrp/device/api/deviceclient.h"
 #include "evrp/device/api/types.h"
-#include "evrp/device/client/remoteinputlistener.h"
 #include "logger.h"
 
 DEFINE_string(target, "127.0.0.1:50051", "Server address (host:port)");
@@ -24,7 +23,8 @@ DEFINE_int32(rounds, 5,
 
 namespace {
 
-bool appendKind(const std::string& token, std::vector<evrp::device::api::DeviceKind>* out) {
+bool appendKind(const std::string& token,
+                std::vector<evrp::device::api::DeviceKind>* out) {
   if (token == "keyboard") {
     out->push_back(evrp::device::api::DeviceKind::kKeyboard);
     return true;
@@ -45,7 +45,7 @@ bool appendKind(const std::string& token, std::vector<evrp::device::api::DeviceK
 }
 
 bool parseKinds(const std::string& csv,
-                 std::vector<evrp::device::api::DeviceKind>* kinds) {
+                std::vector<evrp::device::api::DeviceKind>* kinds) {
   kinds->clear();
   std::string t;
   std::istringstream in(csv);
@@ -83,15 +83,16 @@ const char* deviceKindName(evrp::device::api::DeviceKind k) {
   }
 }
 
-void traceInputEvents(int round, const std::vector<evrp::device::api::InputEvent>& batch) {
+void traceInputEvents(int round,
+                      const std::vector<evrp::device::api::InputEvent>& batch) {
   for (size_t j = 0; j < batch.size(); ++j) {
     const evrp::device::api::InputEvent& e = batch[j];
     std::ostringstream line;
     line << "  event round=" << round << " index=" << j
-         << " device=" << deviceKindName(e.device) << " time=" << e.timeSec << "."
-         << std::setfill('0') << std::setw(6) << e.timeUsec << std::setfill(' ')
-         << " type=0x" << std::hex << e.type << " code=0x" << e.code << std::dec
-         << " value=" << e.value;
+         << " device=" << deviceKindName(e.device) << " time=" << e.timeSec
+         << "." << std::setfill('0') << std::setw(6) << e.timeUsec
+         << std::setfill(' ') << " type=0x" << std::hex << e.type << " code=0x"
+         << e.code << std::dec << " value=" << e.value;
     logInfo(line.str());
   }
 }
@@ -103,7 +104,8 @@ int main(int argc, char** argv) {
   gLogger = &logger;
 
   gflags::SetUsageMessage(
-      "evrp_inputlisten_test_client — RemoteInputListener against InputListenService");
+      "evrp_inputlisten_test_client — RemoteInputListener against "
+      "InputListenService");
   gflags::ParseCommandLineFlags(&argc, &argv, true);
 
   if (FLAGS_wait_ms < 0) {
@@ -124,11 +126,12 @@ int main(int argc, char** argv) {
     return 2;
   }
 
-  std::shared_ptr<grpc::Channel> channel = grpc::CreateChannel(
-      FLAGS_target, grpc::InsecureChannelCredentials());
-  evrp::device::client::RemoteInputListener listener(channel);
+  const std::shared_ptr<grpc::Channel> channel =
+      evrp::device::api::makeDeviceChannel(FLAGS_target);
+  const std::unique_ptr<evrp::device::api::IInputListener> listener =
+      evrp::device::api::makeRemoteInputListener(channel);
 
-  if (!listener.startListening(kinds)) {
+  if (!listener->startListening(kinds)) {
     logError(
         "evrp_inputlisten_test_client: startListening failed (no devices "
         "or server error?). Is evrp_inputlisten_test_server running on " +
@@ -141,20 +144,21 @@ int main(int argc, char** argv) {
       "wait for timeouts...");
   int total_events = 0;
   for (int i = 0; i < FLAGS_rounds; ++i) {
-    if (listener.waitForInputEvent(FLAGS_wait_ms)) {
+    if (listener->waitForInputEvent(FLAGS_wait_ms)) {
       std::vector<evrp::device::api::InputEvent> batch =
-          listener.readInputEvents();
+          listener->readInputEvents();
       total_events += static_cast<int>(batch.size());
       logInfo("round " + std::to_string(i) +
-               " events=" + std::to_string(batch.size()));
+              " events=" + std::to_string(batch.size()));
       traceInputEvents(i, batch);
     } else {
-      logInfo("round " + std::to_string(i) + " no event (timeout or not listening)");
+      logInfo("round " + std::to_string(i) +
+              " no event (timeout or not listening)");
     }
   }
 
-  listener.cancelListening();
+  listener->cancelListening();
   logInfo("evrp_inputlisten_test_client: done, total events=" +
-           std::to_string(total_events));
+          std::to_string(total_events));
   return 0;
 }

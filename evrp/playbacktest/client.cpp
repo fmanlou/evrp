@@ -1,14 +1,14 @@
 #include <gflags/gflags.h>
-#include <grpcpp/grpcpp.h>
 #include <linux/input-event-codes.h>
 
+#include <memory>
 #include <string>
 #include <thread>
 #include <vector>
 
 #include "evrp/device/api/countingsemaphore.h"
+#include "evrp/device/api/deviceclient.h"
 #include "evrp/device/api/types.h"
-#include "evrp/device/client/remoteplayback.h"
 #include "logger.h"
 
 DEFINE_string(target, "127.0.0.1:50051", "Server address (host:port)");
@@ -79,12 +79,13 @@ int main(int argc, char** argv) {
   logInfo("evrp_playback_test_client: will replay " + std::to_string(events.size()) +
            " key events (EV_KEY press/release) for \"hello world\"");
 
-  std::shared_ptr<grpc::Channel> channel =
-      grpc::CreateChannel(FLAGS_target, grpc::InsecureChannelCredentials());
-  evrp::device::client::RemotePlayback remote(channel);
+  const std::shared_ptr<grpc::Channel> channel =
+      evrp::device::api::makeDeviceChannel(FLAGS_target);
+  const std::unique_ptr<evrp::device::api::IPlayback> remote =
+      evrp::device::api::makeRemotePlayback(channel);
 
   evrp::device::api::OperationResult up;
-  if (!remote.upload(events, &up)) {
+  if (!remote->upload(events, &up)) {
     logError("evrp_playback_test_client: upload failed code=" +
               std::to_string(up.code) + " msg=" + up.message);
     return 1;
@@ -99,14 +100,14 @@ int main(int argc, char** argv) {
       for (int i = 0; i < n; ++i) {
         progress_sem.acquire();
         logInfo("evrp_playback_test_client: progress idx=" +
-                 std::to_string(remote.playbackIndex()));
+                 std::to_string(remote->playbackIndex()));
       }
     });
   }
 
   evrp::device::api::OperationResult play;
   const bool ok =
-      remote.playback(&play, FLAGS_progress ? &progress_sem : nullptr);
+      remote->playback(&play, FLAGS_progress ? &progress_sem : nullptr);
 
   if (consumer.joinable()) {
     consumer.join();
