@@ -2,6 +2,7 @@
 
 #include "evrp/device/internal/tofromproto.h"
 #include "evrp/sdk/ioc.h"
+#include "logger.h"
 
 namespace evrp::device::server {
 
@@ -48,6 +49,9 @@ grpc::Status GrpcInputDeviceService::GetCapabilities(
     const v1::GetCapabilitiesRequest* /*request*/,
     v1::GetCapabilitiesResponse* response) {
   if (!deviceKindsProvider_) {
+    logError(
+        "evrp-device: GetCapabilities: IInputDeviceKindsProvider is null "
+        "(IOC misconfiguration; not the same as \"no input hardware\")");
     return grpc::Status(grpc::StatusCode::FAILED_PRECONDITION,
                         "device kinds provider not configured");
   }

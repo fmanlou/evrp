@@ -303,7 +303,7 @@ add_library(localinputdevicekindsprovider STATIC
 target_include_directories(localinputdevicekindsprovider
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(localinputdevicekindsprovider
-                      PUBLIC evrp_device_api PRIVATE inputdevice)
+                      PUBLIC evrp_device_api PRIVATE inputdevice logger)
 
 add_library(device_remote_inputlistener STATIC
             evrp/device/client/remoteinputlistener.cpp)
