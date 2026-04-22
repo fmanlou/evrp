@@ -9,12 +9,8 @@
 
 namespace evrp::device::api {
 
-namespace {
-
 constexpr int kKeepaliveTimeMs = 30000;
 constexpr int kKeepaliveTimeoutMs = 10000;
-
-}  // namespace
 
 std::shared_ptr<grpc::Channel> makeDeviceChannel(
     const std::string& targetHostPort) {
