@@ -1,6 +1,8 @@
 #include "evrp/device/server/grpcinputlisten.h"
 
 #include "evrp/device/internal/tofromproto.h"
+#include "evrp/device/server/devicesessioncheck.h"
+#include "evrp/device/server/devicesessionregistry.h"
 #include "evrp/sdk/ioc.h"
 #include "logger.h"
 
@@ -29,8 +31,9 @@ int64_t steadyNowNs() {
 
 }  // namespace
 
-GrpcInputListenService::GrpcInputListenService(const evrp::Ioc& ioc)
-    : listener_(ioc.get<api::IInputListener>()) {
+GrpcInputListenService::GrpcInputListenService(const evrp::Ioc& ioc,
+                                               DeviceSessionRegistry& sessions)
+    : listener_(ioc.get<api::IInputListener>()), sessions_(sessions) {
   lastRecordingActivityNs_.store(steadyNowNs(), std::memory_order_relaxed);
   watchdogThread_ = std::thread([this] { watchdogLoop(); });
 }
@@ -67,9 +70,12 @@ void GrpcInputListenService::watchdogLoop() {
 }
 
 grpc::Status GrpcInputListenService::StartRecording(
-    grpc::ServerContext* /*context*/,
+    grpc::ServerContext* context,
     const v1::StartRecordingRequest* request,
     google::protobuf::Empty* /*response*/) {
+  if (grpc::Status st = requireDeviceBusinessSession(context, sessions_); !st.ok()) {
+    return st;
+  }
   if (!listener_) {
     return grpc::Status(grpc::StatusCode::FAILED_PRECONDITION,
                         "input listener not configured");
@@ -104,6 +110,9 @@ grpc::Status GrpcInputListenService::WaitForInputEvent(
     grpc::ServerContext* context,
     const v1::WaitForInputEventRequest* request,
     v1::WaitForInputEventResponse* response) {
+  if (grpc::Status st = requireDeviceBusinessSession(context, sessions_); !st.ok()) {
+    return st;
+  }
   if (!listener_) {
     return grpc::Status(grpc::StatusCode::FAILED_PRECONDITION,
                         "input listener not configured");
@@ -168,6 +177,9 @@ grpc::Status GrpcInputListenService::ReadInputEvents(
     grpc::ServerContext* context,
     const google::protobuf::Empty* /*request*/,
     v1::ReadInputEventsResponse* response) {
+  if (grpc::Status st = requireDeviceBusinessSession(context, sessions_); !st.ok()) {
+    return st;
+  }
   if (!listener_) {
     return grpc::Status(grpc::StatusCode::FAILED_PRECONDITION,
                         "input listener not configured");
@@ -188,8 +200,11 @@ grpc::Status GrpcInputListenService::ReadInputEvents(
 }
 
 grpc::Status GrpcInputListenService::StopRecording(
-    grpc::ServerContext* /*context*/, const google::protobuf::Empty* /*request*/,
+    grpc::ServerContext* context, const google::protobuf::Empty* /*request*/,
     google::protobuf::Empty* /*response*/) {
+  if (grpc::Status st = requireDeviceBusinessSession(context, sessions_); !st.ok()) {
+    return st;
+  }
   if (!listener_) {
     return grpc::Status(grpc::StatusCode::FAILED_PRECONDITION,
                         "input listener not configured");

@@ -128,14 +128,21 @@ int main(int argc, char** argv) {
 
   const std::shared_ptr<grpc::Channel> channel =
       evrp::device::api::makeDeviceChannel(FLAGS_target);
+  evrp::device::api::DeviceSessionInfo session;
+  if (!evrp::device::api::deviceSessionConnect(channel, &session)) {
+    logError(
+        "evrp_inputlisten_test_client: DeviceSessionService/Connect failed");
+    return 1;
+  }
   const std::unique_ptr<evrp::device::api::IInputListener> listener =
-      evrp::device::api::makeRemoteInputListener(channel);
+      evrp::device::api::makeRemoteInputListener(channel, session.sessionId);
 
   if (!listener->startListening(kinds)) {
     logError(
         "evrp_inputlisten_test_client: startListening failed (no devices "
         "or server error?). Is evrp_inputlisten_test_server running on " +
         FLAGS_target + "?");
+    (void)evrp::device::api::deviceSessionDisconnect(channel, session.sessionId);
     return 1;
   }
 
@@ -160,5 +167,6 @@ int main(int argc, char** argv) {
   listener->cancelListening();
   logInfo("evrp_inputlisten_test_client: done, total events=" +
           std::to_string(total_events));
+  (void)evrp::device::api::deviceSessionDisconnect(channel, session.sessionId);
   return 0;
 }

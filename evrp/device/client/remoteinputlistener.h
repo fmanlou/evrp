@@ -8,11 +8,14 @@
 #include "evrp/device/api/inputlistener.h"
 #include "evrp/device/v1/service/inputlisten.grpc.pb.h"
 
+#include <string>
+
 namespace evrp::device::client {
 
 class RemoteInputListener final : public api::IInputListener {
  public:
-  explicit RemoteInputListener(std::shared_ptr<grpc::Channel> channel);
+  RemoteInputListener(std::shared_ptr<grpc::Channel> channel,
+                      std::string deviceSessionId);
 
   ~RemoteInputListener() override;
 
@@ -31,6 +34,7 @@ class RemoteInputListener final : public api::IInputListener {
 
  private:
   std::unique_ptr<v1::InputListenService::Stub> stub_;
+  std::string deviceSessionId_;
 
   bool listeningActive_{false};
 };

@@ -2,13 +2,16 @@
 
 #include <google/protobuf/empty.pb.h>
 
+#include "evrp/device/common/devicesessionmetadata.h"
 #include "evrp/device/internal/tofromproto.h"
 
 namespace evrp::device::client {
 
-RemotePlayback::RemotePlayback(std::shared_ptr<grpc::Channel> channel)
+RemotePlayback::RemotePlayback(std::shared_ptr<grpc::Channel> channel,
+                               std::string deviceSessionId)
     : channel_(std::move(channel)),
-      stub_(v1::PlaybackService::NewStub(channel_)) {}
+      stub_(v1::PlaybackService::NewStub(channel_)),
+      deviceSessionId_(std::move(deviceSessionId)) {}
 
 RemotePlayback::~RemotePlayback() = default;
 
@@ -20,6 +23,7 @@ bool RemotePlayback::upload(const std::vector<api::InputEvent>& events,
   api::toProto(events, req.mutable_events());
 
   grpc::ClientContext ctx;
+  addDeviceSessionMetadata(&ctx, deviceSessionId_);
   v1::OperationResult resp;
   grpc::Status st = stub_->Upload(&ctx, req, &resp);
   if (!st.ok()) {
@@ -51,6 +55,7 @@ bool RemotePlayback::playback(api::OperationResult* resultOut,
 
   if (progressNotify != nullptr) {
     stream_ctx = std::make_unique<grpc::ClientContext>();
+    addDeviceSessionMetadata(stream_ctx.get(), deviceSessionId_);
     google::protobuf::Empty sub_req;
     reader = stub_->SubscribePlayback(stream_ctx.get(), sub_req);
 
@@ -68,6 +73,7 @@ bool RemotePlayback::playback(api::OperationResult* resultOut,
   }
 
   grpc::ClientContext playback_ctx;
+  addDeviceSessionMetadata(&playback_ctx, deviceSessionId_);
   v1::PlaybackRecordingRequest play_req;
   v1::OperationResult pb_result;
   grpc::Status st = stub_->Playback(&playback_ctx, play_req, &pb_result);
@@ -92,6 +98,7 @@ bool RemotePlayback::stopPlayback() {
   std::lock_guard<std::mutex> lock(callMu_);
 
   grpc::ClientContext ctx;
+  addDeviceSessionMetadata(&ctx, deviceSessionId_);
   google::protobuf::Empty req;
   google::protobuf::Empty resp;
   return stub_->Stop(&ctx, req, &resp).ok();

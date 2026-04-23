@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package evrp.device.v1;
+
+import "google/protobuf/empty.proto";
+
+// 业务层会话：须先 Connect 上线；其它 RPC 须在 metadata 中携带 x-evrp-device-session-id。
+// 须在 lease_timeout_ms 周期内调用 Heartbeat 保活，否则会话失效，需重新 Connect。
+service DeviceSessionService {
+  rpc Connect(google.protobuf.Empty) returns (ConnectResponse);
+  rpc Heartbeat(google.protobuf.Empty) returns (google.protobuf.Empty);
+  rpc Disconnect(google.protobuf.Empty) returns (google.protobuf.Empty);
+}
+
+message ConnectResponse {
+  string session_id = 1;
+  int32 lease_timeout_ms = 2;
+}

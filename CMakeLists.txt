@@ -194,6 +194,7 @@ set(DEVICE_TYPES_PROTO "${PROTO_ROOT}/evrp/device/v1/types.proto")
 set(DEVICE_INPUTLISTEN_PROTO "${PROTO_ROOT}/evrp/device/v1/service/inputlisten.proto")
 set(DEVICE_PLAYBACK_PROTO "${PROTO_ROOT}/evrp/device/v1/service/playback.proto")
 set(DEVICE_SERVICE_PROTO "${PROTO_ROOT}/evrp/device/v1/service/service.proto")
+set(DEVICE_SESSION_PROTO "${PROTO_ROOT}/evrp/device/v1/service/session.proto")
 set(GEN_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
 
 find_program(
@@ -219,6 +220,10 @@ set(DEVICE_SERVICE_PB_CC "${GEN_DIR}/evrp/device/v1/service/service.pb.cc")
 set(DEVICE_SERVICE_PB_H "${GEN_DIR}/evrp/device/v1/service/service.pb.h")
 set(DEVICE_SERVICE_GRPC_CC "${GEN_DIR}/evrp/device/v1/service/service.grpc.pb.cc")
 set(DEVICE_SERVICE_GRPC_H "${GEN_DIR}/evrp/device/v1/service/service.grpc.pb.h")
+set(DEVICE_SESSION_PB_CC "${GEN_DIR}/evrp/device/v1/service/session.pb.cc")
+set(DEVICE_SESSION_PB_H "${GEN_DIR}/evrp/device/v1/service/session.pb.h")
+set(DEVICE_SESSION_GRPC_CC "${GEN_DIR}/evrp/device/v1/service/session.grpc.pb.cc")
+set(DEVICE_SESSION_GRPC_H "${GEN_DIR}/evrp/device/v1/service/session.grpc.pb.h")
 
 add_custom_command(
   OUTPUT ${DEVICE_TYPES_PB_CC} ${DEVICE_TYPES_PB_H} ${DEVICE_INPUTLISTEN_PB_CC}
@@ -226,16 +231,18 @@ add_custom_command(
          ${DEVICE_INPUTLISTEN_GRPC_H} ${DEVICE_PLAYBACK_PB_CC}
          ${DEVICE_PLAYBACK_PB_H} ${DEVICE_PLAYBACK_GRPC_CC} ${DEVICE_PLAYBACK_GRPC_H}
          ${DEVICE_SERVICE_PB_CC} ${DEVICE_SERVICE_PB_H} ${DEVICE_SERVICE_GRPC_CC}
-         ${DEVICE_SERVICE_GRPC_H}
+         ${DEVICE_SERVICE_GRPC_H} ${DEVICE_SESSION_PB_CC} ${DEVICE_SESSION_PB_H}
+         ${DEVICE_SESSION_GRPC_CC} ${DEVICE_SESSION_GRPC_H}
   COMMAND ${CMAKE_COMMAND} -E make_directory "${GEN_DIR}/evrp/device/v1/service"
   COMMAND
     ${PROTOC_PROGRAM} --cpp_out=${GEN_DIR} --grpc_out=${GEN_DIR}
     --plugin=protoc-gen-grpc=${GRPC_CPP_PLUGIN_PROGRAM} -I${PROTO_ROOT}
     ${DEVICE_TYPES_PROTO} ${DEVICE_INPUTLISTEN_PROTO} ${DEVICE_PLAYBACK_PROTO}
-    ${DEVICE_SERVICE_PROTO}
+    ${DEVICE_SERVICE_PROTO} ${DEVICE_SESSION_PROTO}
   DEPENDS ${DEVICE_TYPES_PROTO} ${DEVICE_INPUTLISTEN_PROTO}
           ${DEVICE_PLAYBACK_PROTO}
           ${DEVICE_SERVICE_PROTO}
+          ${DEVICE_SESSION_PROTO}
   COMMENT
     "Generating protobuf/gRPC from types.proto and evrp/device/v1/service/*.proto"
   VERBATIM)
@@ -243,7 +250,8 @@ add_custom_command(
 add_library(evrp_device_proto STATIC ${DEVICE_TYPES_PB_CC} ${DEVICE_INPUTLISTEN_PB_CC}
                                      ${DEVICE_INPUTLISTEN_GRPC_CC}
                                      ${DEVICE_PLAYBACK_PB_CC} ${DEVICE_PLAYBACK_GRPC_CC}
-                                     ${DEVICE_SERVICE_PB_CC} ${DEVICE_SERVICE_GRPC_CC})
+                                     ${DEVICE_SERVICE_PB_CC} ${DEVICE_SERVICE_GRPC_CC}
+                                     ${DEVICE_SESSION_PB_CC} ${DEVICE_SESSION_GRPC_CC})
 target_include_directories(evrp_device_proto PUBLIC ${GEN_DIR})
 target_link_libraries(evrp_device_proto PUBLIC protobuf::libprotobuf
                                                gRPC::grpc++)
@@ -347,6 +355,9 @@ set_target_properties(
 add_library(
   evrp_device_grpc STATIC
   evrp/device/server/grpcserverimpl.cpp
+  evrp/device/server/devicesessionregistry.cpp
+  evrp/device/server/devicesessioncheck.cpp
+  evrp/device/server/grpcdevicesessionservice.cpp
   evrp/device/server/grpcinputlisten.cpp
   evrp/device/server/grpcinputdeviceservice.cpp
   evrp/device/server/grpcplaybackservice.cpp)

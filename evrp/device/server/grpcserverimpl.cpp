@@ -1,34 +1,50 @@
 #include "evrp/device/api/server.h"
 
+#include <chrono>
 #include <memory>
 #include <string>
+#include <thread>
 
+#include <gflags/gflags.h>
 #include <grpc/grpc.h>
 #include <grpcpp/grpcpp.h>
 #include <grpcpp/health_check_service_interface.h>
 
+#include "evrp/device/server/devicesessionregistry.h"
+#include "evrp/device/server/grpcdevicesessionservice.h"
 #include "evrp/device/server/grpcinputdeviceservice.h"
 #include "evrp/device/server/grpcinputlisten.h"
 #include "evrp/device/server/grpcplaybackservice.h"
 #include "logger.h"
 
+DECLARE_int32(device_session_lease_ms);
+
 namespace evrp::device::api {
 
 int runDeviceServer(const std::string& listen_address, const evrp::Ioc& ioc) {
-  server::GrpcInputListenService listen_service(ioc);
-  server::GrpcInputDeviceService device_service(ioc);
-  server::GrpcPlaybackService playback_service(ioc);
+  server::DeviceSessionRegistry sessionRegistry(FLAGS_device_session_lease_ms);
+  server::GrpcDeviceSessionService session_service(sessionRegistry);
+  server::GrpcInputListenService listen_service(ioc, sessionRegistry);
+  server::GrpcInputDeviceService device_service(ioc, sessionRegistry);
+  server::GrpcPlaybackService playback_service(ioc, sessionRegistry);
+
+  std::thread([&sessionRegistry]() {
+    for (;;) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(500));
+      sessionRegistry.sweepExpiredForLogging();
+    }
+  }).detach();
 
   grpc::EnableDefaultHealthCheckService(true);
 
   grpc::ServerBuilder builder;
   builder.AddListeningPort(listen_address, grpc::InsecureServerCredentials());
-  // HTTP/2 keepalive (align with makeDeviceChannel on the client).
   builder.AddChannelArgument(GRPC_ARG_KEEPALIVE_TIME_MS, 30000);
   builder.AddChannelArgument(GRPC_ARG_KEEPALIVE_TIMEOUT_MS, 10000);
   builder.AddChannelArgument(GRPC_ARG_KEEPALIVE_PERMIT_WITHOUT_CALLS, 1);
   builder.AddChannelArgument(
       GRPC_ARG_HTTP2_MIN_RECV_PING_INTERVAL_WITHOUT_DATA_MS, 10000);
+  builder.RegisterService(&session_service);
   builder.RegisterService(&listen_service);
   builder.RegisterService(&device_service);
   builder.RegisterService(&playback_service);

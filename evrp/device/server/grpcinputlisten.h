@@ -16,10 +16,12 @@ class Ioc;
 
 namespace evrp::device::server {
 
+class DeviceSessionRegistry;
+
 class GrpcInputListenService final
     : public v1::InputListenService::Service {
  public:
-  explicit GrpcInputListenService(const evrp::Ioc& ioc);
+  GrpcInputListenService(const evrp::Ioc& ioc, DeviceSessionRegistry& sessions);
   ~GrpcInputListenService();
 
   GrpcInputListenService(const GrpcInputListenService&) = delete;
@@ -51,6 +53,7 @@ class GrpcInputListenService final
   void watchdogLoop();
 
   api::IInputListener* listener_;
+  DeviceSessionRegistry& sessions_;
   std::atomic<int64_t> lastRecordingActivityNs_{0};
   std::atomic<bool> watchdogStop_{false};
   std::thread watchdogThread_;

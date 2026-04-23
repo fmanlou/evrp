@@ -1,19 +1,26 @@
 #include "evrp/device/server/grpcinputdeviceservice.h"
 
 #include "evrp/device/internal/tofromproto.h"
+#include "evrp/device/server/devicesessioncheck.h"
+#include "evrp/device/server/devicesessionregistry.h"
 #include "evrp/sdk/ioc.h"
 #include "logger.h"
 
 namespace evrp::device::server {
 
-GrpcInputDeviceService::GrpcInputDeviceService(const evrp::Ioc& ioc)
+GrpcInputDeviceService::GrpcInputDeviceService(const evrp::Ioc& ioc,
+                                               DeviceSessionRegistry& sessions)
     : cursorPosition_(ioc.get<api::ICursorPosition>()),
-      deviceKindsProvider_(ioc.get<api::IInputDeviceKindsProvider>()) {}
+      deviceKindsProvider_(ioc.get<api::IInputDeviceKindsProvider>()),
+      sessions_(sessions) {}
 
 grpc::Status GrpcInputDeviceService::GetCursorPositionAvailability(
-    grpc::ServerContext* /*context*/,
+    grpc::ServerContext* context,
     const v1::GetCursorPositionAvailabilityRequest* /*request*/,
     v1::GetCursorPositionAvailabilityResponse* response) {
+  if (grpc::Status st = requireDeviceBusinessSession(context, sessions_); !st.ok()) {
+    return st;
+  }
   if (!cursorPosition_) {
     return grpc::Status(grpc::StatusCode::FAILED_PRECONDITION,
                         "cursor position not configured");
@@ -23,9 +30,12 @@ grpc::Status GrpcInputDeviceService::GetCursorPositionAvailability(
 }
 
 grpc::Status GrpcInputDeviceService::ReadCursorPosition(
-    grpc::ServerContext* /*context*/,
+    grpc::ServerContext* context,
     const v1::ReadCursorPositionRequest* /*request*/,
     v1::ReadCursorPositionResponse* response) {
+  if (grpc::Status st = requireDeviceBusinessSession(context, sessions_); !st.ok()) {
+    return st;
+  }
   if (!cursorPosition_) {
     return grpc::Status(grpc::StatusCode::FAILED_PRECONDITION,
                         "cursor position not configured");
@@ -45,9 +55,12 @@ grpc::Status GrpcInputDeviceService::ReadCursorPosition(
 }
 
 grpc::Status GrpcInputDeviceService::GetCapabilities(
-    grpc::ServerContext* /*context*/,
+    grpc::ServerContext* context,
     const v1::GetCapabilitiesRequest* /*request*/,
     v1::GetCapabilitiesResponse* response) {
+  if (grpc::Status st = requireDeviceBusinessSession(context, sessions_); !st.ok()) {
+    return st;
+  }
   if (!deviceKindsProvider_) {
     logError(
         "evrp-device: GetCapabilities: IInputDeviceKindsProvider is null "

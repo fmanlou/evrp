@@ -3,12 +3,15 @@
 #include <google/protobuf/empty.pb.h>
 
 #include "evrp/device/internal/tofromproto.h"
+#include "evrp/device/server/devicesessioncheck.h"
+#include "evrp/device/server/devicesessionregistry.h"
 #include "evrp/sdk/ioc.h"
 
 namespace evrp::device::server {
 
-GrpcPlaybackService::GrpcPlaybackService(const evrp::Ioc& ioc)
-    : playback_(ioc.get<api::IPlayback>()) {}
+GrpcPlaybackService::GrpcPlaybackService(const evrp::Ioc& ioc,
+                                         DeviceSessionRegistry& sessions)
+    : playback_(ioc.get<api::IPlayback>()), sessions_(sessions) {}
 
 void GrpcPlaybackService::markPlaybackStreamFinished() {
   std::lock_guard<std::mutex> lock(progressMutex_);
@@ -16,9 +19,12 @@ void GrpcPlaybackService::markPlaybackStreamFinished() {
 }
 
 grpc::Status GrpcPlaybackService::Upload(
-    grpc::ServerContext* /*context*/,
+    grpc::ServerContext* context,
     const v1::UploadRecordingRequest* request,
     v1::OperationResult* response) {
+  if (grpc::Status st = requireDeviceBusinessSession(context, sessions_); !st.ok()) {
+    return st;
+  }
   if (!playback_) {
     return grpc::Status(grpc::StatusCode::FAILED_PRECONDITION,
                         "playback not configured");
@@ -35,9 +41,12 @@ grpc::Status GrpcPlaybackService::Upload(
 }
 
 grpc::Status GrpcPlaybackService::Playback(
-    grpc::ServerContext* /*context*/,
+    grpc::ServerContext* context,
     const v1::PlaybackRecordingRequest* /*request*/,
     v1::OperationResult* response) {
+  if (grpc::Status st = requireDeviceBusinessSession(context, sessions_); !st.ok()) {
+    return st;
+  }
   while (playbackProgressSem_.tryAcquire()) {
   }
   {
@@ -64,6 +73,9 @@ grpc::Status GrpcPlaybackService::SubscribePlayback(
     grpc::ServerContext* context,
     const google::protobuf::Empty* /*request*/,
     grpc::ServerWriter<v1::PlaybackProgress>* writer) {
+  if (grpc::Status st = requireDeviceBusinessSession(context, sessions_); !st.ok()) {
+    return st;
+  }
   if (!playback_) {
     return grpc::Status(grpc::StatusCode::FAILED_PRECONDITION,
                         "playback not configured");
@@ -114,8 +126,11 @@ grpc::Status GrpcPlaybackService::SubscribePlayback(
 }
 
 grpc::Status GrpcPlaybackService::Stop(
-    grpc::ServerContext* /*context*/, const google::protobuf::Empty* /*request*/,
+    grpc::ServerContext* context, const google::protobuf::Empty* /*request*/,
     google::protobuf::Empty* /*response*/) {
+  if (grpc::Status st = requireDeviceBusinessSession(context, sessions_); !st.ok()) {
+    return st;
+  }
   if (!playback_) {
     return grpc::Status(grpc::StatusCode::FAILED_PRECONDITION,
                         "playback not configured");

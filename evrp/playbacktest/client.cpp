@@ -81,13 +81,19 @@ int main(int argc, char** argv) {
 
   const std::shared_ptr<grpc::Channel> channel =
       evrp::device::api::makeDeviceChannel(FLAGS_target);
+  evrp::device::api::DeviceSessionInfo session;
+  if (!evrp::device::api::deviceSessionConnect(channel, &session)) {
+    logError("evrp_playback_test_client: DeviceSessionService/Connect failed");
+    return 1;
+  }
   const std::unique_ptr<evrp::device::api::IPlayback> remote =
-      evrp::device::api::makeRemotePlayback(channel);
+      evrp::device::api::makeRemotePlayback(channel, session.sessionId);
 
   evrp::device::api::OperationResult up;
   if (!remote->upload(events, &up)) {
     logError("evrp_playback_test_client: upload failed code=" +
               std::to_string(up.code) + " msg=" + up.message);
+    (void)evrp::device::api::deviceSessionDisconnect(channel, session.sessionId);
     return 1;
   }
 
@@ -116,11 +122,13 @@ int main(int argc, char** argv) {
   if (!ok) {
     logError("evrp_playback_test_client: playback failed code=" +
               std::to_string(play.code) + " msg=" + play.message);
+    (void)evrp::device::api::deviceSessionDisconnect(channel, session.sessionId);
     return 1;
   }
   logInfo("hello world");
   logInfo(
       "evrp_playback_test_client: playback finished (keyboard injection "
       "requires focus in a text field)");
+  (void)evrp::device::api::deviceSessionDisconnect(channel, session.sessionId);
   return 0;
 }

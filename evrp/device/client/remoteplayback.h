@@ -10,11 +10,14 @@
 #include "evrp/device/api/playback.h"
 #include "evrp/device/v1/service/playback.grpc.pb.h"
 
+#include <string>
+
 namespace evrp::device::client {
 
 class RemotePlayback final : public api::IPlayback {
  public:
-  explicit RemotePlayback(std::shared_ptr<grpc::Channel> channel);
+  RemotePlayback(std::shared_ptr<grpc::Channel> channel,
+                 std::string deviceSessionId);
 
   ~RemotePlayback() override;
 
@@ -34,6 +37,7 @@ class RemotePlayback final : public api::IPlayback {
  private:
   std::shared_ptr<grpc::Channel> channel_;
   std::unique_ptr<v1::PlaybackService::Stub> stub_;
+  std::string deviceSessionId_;
 
   std::mutex callMu_;
   std::atomic<int> reportedIndex_{-1};
