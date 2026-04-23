@@ -6,7 +6,7 @@
 #include "record.h"
 
 int main(int argc, char *argv[]) {
-  Logger logger;
+  Logger logger("evrp");
   gLogger = &logger;
 
   CursorPos cursor;

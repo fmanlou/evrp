@@ -100,7 +100,7 @@ void traceInputEvents(int round,
 }  // namespace
 
 int main(int argc, char** argv) {
-  Logger logger;
+  Logger logger("evrp_inputlisten_test_client");
   gLogger = &logger;
 
   gflags::SetUsageMessage(

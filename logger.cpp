@@ -71,7 +71,8 @@ const char* logLevelName(LogLevel level) {
   return "INFO";
 }
 
-Logger::Logger() : service_(std::make_unique<logging::LogService>("evrp")) {}
+Logger::Logger(std::string name)
+    : service_(std::make_unique<logging::LogService>(std::move(name))) {}
 
 Logger::~Logger() = default;
 

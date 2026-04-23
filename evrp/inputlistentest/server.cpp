@@ -10,7 +10,7 @@ DEFINE_string(listen, "127.0.0.1:50051",
               "Listen address (host:port) for InputListenService and peers");
 
 int main(int argc, char** argv) {
-  Logger logger;
+  Logger logger("evrp_inputlisten_test_server");
   gLogger = &logger;
 
   gflags::SetUsageMessage(

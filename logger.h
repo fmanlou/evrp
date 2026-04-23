@@ -20,7 +20,8 @@ class LogService;
 
 class Logger {
  public:
-  Logger();
+  // Shown in log lines to identify the process (e.g. "evrp-device", "evrp").
+  explicit Logger(std::string name);
   ~Logger();
 
   void setLevel(LogLevel level);
