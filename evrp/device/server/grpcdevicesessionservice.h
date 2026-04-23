@@ -28,4 +28,4 @@ class GrpcDeviceSessionService final
   DeviceSessionRegistry& registry_;
 };
 
-}  // namespace evrp::device::server
+}

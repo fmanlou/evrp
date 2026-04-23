@@ -17,7 +17,7 @@ class FileSystem {
   long writeFd(int fd, const void *buffer, unsigned long size) const;
   int pollFds(int *fds, int nfds, int timeoutMs, bool *ready) const;
 
-  // Empty path means writing to stdout.
+  
   bool openOutput(const std::string &path);
   std::ostream &outputStream();
   const std::string &errorMessage() const;

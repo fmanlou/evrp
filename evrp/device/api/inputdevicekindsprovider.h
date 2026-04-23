@@ -13,4 +13,4 @@ class IInputDeviceKindsProvider {
   virtual std::vector<DeviceKind> kinds() = 0;
 };
 
-}  // namespace evrp::device::api
+}

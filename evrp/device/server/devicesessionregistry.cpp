@@ -25,7 +25,7 @@ std::string randomSessionId() {
   return ss.str();
 }
 
-}  // namespace
+}  
 
 DeviceSessionRegistry::DeviceSessionRegistry(int leaseTimeoutMs) {
   int ms = leaseTimeoutMs > 0 ? leaseTimeoutMs : FLAGS_device_session_lease_ms;
@@ -147,4 +147,4 @@ void DeviceSessionRegistry::sweepExpiredForLogging() {
   }
 }
 
-}  // namespace evrp::device::server
+}

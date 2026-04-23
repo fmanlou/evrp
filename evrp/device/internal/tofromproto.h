@@ -40,4 +40,4 @@ std::vector<InputEvent> fromProto(
 
 void toProto(const OperationResult& r, v1::OperationResult* p);
 
-}  // namespace evrp::device::api
+}

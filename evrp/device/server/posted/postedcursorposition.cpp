@@ -21,4 +21,4 @@ bool PostedCursorPosition::readCursorPosition(int* outX, int* outY) {
   });
 }
 
-}  // namespace evrp::device::server
+}

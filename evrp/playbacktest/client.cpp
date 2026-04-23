@@ -65,7 +65,7 @@ std::vector<evrp::device::api::InputEvent> makeHelloWorldKeyEvents() {
   return v;
 }
 
-}  // namespace
+}  
 
 int main(int argc, char** argv) {
   Logger logger("evrp_playback_test_client");

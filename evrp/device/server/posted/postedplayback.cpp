@@ -33,4 +33,4 @@ bool PostedPlayback::stopPlayback() {
       [this]() { return inner_.stopPlayback(); });
 }
 
-}  // namespace evrp::device::server
+}

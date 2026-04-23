@@ -29,7 +29,7 @@ int64_t steadyNowNs() {
       .count();
 }
 
-}  // namespace
+}  
 
 GrpcInputListenService::GrpcInputListenService(const evrp::Ioc& ioc,
                                                DeviceSessionRegistry& sessions)
@@ -72,7 +72,7 @@ void GrpcInputListenService::watchdogLoop() {
 grpc::Status GrpcInputListenService::StartRecording(
     grpc::ServerContext* context,
     const v1::StartRecordingRequest* request,
-    google::protobuf::Empty* /*response*/) {
+    google::protobuf::Empty* ) {
   if (grpc::Status st = requireDeviceBusinessSession(context, sessions_); !st.ok()) {
     return st;
   }
@@ -175,7 +175,7 @@ grpc::Status GrpcInputListenService::WaitForInputEvent(
 
 grpc::Status GrpcInputListenService::ReadInputEvents(
     grpc::ServerContext* context,
-    const google::protobuf::Empty* /*request*/,
+    const google::protobuf::Empty* ,
     v1::ReadInputEventsResponse* response) {
   if (grpc::Status st = requireDeviceBusinessSession(context, sessions_); !st.ok()) {
     return st;
@@ -200,8 +200,8 @@ grpc::Status GrpcInputListenService::ReadInputEvents(
 }
 
 grpc::Status GrpcInputListenService::StopRecording(
-    grpc::ServerContext* context, const google::protobuf::Empty* /*request*/,
-    google::protobuf::Empty* /*response*/) {
+    grpc::ServerContext* context, const google::protobuf::Empty* ,
+    google::protobuf::Empty* ) {
   if (grpc::Status st = requireDeviceBusinessSession(context, sessions_); !st.ok()) {
     return st;
   }
@@ -215,4 +215,4 @@ grpc::Status GrpcInputListenService::StopRecording(
   return grpc::Status::OK;
 }
 
-}  // namespace evrp::device::server
+}

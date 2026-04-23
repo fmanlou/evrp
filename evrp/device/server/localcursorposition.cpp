@@ -10,4 +10,4 @@ bool LocalCursorPosition::readCursorPosition(int* outX, int* outY) {
   return cursor_.getPosition(outX, outY);
 }
 
-}  // namespace evrp::device::server
+}

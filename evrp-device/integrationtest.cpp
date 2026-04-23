@@ -107,7 +107,6 @@ bool isExecutableFile(const std::string& path) {
   return access(path.c_str(), X_OK) == 0;
 }
 
-// Returns address or empty; sets *ok false on invalid --host/--port combo.
 std::string remoteTargetFromFlags(bool* ok) {
   *ok = true;
   if (!FLAGS_target.empty()) {
@@ -397,7 +396,7 @@ struct DeviceProcess {
   }
 };
 
-}  // namespace
+}  
 
 int main(int argc, char** argv) {
   Logger logger("evrp_device_integration_test");

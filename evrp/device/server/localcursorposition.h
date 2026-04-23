@@ -17,4 +17,4 @@ class LocalCursorPosition final : public api::ICursorPosition {
   CursorPos cursor_;
 };
 
-}  // namespace evrp::device::server
+}

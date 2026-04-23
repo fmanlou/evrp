@@ -1,7 +1,5 @@
 #pragma once
 
-// 设备端 `InputDeviceService` 实现（光标、能力等）；由 grpcserverimpl.cpp 注册。业务代码勿直接 include。
-
 #include <grpcpp/grpcpp.h>
 
 #include "evrp/device/api/cursorposition.h"
@@ -45,4 +43,4 @@ class GrpcInputDeviceService final
   DeviceSessionRegistry& sessions_;
 };
 
-}  // namespace evrp::device::server
+}

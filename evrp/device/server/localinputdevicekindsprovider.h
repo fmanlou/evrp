@@ -14,4 +14,4 @@ class LocalInputDeviceKindsProvider final
   std::vector<api::DeviceKind> kinds() override;
 };
 
-}  // namespace evrp::device::server
+}

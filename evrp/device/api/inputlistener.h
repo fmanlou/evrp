@@ -21,4 +21,4 @@ class IInputListener {
   virtual bool isListening() const = 0;
 };
 
-}  // namespace evrp::device::api
+}

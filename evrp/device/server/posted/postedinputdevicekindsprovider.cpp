@@ -17,4 +17,4 @@ std::vector<api::DeviceKind> PostedInputDeviceKindsProvider::kinds() {
       [this]() { return inner_.kinds(); });
 }
 
-}  // namespace evrp::device::server
+}

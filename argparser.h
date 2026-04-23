@@ -13,7 +13,7 @@ struct RunOptions {
   std::string playbackPath;
   std::string outputPath;
   std::vector<evrp::device::api::DeviceKind> kinds;
-  // Playback only: whether to execute [leading]/[trailing] waits (default true).
+  
   bool executeWaitBeforeFirst;
   bool executeWaitAfterLast;
 };

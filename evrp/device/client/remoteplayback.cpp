@@ -104,4 +104,4 @@ bool RemotePlayback::stopPlayback() {
   return stub_->Stop(&ctx, req, &resp).ok();
 }
 
-}  // namespace evrp::device::client
+}

@@ -41,4 +41,4 @@ bool PostedInputListener::isListening() const {
       [this]() { return inner_.isListening(); });
 }
 
-}  // namespace evrp::device::server
+}

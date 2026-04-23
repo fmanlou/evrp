@@ -11,4 +11,4 @@ class ICursorPosition {
   virtual bool readCursorPosition(int* outX, int* outY) = 0;
 };
 
-}  // namespace evrp::device::api
+}

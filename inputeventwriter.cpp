@@ -70,7 +70,7 @@ bool InputEventWriter::write(api::DeviceKind device, unsigned short type,
 bool InputEventWriter::writeRaw(api::DeviceKind device, unsigned short type,
                                 unsigned short code, int value) {
   int fd = getFd(device);
-  if (fd < 0) return true;  // Skip when device not found
+  if (fd < 0) return true;  
   if (type != EV_SYN) {
     struct timeval tv;
     gettimeofday(&tv, nullptr);

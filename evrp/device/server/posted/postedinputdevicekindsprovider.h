@@ -27,4 +27,4 @@ class PostedInputDeviceKindsProvider final
   api::IInputDeviceKindsProvider& inner_;
 };
 
-}  // namespace evrp::device::server
+}

@@ -31,4 +31,4 @@ class RemoteInputDeviceClient final : public api::IInputDeviceClient {
   std::string deviceSessionId_;
 };
 
-}  // namespace evrp::device::client
+}

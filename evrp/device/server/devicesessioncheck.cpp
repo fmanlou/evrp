@@ -26,4 +26,4 @@ grpc::Status requireDeviceBusinessSession(grpc::ServerContext* ctx,
   return registry.requireActiveBusinessCall(sv, ctx->peer());
 }
 
-}  // namespace evrp::device::server
+}

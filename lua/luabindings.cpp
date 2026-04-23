@@ -243,12 +243,12 @@ int luaMouseButtonClick(lua_State* L) {
 }
 
 void registerEvrpTable(lua_State* L) {
-  lua_newtable(L);  // evrp
+  lua_newtable(L);  
 
   lua_pushboolean(L, false);
   lua_setfield(L, -2, "dry_run");
 
-  // evrp.keyboard
+  
   lua_newtable(L);
   lua_pushcfunction(L, luaPress);
   lua_setfield(L, -2, "press");
@@ -257,7 +257,7 @@ void registerEvrpTable(lua_State* L) {
   lua_pushcfunction(L, luaClick);
   lua_setfield(L, -2, "click");
 
-  // Key code constants (from linux/input-event-codes.h)
+  
   lua_pushinteger(L, KEY_A);
   lua_setfield(L, -2, "KEY_A");
   lua_pushinteger(L, KEY_B);
@@ -327,7 +327,7 @@ void registerEvrpTable(lua_State* L) {
 
   lua_setglobal(L, "keyboard");
 
-  // mouse table
+  
   lua_newtable(L);
   lua_pushcfunction(L, luaMouseMove);
   lua_setfield(L, -2, "move");
@@ -362,7 +362,7 @@ void registerEvrpTable(lua_State* L) {
   lua_setglobal(L, "evrp");
 }
 
-}  // namespace
+}  
 
 int runScript(const char* path) {
   lua_State* L = luaL_newstate();
@@ -412,5 +412,5 @@ int executeChunk(InputEventWriter* writer, const char* chunk) {
   return err;
 }
 
-}  // namespace lua
-}  // namespace evrp
+}  
+}

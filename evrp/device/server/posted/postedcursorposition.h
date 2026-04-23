@@ -24,4 +24,4 @@ class PostedCursorPosition final : public api::ICursorPosition,
   api::ICursorPosition& inner_;
 };
 
-}  // namespace evrp::device::server
+}

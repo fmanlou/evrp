@@ -99,4 +99,4 @@ bool LocalPlayback::stopPlayback() {
   return true;
 }
 
-}  // namespace evrp::device::server
+}

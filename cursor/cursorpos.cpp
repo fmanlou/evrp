@@ -10,7 +10,7 @@ CursorPos *gCursor = nullptr;
 void CursorPos::ensureInitialized() const {
   if (initialized_) return;
 
-  // Try backends in order. Add Wayland, etc. here.
+  
   CursorPosBackend *b = nullptr;
 #ifdef EVRP_USE_X11_CURSOR
   b = createCursorPosBackendX11();

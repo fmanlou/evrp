@@ -20,8 +20,6 @@ class Ioc;
 
 namespace evrp::device::server {
 
-// 在独立线程上运行 asio::io_context，承载 Local* 实现；经 Posted* 投递到 io_context 串行执行后写入 Ioc（仅 api 接口指针，不含 LocalInputListener）。
-// gRPC 多线程调用均投递到该 io_context，避免与本地实现直接竞争。
 class DeviceRuntime {
  public:
   DeviceRuntime();
@@ -47,4 +45,4 @@ class DeviceRuntime {
   std::thread worker_;
 };
 
-}  // namespace evrp::device::server
+}

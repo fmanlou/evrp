@@ -31,7 +31,6 @@ void resetArgFlags() {
   FLAGS_wait_trailing = true;
 }
 
-// Map legacy flags (-r/-p/-o, --log-level, --wait-*) to gflags names.
 void normalizeLegacyArgs(std::vector<std::string> *args) {
   auto &a = *args;
   for (size_t i = 1; i < a.size();) {
@@ -63,7 +62,7 @@ void normalizeLegacyArgs(std::vector<std::string> *args) {
   }
 }
 
-} // namespace
+} 
 
 void printUsage(const char *prog) {
   std::cout
@@ -111,7 +110,7 @@ RunOptions parseOptions(int argc, char *argv[]) {
   }
   argv_ptrs.push_back(nullptr);
 
-  // argc may shrink after merging -p/-o with their values.
+  
   int argcMut = static_cast<int>(owned.size());
   char **argvMut = argv_ptrs.data();
   google::ParseCommandLineFlags(&argcMut, &argvMut, true);

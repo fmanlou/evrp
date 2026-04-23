@@ -94,4 +94,4 @@ void RemoteInputListener::cancelListening() {
 
 bool RemoteInputListener::isListening() const { return listeningActive_; }
 
-}  // namespace evrp::device::client
+}

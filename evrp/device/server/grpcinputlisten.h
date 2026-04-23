@@ -1,7 +1,5 @@
 #pragma once
 
-// 设备端 `InputListenService`（unary）。业务代码勿直接 include。
-
 #include <atomic>
 #include <cstdint>
 #include <grpcpp/grpcpp.h>
@@ -59,4 +57,4 @@ class GrpcInputListenService final
   std::thread watchdogThread_;
 };
 
-}  // namespace evrp::device::server
+}

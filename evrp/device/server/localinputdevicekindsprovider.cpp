@@ -49,7 +49,7 @@ std::string formatKindList(const std::vector<api::DeviceKind>& kinds) {
   return s;
 }
 
-}  // namespace
+}  
 
 std::vector<api::DeviceKind> LocalInputDeviceKindsProvider::kinds() {
   static const api::DeviceKind k_order[] = {
@@ -89,4 +89,4 @@ std::vector<api::DeviceKind> LocalInputDeviceKindsProvider::kinds() {
   return out;
 }
 
-}  // namespace evrp::device::server
+}

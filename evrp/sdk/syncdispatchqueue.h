@@ -9,7 +9,6 @@
 
 namespace evrp::device::server {
 
-// 在指定 io_context 所关联的线程上串行执行任务（由外部 run io_context）。
 class SyncDispatchQueue {
  public:
   explicit SyncDispatchQueue(asio::io_context& ioContext);
@@ -41,4 +40,4 @@ R SyncDispatchQueue::postSync(std::function<R()> fn) const {
   return fut.get();
 }
 
-}  // namespace evrp::device::server
+}

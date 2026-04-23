@@ -106,4 +106,3 @@ void toProto(const OperationResult& r, v1::OperationResult* p) {
 }
 
 }
-

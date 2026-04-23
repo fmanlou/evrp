@@ -42,7 +42,7 @@ grpc::Status GrpcPlaybackService::Upload(
 
 grpc::Status GrpcPlaybackService::Playback(
     grpc::ServerContext* context,
-    const v1::PlaybackRecordingRequest* /*request*/,
+    const v1::PlaybackRecordingRequest* ,
     v1::OperationResult* response) {
   if (grpc::Status st = requireDeviceBusinessSession(context, sessions_); !st.ok()) {
     return st;
@@ -71,7 +71,7 @@ grpc::Status GrpcPlaybackService::Playback(
 
 grpc::Status GrpcPlaybackService::SubscribePlayback(
     grpc::ServerContext* context,
-    const google::protobuf::Empty* /*request*/,
+    const google::protobuf::Empty* ,
     grpc::ServerWriter<v1::PlaybackProgress>* writer) {
   if (grpc::Status st = requireDeviceBusinessSession(context, sessions_); !st.ok()) {
     return st;
@@ -126,8 +126,8 @@ grpc::Status GrpcPlaybackService::SubscribePlayback(
 }
 
 grpc::Status GrpcPlaybackService::Stop(
-    grpc::ServerContext* context, const google::protobuf::Empty* /*request*/,
-    google::protobuf::Empty* /*response*/) {
+    grpc::ServerContext* context, const google::protobuf::Empty* ,
+    google::protobuf::Empty* ) {
   if (grpc::Status st = requireDeviceBusinessSession(context, sessions_); !st.ok()) {
     return st;
   }
@@ -141,4 +141,4 @@ grpc::Status GrpcPlaybackService::Stop(
   return grpc::Status::OK;
 }
 
-}  // namespace evrp::device::server
+}

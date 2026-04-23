@@ -15,4 +15,4 @@ std::optional<std::string> deviceSessionIdFromContext(
 grpc::Status requireDeviceBusinessSession(grpc::ServerContext* ctx,
                                           DeviceSessionRegistry& registry);
 
-}  // namespace evrp::device::server
+}

@@ -11,7 +11,7 @@ GrpcDeviceSessionService::GrpcDeviceSessionService(DeviceSessionRegistry& regist
 
 grpc::Status GrpcDeviceSessionService::Connect(
     grpc::ServerContext* context,
-    const google::protobuf::Empty* /*request*/,
+    const google::protobuf::Empty* ,
     v1::ConnectResponse* response) {
   const std::string id = registry_.connect(context->peer());
   response->set_session_id(id);
@@ -21,8 +21,8 @@ grpc::Status GrpcDeviceSessionService::Connect(
 
 grpc::Status GrpcDeviceSessionService::Heartbeat(
     grpc::ServerContext* context,
-    const google::protobuf::Empty* /*request*/,
-    google::protobuf::Empty* /*response*/) {
+    const google::protobuf::Empty* ,
+    google::protobuf::Empty* ) {
   const auto sid = deviceSessionIdFromContext(*context);
   const std::string_view sv =
       sid ? std::string_view(*sid) : std::string_view();
@@ -31,12 +31,12 @@ grpc::Status GrpcDeviceSessionService::Heartbeat(
 
 grpc::Status GrpcDeviceSessionService::Disconnect(
     grpc::ServerContext* context,
-    const google::protobuf::Empty* /*request*/,
-    google::protobuf::Empty* /*response*/) {
+    const google::protobuf::Empty* ,
+    google::protobuf::Empty* ) {
   const auto sid = deviceSessionIdFromContext(*context);
   const std::string_view sv =
       sid ? std::string_view(*sid) : std::string_view();
   return registry_.disconnect(sv, context->peer());
 }
 
-}  // namespace evrp::device::server
+}

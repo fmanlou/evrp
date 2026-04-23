@@ -87,4 +87,4 @@ std::unique_ptr<IInputDeviceClient> makeRemoteInputDeviceClient(
                                                            deviceSessionId);
 }
 
-}  // namespace evrp::device::api
+}

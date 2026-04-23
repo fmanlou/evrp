@@ -6,7 +6,6 @@
 
 namespace evrp::device::api {
 
-// Host-side client for evrp.device.v1.InputDeviceService (capabilities, cursor).
 class IInputDeviceClient {
  public:
   virtual ~IInputDeviceClient() = default;
@@ -18,4 +17,4 @@ class IInputDeviceClient {
   virtual bool readCursorPosition(int* outX, int* outY) = 0;
 };
 
-}  // namespace evrp::device::api
+}

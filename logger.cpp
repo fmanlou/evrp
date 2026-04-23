@@ -41,7 +41,7 @@ LogLevel fromLoggingLevel(logging::LogLevel l) {
   }
 }
 
-}  // namespace
+}  
 
 LogLevel logLevelFromString(const std::string& s) {
   std::string lower = s;

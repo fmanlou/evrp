@@ -9,7 +9,6 @@
 
 namespace evrp::device::server {
 
-// 进程内：`upload` 缓存事件序列；`playback` 通过 `InputEventWriter` 按录制时间间隔写回 evdev。
 class LocalPlayback final : public api::IPlayback {
  public:
   LocalPlayback() = default;
@@ -35,4 +34,4 @@ class LocalPlayback final : public api::IPlayback {
   int currentEventIndex_{-1};
 };
 
-}  // namespace evrp::device::server
+}

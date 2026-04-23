@@ -34,16 +34,12 @@ struct Event {
 
 bool getCapabilities(int fd, Capabilities *out);
 
-// Convenience: open nonblocking, get caps, close. Returns true on success.
 bool openAndGetCapabilities(const char *path, Capabilities *out);
 
-// Returns number of events read, or -1 on error
 int readEvents(int fd, Event *events, int max_count);
 
-// After poll returns -1, check if errno was EINTR
 bool errnoIsEintr();
 
-// RAII: installs SIGINT handler in ctor, restores in dtor
 class SigintGuard {
  public:
   SigintGuard();

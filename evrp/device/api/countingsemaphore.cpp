@@ -27,4 +27,4 @@ bool CountingSemaphore::tryAcquire() {
   return true;
 }
 
-}  // namespace evrp
+}

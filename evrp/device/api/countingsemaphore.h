@@ -6,7 +6,6 @@
 
 namespace evrp {
 
-// Counting semaphore using std::mutex and std::condition_variable (C++17).
 class CountingSemaphore {
  public:
   CountingSemaphore();
@@ -27,4 +26,4 @@ class CountingSemaphore {
   std::ptrdiff_t count_{0};
 };
 
-}  // namespace evrp
+}

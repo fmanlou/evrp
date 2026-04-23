@@ -39,4 +39,4 @@ class RemoteInputListener final : public api::IInputListener {
   bool listeningActive_{false};
 };
 
-}  // namespace evrp::device::client
+}

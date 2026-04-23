@@ -35,7 +35,7 @@ class CursorPosBackendX11 : public CursorPosBackend {
   }
 };
 
-}  // namespace
+}  
 
 CursorPosBackend *createCursorPosBackendX11() {
   static CursorPosBackendX11 instance;

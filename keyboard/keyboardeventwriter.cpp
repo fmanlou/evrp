@@ -30,7 +30,7 @@ bool KeyboardEventWriter::write(unsigned short type, unsigned short code,
     if (value == 0) return release(code);
     if (value == 1) return press(code);
     if (value == 2) return repeat(code);
-    return true;  // Unknown value, skip
+    return true;  
   }
   return writer_->writeRaw(evrp::device::api::DeviceKind::kKeyboard, type,
                            code, value);

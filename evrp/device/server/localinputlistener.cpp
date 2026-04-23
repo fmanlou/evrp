@@ -26,7 +26,7 @@ api::InputEvent toApiInputEvent(api::DeviceKind device, const Event& ev) {
   return e;
 }
 
-}  // namespace
+}  
 
 void LocalInputListener::dispose() {
   cancelListening();
@@ -196,4 +196,4 @@ void LocalInputListener::cancelListening() {
   closeDevices();
 }
 
-}  // namespace evrp::device::server
+}

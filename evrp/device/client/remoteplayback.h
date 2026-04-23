@@ -43,4 +43,4 @@ class RemotePlayback final : public api::IPlayback {
   std::atomic<int> reportedIndex_{-1};
 };
 
-}  // namespace evrp::device::client
+}

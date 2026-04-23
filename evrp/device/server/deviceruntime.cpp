@@ -43,4 +43,4 @@ void DeviceRuntime::registerWith(Ioc& ioc) {
       static_cast<api::IPlayback*>(&postedPlayback_));
 }
 
-}  // namespace evrp::device::server
+}

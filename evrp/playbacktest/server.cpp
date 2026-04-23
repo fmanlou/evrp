@@ -33,7 +33,7 @@ class NoInputListener final : public evrp::device::api::IInputListener {
   bool isListening() const override { return false; }
 };
 
-}  // namespace
+}  
 
 int main(int argc, char** argv) {
   Logger logger("evrp_playback_test_server");

@@ -62,4 +62,4 @@ bool RemoteInputDeviceClient::readCursorPosition(int* outX, int* outY) {
   return true;
 }
 
-}  // namespace evrp::device::client
+}

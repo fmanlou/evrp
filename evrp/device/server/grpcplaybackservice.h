@@ -1,7 +1,5 @@
 #pragma once
 
-// 设备端 `PlaybackService` 实现；由 grpcserverimpl.cpp 注册。业务代码勿直接 include。
-
 #include <mutex>
 
 #include <grpcpp/grpcpp.h>
@@ -54,4 +52,4 @@ class GrpcPlaybackService final
   bool playbackProgressFinished_{false};
 };
 
-}  // namespace evrp::device::server
+}

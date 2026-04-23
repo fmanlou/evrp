@@ -108,14 +108,14 @@ TEST(ArgParser, LogLevelFromString) {
 }
 
 TEST(ArgParser, ParseOptionsLogLevel) {
-  // Standalone --log-level
+  
   std::vector<std::string> storage0 = {"evrp", "--log-level=debug"};
   std::vector<char *> argv0 = buildArgv(&storage0);
   RunOptions opt0 =
       parseOptions(static_cast<int>(argv0.size()), argv0.data());
   EXPECT_EQ(opt0.logLevel, LogLevel::Debug);
 
-  // --log-level in -r block
+  
   std::vector<std::string> storage1 = {"evrp", "-r", "--log-level=debug",
                                        "keyboard"};
   std::vector<char *> argv1 = buildArgv(&storage1);

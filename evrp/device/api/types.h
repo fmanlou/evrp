@@ -51,4 +51,4 @@ inline std::string deviceKindLabel(DeviceKind kind) {
   }
 }
 
-}  // namespace evrp::device::api
+}

@@ -10,7 +10,6 @@
 
 namespace evrp::device::server {
 
-// 业务层会话（与 gRPC TCP 连接无关）：Connect 创建、Heartbeat 续期、超时或 Disconnect 清除。
 class DeviceSessionRegistry {
  public:
   explicit DeviceSessionRegistry(int leaseTimeoutMs);
@@ -39,4 +38,4 @@ class DeviceSessionRegistry {
   std::unordered_map<std::string, Record> sessions_;
 };
 
-}  // namespace evrp::device::server
+}

@@ -36,4 +36,4 @@ void SyncDispatchQueue::shutdown(std::function<void()> finalTask) {
   done.wait();
 }
 
-}  // namespace evrp::device::server
+}

@@ -32,4 +32,4 @@ class PostedInputListener final : public api::IInputListener,
   api::IInputListener& inner_;
 };
 
-}  // namespace evrp::device::server
+}
