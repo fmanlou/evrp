@@ -3,6 +3,7 @@
 #include <google/protobuf/empty.pb.h>
 
 #include "evrp/device/common/devicesessionmetadata.h"
+#include "evrp/device/internal/grpcstatuscodefmt.h"
 #include "evrp/device/internal/tofromproto.h"
 #include "logger.h"
 
@@ -34,7 +35,7 @@ bool RemoteInputListener::startListening(
   if (!st.ok()) {
     logError(
         "RemoteInputListener: StartRecording gRPC code={} {}",
-        static_cast<int>(st.error_code()),
+        st.error_code(),
         st.error_message());
     return false;
   }
