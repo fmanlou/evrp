@@ -61,9 +61,9 @@ void GrpcInputListenService::watchdogLoop() {
     const int64_t idle_ns = steadyNowNs() - last;
     if (idle_ns > static_cast<int64_t>(timeout_ms) * 1'000'000) {
       logWarn(
-          "evrp-device: recording idle timeout (" +
-          std::to_string(timeout_ms) +
-          " ms); stopping recording (no recent InputListen RPC activity)");
+          "evrp-device: recording idle timeout ({} ms); stopping recording "
+          "(no recent InputListen RPC activity)",
+          timeout_ms);
       listener_->cancelListening();
     }
   }

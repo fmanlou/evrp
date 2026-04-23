@@ -32,9 +32,10 @@ bool RemoteInputListener::startListening(
   google::protobuf::Empty resp;
   grpc::Status st = stub_->StartRecording(&ctx, req, &resp);
   if (!st.ok()) {
-    logError("RemoteInputListener: StartRecording gRPC code=" +
-             std::to_string(static_cast<int>(st.error_code())) + " " +
-             st.error_message());
+    logError(
+        "RemoteInputListener: StartRecording gRPC code={} {}",
+        static_cast<int>(st.error_code()),
+        st.error_message());
     return false;
   }
 

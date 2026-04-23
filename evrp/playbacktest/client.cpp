@@ -68,16 +68,18 @@ std::vector<evrp::device::api::InputEvent> makeHelloWorldKeyEvents() {
 }  
 
 int main(int argc, char** argv) {
-  Logger logger("evrp_playback_test_client");
-  gLogger = &logger;
+  logging::LogService logSvc("evrp_playback_test_client");
+  logService = &logSvc;
 
   gflags::SetUsageMessage(
       "evrp_playback_test_client — replay keyboard events for \"hello world\"");
   gflags::ParseCommandLineFlags(&argc, &argv, true);
 
   const auto events = makeHelloWorldKeyEvents();
-  logInfo("evrp_playback_test_client: will replay " + std::to_string(events.size()) +
-           " key events (EV_KEY press/release) for \"hello world\"");
+  logInfo(
+      "evrp_playback_test_client: will replay {} key events (EV_KEY "
+      "press/release) for \"hello world\"",
+      events.size());
 
   const std::shared_ptr<grpc::Channel> channel =
       evrp::device::api::makeDeviceChannel(FLAGS_target);
@@ -91,8 +93,9 @@ int main(int argc, char** argv) {
 
   evrp::device::api::OperationResult up;
   if (!remote->upload(events, &up)) {
-    logError("evrp_playback_test_client: upload failed code=" +
-              std::to_string(up.code) + " msg=" + up.message);
+    logError("evrp_playback_test_client: upload failed code={} msg={}",
+             up.code,
+             up.message);
     (void)evrp::device::api::deviceSessionDisconnect(channel, session.sessionId);
     return 1;
   }
@@ -105,8 +108,8 @@ int main(int argc, char** argv) {
     consumer = std::thread([&]() {
       for (int i = 0; i < n; ++i) {
         progress_sem.acquire();
-        logInfo("evrp_playback_test_client: progress idx=" +
-                 std::to_string(remote->playbackIndex()));
+        logInfo("evrp_playback_test_client: progress idx={}",
+                remote->playbackIndex());
       }
     });
   }
@@ -120,8 +123,9 @@ int main(int argc, char** argv) {
   }
 
   if (!ok) {
-    logError("evrp_playback_test_client: playback failed code=" +
-              std::to_string(play.code) + " msg=" + play.message);
+    logError("evrp_playback_test_client: playback failed code={} msg={}",
+             play.code,
+             play.message);
     (void)evrp::device::api::deviceSessionDisconnect(channel, session.sessionId);
     return 1;
   }

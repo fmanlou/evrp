@@ -6,14 +6,14 @@
 #include "record.h"
 
 int main(int argc, char *argv[]) {
-  Logger logger("evrp");
-  gLogger = &logger;
+  logging::LogService logSvc("evrp");
+  logService = &logSvc;
 
   CursorPos cursor;
   gCursor = &cursor;
 
   RunOptions options = parseOptions(argc, argv);
-  gLogger->setLevel(options.logLevel);
+  logService->setLevel(options.logLevel);
 
   int mode_count = (options.recording ? 1 : 0) + (options.playback ? 1 : 0);
   if (mode_count > 1) {

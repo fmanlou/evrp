@@ -50,11 +50,11 @@ int runDeviceServer(const std::string& listen_address, const evrp::Ioc& ioc) {
   builder.RegisterService(&playback_service);
   std::unique_ptr<grpc::Server> server(builder.BuildAndStart());
   if (!server) {
-    logError("evrp-device: failed to listen on " + listen_address);
+    logError("evrp-device: failed to listen on {}", listen_address);
     return 1;
   }
 
-  logInfo("evrp-device listening on " + listen_address);
+  logInfo("evrp-device listening on {}", listen_address);
   server->Wait();
   return 0;
 }

@@ -380,7 +380,8 @@ int runScript(const char* path) {
   g_mouse = nullptr;
 
   if (err != LUA_OK) {
-    logError(std::string("Lua error: ") + lua_tostring(L, -1));
+    const char* msg = lua_tostring(L, -1);
+    logError("Lua error: {}", msg ? msg : "(null)");
     lua_pop(L, 1);
   }
   lua_close(L);
@@ -405,7 +406,8 @@ int executeChunk(InputEventWriter* writer, const char* chunk) {
   g_mouse = nullptr;
 
   if (err != LUA_OK) {
-    logError(std::string("Lua error: ") + lua_tostring(L, -1));
+    const char* msg = lua_tostring(L, -1);
+    logError("Lua error: {}", msg ? msg : "(null)");
     lua_pop(L, 1);
   }
   lua_close(L);

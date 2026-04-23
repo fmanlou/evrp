@@ -2,7 +2,6 @@
 
 #include <cstdlib>
 #include <memory>
-#include <iomanip>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -60,7 +59,7 @@ bool parseKinds(const std::string& csv,
       continue;
     }
     if (!appendKind(t, kinds)) {
-      logError("evrp_inputlisten_test_client: unknown kind \"" + t + "\"");
+      logError("evrp_inputlisten_test_client: unknown kind \"{}\"", t);
       return false;
     }
   }
@@ -87,21 +86,25 @@ void traceInputEvents(int round,
                       const std::vector<evrp::device::api::InputEvent>& batch) {
   for (size_t j = 0; j < batch.size(); ++j) {
     const evrp::device::api::InputEvent& e = batch[j];
-    std::ostringstream line;
-    line << "  event round=" << round << " index=" << j
-         << " device=" << deviceKindName(e.device) << " time=" << e.timeSec
-         << "." << std::setfill('0') << std::setw(6) << e.timeUsec
-         << std::setfill(' ') << " type=0x" << std::hex << e.type << " code=0x"
-         << e.code << std::dec << " value=" << e.value;
-    logInfo(line.str());
+    logInfo(
+        "  event round={} index={} device={} time={}.{:06d} type={:#x} "
+        "code={:#x} value={}",
+        round,
+        j,
+        deviceKindName(e.device),
+        e.timeSec,
+        e.timeUsec,
+        e.type,
+        e.code,
+        e.value);
   }
 }
 
 }  
 
 int main(int argc, char** argv) {
-  Logger logger("evrp_inputlisten_test_client");
-  gLogger = &logger;
+  logging::LogService logSvc("evrp_inputlisten_test_client");
+  logService = &logSvc;
 
   gflags::SetUsageMessage(
       "evrp_inputlisten_test_client — RemoteInputListener against "
@@ -140,8 +143,8 @@ int main(int argc, char** argv) {
   if (!listener->startListening(kinds)) {
     logError(
         "evrp_inputlisten_test_client: startListening failed (no devices "
-        "or server error?). Is evrp_inputlisten_test_server running on " +
-        FLAGS_target + "?");
+        "or server error?). Is evrp_inputlisten_test_server running on {}?",
+        FLAGS_target);
     (void)evrp::device::api::deviceSessionDisconnect(channel, session.sessionId);
     return 1;
   }
@@ -155,18 +158,16 @@ int main(int argc, char** argv) {
       std::vector<evrp::device::api::InputEvent> batch =
           listener->readInputEvents();
       total_events += static_cast<int>(batch.size());
-      logInfo("round " + std::to_string(i) +
-              " events=" + std::to_string(batch.size()));
+      logInfo("round {} events={}", i, batch.size());
       traceInputEvents(i, batch);
     } else {
-      logInfo("round " + std::to_string(i) +
-              " no event (timeout or not listening)");
+      logInfo("round {} no event (timeout or not listening)", i);
     }
   }
 
   listener->cancelListening();
-  logInfo("evrp_inputlisten_test_client: done, total events=" +
-          std::to_string(total_events));
+  logInfo("evrp_inputlisten_test_client: done, total events={}",
+          total_events);
   (void)evrp::device::api::deviceSessionDisconnect(channel, session.sessionId);
   return 0;
 }

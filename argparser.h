@@ -9,7 +9,7 @@
 struct RunOptions {
   bool recording;
   bool playback;
-  LogLevel logLevel;
+  logging::LogLevel logLevel;
   std::string playbackPath;
   std::string outputPath;
   std::vector<evrp::device::api::DeviceKind> kinds;

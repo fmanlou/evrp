@@ -25,18 +25,18 @@ int Playback::run() {
   const std::string &path = options_.playbackPath;
   std::string::size_type dot = path.rfind('.');
   if (dot != std::string::npos && path.substr(dot) == ".lua") {
-    gLogger->setLevel(options_.logLevel);
+    logService->setLevel(options_.logLevel);
     int err = evrp::lua::runScript(path.c_str());
     return (err == LUA_OK) ? 0 : 1;
   }
 
   if (!fs_.openInput(path)) {
-    logError(fs_.errorMessage());
+    logError("{}", fs_.errorMessage());
     return 1;
   }
 
-  gLogger->setLevel(options_.logLevel);
-  gLogger->info("Playing back to input devices (Ctrl+C to stop)...");
+  logService->setLevel(options_.logLevel);
+  logInfo("Playing back to input devices (Ctrl+C to stop)...");
   SigintGuard sigint;
 
   std::istream &input = fs_.inputStream();

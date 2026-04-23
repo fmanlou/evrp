@@ -45,8 +45,9 @@ std::string DeviceSessionRegistry::connect(std::string_view peer) {
   r.peer = std::string(peer);
   r.lastHeartbeat = std::chrono::steady_clock::now();
   sessions_.emplace(id, std::move(r));
-  logInfo("evrp-device: business session online peer=" + std::string(peer) +
-          " session=" + id);
+  logInfo("evrp-device: business session online peer={} session={}",
+          peer,
+          id);
   return id;
 }
 
@@ -96,8 +97,9 @@ grpc::Status DeviceSessionRegistry::disconnect(std::string_view sessionId,
     return grpc::Status(grpc::StatusCode::PERMISSION_DENIED,
                         "session peer mismatch");
   }
-  logInfo("evrp-device: business session offline peer=" + it->second.peer +
-          " session=" + std::string(sessionId));
+  logInfo("evrp-device: business session offline peer={} session={}",
+          it->second.peer,
+          sessionId);
   sessions_.erase(it);
   return grpc::Status::OK;
 }
@@ -138,8 +140,10 @@ void DeviceSessionRegistry::sweepExpiredForLogging() {
   for (auto it = sessions_.begin(); it != sessions_.end();) {
     if (now - it->second.lastHeartbeat >
         std::chrono::milliseconds(leaseTimeoutMs_)) {
-      logWarn("evrp-device: business session timed out peer=" + it->second.peer +
-              " session=" + it->first);
+      logWarn(
+          "evrp-device: business session timed out peer={} session={}",
+          it->second.peer,
+          it->first);
       it = sessions_.erase(it);
     } else {
       ++it;

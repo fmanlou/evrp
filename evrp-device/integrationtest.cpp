@@ -9,7 +9,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <memory>
-#include <sstream>
 #include <string>
 #include <thread>
 #include <vector>
@@ -150,8 +149,7 @@ bool fetchCapabilities(
     logError("GetCapabilities failed");
     return false;
   }
-  logInfo("GetCapabilities ok (" +
-          std::to_string(kindsOut->size()) + " kind(s))");
+  logInfo("GetCapabilities ok ({} kind(s))", kindsOut->size());
   return true;
 }
 
@@ -250,9 +248,10 @@ bool testInputListen(
     (void)listener->waitForInputEvent(FLAGS_listen_wait_ms);
     const std::vector<evrp::device::api::InputEvent> batch =
         listener->readInputEvents();
-    logInfo("InputListen: ReadInputEvents count=" +
-            std::to_string(batch.size()) + " (--listen_require_valid_event_"
-            "per_kind=false)");
+    logInfo(
+        "InputListen: ReadInputEvents count={} "
+        "(--listen_require_valid_event_per_kind=false)",
+        batch.size());
     listener->cancelListening();
     logInfo("InputListen: StopRecording ok");
     return true;
@@ -276,9 +275,10 @@ bool testInputListen(
         evrp::device::api::makeRemoteInputListener(channel, deviceSessionId);
     if (!listener->startListening({kind})) {
       logError(
-          "InputListen: StartRecording failed for kind " + kindLabel +
-          " (client log shows gRPC error; evrp-device log shows "
-          "LocalInputListener path/open details)");
+          "InputListen: StartRecording failed for kind {} (client log shows "
+          "gRPC error; evrp-device log shows LocalInputListener path/open "
+          "details)",
+          kindLabel);
       return false;
     }
     const auto deadline = std::chrono::steady_clock::now() +
@@ -298,11 +298,12 @@ bool testInputListen(
       for (const evrp::device::api::InputEvent& e : batch) {
         if (isValidListenProbeEvent(kind, e)) {
           gotValid = true;
-          std::ostringstream line;
-          line << "InputListen: valid event on " << kindLabel
-               << " type=0x" << std::hex << e.type << " code=0x" << e.code
-               << std::dec << " value=" << e.value;
-          logInfo(line.str());
+          logInfo(
+              "InputListen: valid event on {} type={:#x} code={:#x} value={}",
+              kindLabel,
+              e.type,
+              e.code,
+              e.value);
           break;
         }
       }
@@ -310,16 +311,18 @@ bool testInputListen(
     listener->cancelListening();
     if (!gotValid) {
       logError(
-          "InputListen: timeout waiting for non-EV_SYN event on kind " +
-          kindLabel + " within " +
-          std::to_string(FLAGS_listen_per_kind_timeout_ms) +
-          " ms (operate that device or use "
-          "--listen_require_valid_event_per_kind=false for CI)");
+          "InputListen: timeout waiting for non-EV_SYN event on kind {} within "
+          "{} ms (operate that device or use "
+          "--listen_require_valid_event_per_kind=false for CI)",
+          kindLabel,
+          FLAGS_listen_per_kind_timeout_ms);
       return false;
     }
   }
-  logInfo("InputListen: all " + std::to_string(kinds.size()) +
-          " kind(s) produced at least one valid event; StopRecording ok");
+  logInfo(
+      "InputListen: all {} kind(s) produced at least one valid event; "
+      "StopRecording ok",
+      kinds.size());
   return true;
 }
 
@@ -342,11 +345,10 @@ bool testPlayback(const std::shared_ptr<grpc::Channel>& channel,
       evrp::device::api::makeRemotePlayback(channel, deviceSessionId);
   evrp::device::api::OperationResult up;
   if (!playback->upload(events, &up)) {
-    logError("Playback: Upload failed code=" + std::to_string(up.code) +
-             " msg=" + up.message);
+    logError("Playback: Upload failed code={} msg={}", up.code, up.message);
     return false;
   }
-  logInfo("Playback: Upload ok (" + std::to_string(events.size()) + " events)");
+  logInfo("Playback: Upload ok ({} events)", events.size());
 
   evrp::CountingSemaphore progressSem;
   const int n = static_cast<int>(events.size());
@@ -361,8 +363,9 @@ bool testPlayback(const std::shared_ptr<grpc::Channel>& channel,
   consumer.join();
 
   if (!ok) {
-    logError("Playback: Playback failed code=" + std::to_string(play.code) +
-             " msg=" + play.message);
+    logError("Playback: Playback failed code={} msg={}",
+             play.code,
+             play.message);
     return false;
   }
   logInfo("Playback: Playback RPC finished ok");
@@ -399,8 +402,8 @@ struct DeviceProcess {
 }  
 
 int main(int argc, char** argv) {
-  Logger logger("evrp_device_integration_test");
-  gLogger = &logger;
+  logging::LogService logSvc("evrp_device_integration_test");
+  logService = &logSvc;
 
   gflags::SetUsageMessage(
       "Host-side check: GetCapabilities, InputListen, Playback against "
@@ -414,7 +417,7 @@ int main(int argc, char** argv) {
   const std::string binary = deviceBinaryPath();
   if (!binary.empty()) {
     if (!isExecutableFile(binary)) {
-      logError("Not an executable file: " + binary);
+      logError("Not an executable file: {}", binary);
       return 2;
     }
     const int ephemeral = pickFreeLoopbackPort();
@@ -426,7 +429,7 @@ int main(int argc, char** argv) {
     const std::string listenArg = target;
     proc.pid = fork();
     if (proc.pid < 0) {
-      logError("fork failed: " + std::string(std::strerror(errno)));
+      logError("fork failed: {}", std::strerror(errno));
       return 1;
     }
     if (proc.pid == 0) {
@@ -467,7 +470,7 @@ int main(int argc, char** argv) {
       std::this_thread::sleep_for(std::chrono::milliseconds(40));
     }
     if (!connected) {
-      logError("Timed out waiting for DeviceSessionService/Connect on " +
+      logError("Timed out waiting for DeviceSessionService/Connect on {}",
                target);
       return 1;
     }
@@ -495,10 +498,10 @@ int main(int argc, char** argv) {
                                   FLAGS_rpc_wait_ms)) {
     heartbeatStop.store(true, std::memory_order_relaxed);
     heartbeatThread.join();
-    logError("Timed out waiting for GetCapabilities on " + target);
+    logError("Timed out waiting for GetCapabilities on {}", target);
     return 1;
   }
-  logInfo("InputDeviceService (GetCapabilities) ok on " + target);
+  logInfo("InputDeviceService (GetCapabilities) ok on {}", target);
 
   std::vector<evrp::device::api::DeviceKind> caps;
   if (!fetchCapabilities(channel, session.sessionId, &caps)) {

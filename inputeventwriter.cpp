@@ -5,7 +5,6 @@
 #include <sys/time.h>
 
 #include <cstdio>
-#include <sstream>
 
 #include "cursor/cursorpos.h"
 #include "evdev.h"
@@ -34,25 +33,22 @@ int InputEventWriter::getFd(api::DeviceKind device) {
 
   std::string devPath = findDevicePath(device);
   if (devPath.empty()) {
-    logWarn(std::string("No ") + api::deviceKindLabel(device) +
-            " device found, skipping events.");
+    logWarn("No {} device found, skipping events.",
+               api::deviceKindLabel(device));
     kindToFd_[device] = -1;
     return -1;
   }
 
   int fd = fs_->openReadWrite(devPath.c_str());
   if (fd < 0) {
-    std::ostringstream oss;
-    oss << "Failed to open " << devPath << " for write (try: sudo)";
-    logWarn(oss.str());
+    logWarn("Failed to open {} for write (try: sudo)", devPath);
     std::perror(devPath.c_str());
     kindToFd_[device] = -1;
     return -1;
   }
 
   kindToFd_[device] = fd;
-  logInfo(std::string("Playing back ") + api::deviceKindLabel(device) + " to " +
-          devPath);
+  logInfo("Playing back {} to {}", api::deviceKindLabel(device), devPath);
   return fd;
 }
 
@@ -75,7 +71,7 @@ bool InputEventWriter::writeRaw(api::DeviceKind device, unsigned short type,
     struct timeval tv;
     gettimeofday(&tv, nullptr);
     Event ev = {tv.tv_sec, tv.tv_usec, type, code, value};
-    logDebug(formatEventLine(device, ev, 0));
+    logDebug("{}", formatEventLine(device, ev, 0));
   }
   return writeEventWithSync(fd, type, code, value);
 }

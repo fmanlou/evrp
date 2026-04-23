@@ -100,11 +100,11 @@ TEST(ArgParser, ParseOptionsRecordDefaultsKindsWhenNoTypes) {
 }
 
 TEST(ArgParser, LogLevelFromString) {
-  EXPECT_EQ(logLevelFromString("error"), LogLevel::Error);
-  EXPECT_EQ(logLevelFromString("warn"), LogLevel::Warn);
-  EXPECT_EQ(logLevelFromString("info"), LogLevel::Info);
-  EXPECT_EQ(logLevelFromString("debug"), LogLevel::Debug);
-  EXPECT_EQ(logLevelFromString("trace"), LogLevel::Trace);
+  EXPECT_EQ(logLevelFromString("error"), logging::LogLevel::Error);
+  EXPECT_EQ(logLevelFromString("warn"), logging::LogLevel::Warning);
+  EXPECT_EQ(logLevelFromString("info"), logging::LogLevel::Info);
+  EXPECT_EQ(logLevelFromString("debug"), logging::LogLevel::Debug);
+  EXPECT_EQ(logLevelFromString("trace"), logging::LogLevel::Trace);
 }
 
 TEST(ArgParser, ParseOptionsLogLevel) {
@@ -113,7 +113,7 @@ TEST(ArgParser, ParseOptionsLogLevel) {
   std::vector<char *> argv0 = buildArgv(&storage0);
   RunOptions opt0 =
       parseOptions(static_cast<int>(argv0.size()), argv0.data());
-  EXPECT_EQ(opt0.logLevel, LogLevel::Debug);
+  EXPECT_EQ(opt0.logLevel, logging::LogLevel::Debug);
 
   
   std::vector<std::string> storage1 = {"evrp", "-r", "--log-level=debug",
@@ -122,7 +122,7 @@ TEST(ArgParser, ParseOptionsLogLevel) {
   RunOptions opt1 =
       parseOptions(static_cast<int>(argv1.size()), argv1.data());
   EXPECT_TRUE(opt1.recording);
-  EXPECT_EQ(opt1.logLevel, LogLevel::Debug);
+  EXPECT_EQ(opt1.logLevel, logging::LogLevel::Debug);
   ASSERT_EQ(opt1.kinds.size(), 1u);
   EXPECT_EQ(opt1.kinds[0], api::DeviceKind::kKeyboard);
 }
@@ -135,6 +135,6 @@ TEST(ArgParser, ParseOptionsPlaybackWithLogLevel) {
   RunOptions options =
       parseOptions(static_cast<int>(argv.size()), argv.data());
   EXPECT_TRUE(options.playback);
-  EXPECT_EQ(options.logLevel, LogLevel::Error);
+  EXPECT_EQ(options.logLevel, logging::LogLevel::Error);
   EXPECT_EQ(options.playbackPath, "events.log");
 }

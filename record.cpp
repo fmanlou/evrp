@@ -21,8 +21,8 @@ std::vector<RecordTarget> Record::collectTargets() {
   for (const auto &kind : options_.kinds) {
     std::string path = findDevicePath(kind);
     if (path.empty()) {
-      logWarn("No " + std::string(evrp::device::api::deviceKindLabel(kind)) +
-               " detected. Try running with sudo.");
+      logWarn("No {} detected. Try running with sudo.",
+                 evrp::device::api::deviceKindLabel(kind));
       continue;
     }
 
@@ -43,13 +43,13 @@ void Record::closeTargets() {
 void Record::recordEvents() {
   if (targets_.empty()) return;
 
-  gLogger->setLevel(options_.logLevel);
+  logService->setLevel(options_.logLevel);
 
   std::vector<int> fds;
   fds.reserve(targets_.size());
   for (const auto &t : targets_) {
-    logInfo("Recording " +
-            std::string(evrp::device::api::deviceKindLabel(t.kind)) + " from " +
+    logInfo("Recording {} from {}",
+            evrp::device::api::deviceKindLabel(t.kind),
             t.path);
     fds.push_back(t.fd);
   }
@@ -63,7 +63,7 @@ void Record::recordEvents() {
   long long lastTimestampUs = -1;
   auto writeLine = [&](const std::string &line) {
     eventOut << line << "\n";
-    logDebug(line);
+    logDebug("{}", line);
   };
   auto writeEventLine = [&](evrp::device::api::DeviceKind device,
                             const Event &ev) {
@@ -164,7 +164,7 @@ void Record::recordEvents() {
 }
 
 int Record::run() {
-  gLogger->setLevel(options_.logLevel);
+  logService->setLevel(options_.logLevel);
   targets_ = collectTargets();
 
   if (targets_.empty()) {
@@ -173,7 +173,7 @@ int Record::run() {
   }
 
   if (!fs_.openOutput(options_.outputPath)) {
-    logError(fs_.errorMessage());
+    logError("{}", fs_.errorMessage());
     closeTargets();
     return 1;
   }

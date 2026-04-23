@@ -69,22 +69,23 @@ std::vector<api::DeviceKind> LocalInputDeviceKindsProvider::kinds() {
   if (out.empty()) {
     logInfo(
         "evrp-device: input capabilities probe finished: no supported kinds "
-        "(touchpad/touchscreen/mouse/keyboard). /dev/input/event0-31: " +
-        std::to_string(ev.characterDevices) +
-        " character device node(s); " +
-        std::to_string(ev.capsReadable) +
-        " opened and EVIOC* capability read succeeded; " +
-        std::to_string(ev.capsUnreadable) +
-        " failed open or cap query (often EACCES: add user to group \"input\" "
-        "or run with access to /dev/input/*). If capsReadable>0 but still no "
-        "kinds, no node matched keyboard/mouse/touchpad/touchscreen "
-        "heuristics.");
+        "(touchpad/touchscreen/mouse/keyboard). /dev/input/event0-31: {} "
+        "character device node(s); {} opened and EVIOC* capability read "
+        "succeeded; {} failed open or cap query (often EACCES: add user to "
+        "group \"input\" or run with access to /dev/input/*). If "
+        "capsReadable>0 but still no kinds, no node matched "
+        "keyboard/mouse/touchpad/touchscreen heuristics.",
+        ev.characterDevices,
+        ev.capsReadable,
+        ev.capsUnreadable);
   } else {
-    logInfo("evrp-device: input capabilities probe finished: supported kinds " +
-            formatKindList(out) + " (" + std::to_string(out.size()) +
-            " kind(s)); /dev/input/event0-31: " +
-            std::to_string(ev.characterDevices) + " node(s), " +
-            std::to_string(ev.capsReadable) + " with readable caps.");
+    logInfo(
+        "evrp-device: input capabilities probe finished: supported kinds {} "
+        "({} kind(s)); /dev/input/event0-31: {} node(s), {} with readable caps.",
+        formatKindList(out),
+        out.size(),
+        ev.characterDevices,
+        ev.capsReadable);
   }
   return out;
 }

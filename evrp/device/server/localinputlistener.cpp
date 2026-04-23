@@ -70,19 +70,27 @@ bool LocalInputListener::startListening(
     const std::string kindLabel = api::deviceKindLabel(k);
     std::string path = findDevicePath(k);
     if (path.empty()) {
-      logWarn("LocalInputListener: kind " + kindLabel +
-              " has no matching /dev/input node (findDevicePath empty)");
+      logWarn(
+          "LocalInputListener: kind {} has no matching /dev/input node "
+          "(findDevicePath empty)",
+          kindLabel);
       continue;
     }
     if (!opened_paths.insert(path).second) {
-      logInfo("LocalInputListener: skip kind " + kindLabel + " path " + path +
-              " (same node already opened for this session)");
+      logInfo(
+          "LocalInputListener: skip kind {} path {} (same node already opened "
+          "for this session)",
+          kindLabel,
+          path);
       continue;
     }
     int fd = fs_.openReadOnly(path.c_str(), true);
     if (fd < 0) {
-      logWarn("LocalInputListener: kind " + kindLabel + " path " + path +
-              " open(O_RDONLY) failed: " + std::string(std::strerror(errno)));
+      logWarn(
+          "LocalInputListener: kind {} path {} open(O_RDONLY) failed: {}",
+          kindLabel,
+          path,
+          std::strerror(errno));
       continue;
     }
     new_devices.push_back(TrackedDevice{fd, k});
