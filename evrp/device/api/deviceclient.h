@@ -13,7 +13,7 @@ class Channel;
 
 namespace evrp::device::api {
 
-struct DeviceSessionInfo {
+struct SessionInfo {
   std::string sessionId;
   int leaseTimeoutMs = 0;
 };
@@ -26,7 +26,7 @@ std::shared_ptr<grpc::Channel> makeDeviceChannel(const std::string& targetHostPo
 // Business session: call Connect before other device RPCs; keep Heartbeat within
 // lease_timeout_ms. Pass sessionId into makeRemote* helpers.
 bool deviceSessionConnect(const std::shared_ptr<grpc::Channel>& channel,
-                          DeviceSessionInfo* out);
+                          SessionInfo* out);
 bool deviceSessionHeartbeat(const std::shared_ptr<grpc::Channel>& channel,
                             const std::string& sessionId);
 bool deviceSessionDisconnect(const std::shared_ptr<grpc::Channel>& channel,

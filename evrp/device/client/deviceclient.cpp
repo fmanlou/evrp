@@ -29,7 +29,7 @@ std::shared_ptr<grpc::Channel> makeDeviceChannel(
 }
 
 bool deviceSessionConnect(const std::shared_ptr<grpc::Channel>& channel,
-                          DeviceSessionInfo* out) {
+                          SessionInfo* out) {
   if (!out) {
     return false;
   }

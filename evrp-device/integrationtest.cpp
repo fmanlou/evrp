@@ -454,7 +454,7 @@ int main(int argc, char** argv) {
   const std::shared_ptr<grpc::Channel> channel =
       evrp::device::api::makeDeviceChannel(target);
 
-  evrp::device::api::DeviceSessionInfo session;
+  evrp::device::api::SessionInfo session;
   {
     const auto connectDeadline =
         std::chrono::steady_clock::now() +

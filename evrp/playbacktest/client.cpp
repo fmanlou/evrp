@@ -81,7 +81,7 @@ int main(int argc, char** argv) {
 
   const std::shared_ptr<grpc::Channel> channel =
       evrp::device::api::makeDeviceChannel(FLAGS_target);
-  evrp::device::api::DeviceSessionInfo session;
+  evrp::device::api::SessionInfo session;
   if (!evrp::device::api::deviceSessionConnect(channel, &session)) {
     logError("evrp_playback_test_client: DeviceSessionService/Connect failed");
     return 1;
