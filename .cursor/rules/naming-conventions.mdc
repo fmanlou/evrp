@@ -6,7 +6,7 @@ alwaysApply: true
 # Naming Conventions
 
 - Follow Google C++ style as the baseline.
-- **函数与方法：小驼峰** — all free functions, member functions, and static methods use lower camelCase (`runDeviceServer`, `registerWith`, `parseOptions`).
+- **函数与方法：小驼峰** — all free functions, member functions, and static methods use lower camelCase (`makeServer`, `registerWith`, `parseOptions`).
 - **变量：小驼峰** — local variables, parameters, and struct / aggregate fields use lower camelCase (`localVar`, `playbackPath`, `deviceKindsProvider`).
 - **成员：小驼峰 + 尾部下划线** — class data members use lower camelCase with a trailing underscore (`memberName_`, `ioContext_`, `progressMutex_`).
 - Project globals use lower camelCase with a `g` prefix (`gLogger`, `gCursor`). Do not rename generated or third-party APIs (e.g. protobuf `time_sec()`, `FLAGS_log_level`).

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <string>
 
 namespace evrp {
@@ -8,6 +9,12 @@ class Ioc;
 
 namespace evrp::device::api {
 
-int runDeviceServer(const std::string& listen_address, const evrp::Ioc& ioc);
+class IServer {
+ public:
+  virtual ~IServer() = default;
+  virtual int run(const std::string& listen_address, const evrp::Ioc& ioc) = 0;
+};
+
+std::unique_ptr<IServer> makeServer();
 
 }
