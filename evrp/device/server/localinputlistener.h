@@ -3,6 +3,7 @@
 #include <atomic>
 #include <mutex>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "evrp/device/api/inputlistener.h"
@@ -35,9 +36,11 @@ class LocalInputListener final : public api::IInputListener {
   struct TrackedDevice {
     int fd{-1};
     api::DeviceKind kind{api::DeviceKind::kUnspecified};
+    std::string path;
   };
 
   void closeDevices();
+  std::string listenDevicesSummary() const;
 
   FileSystem fs_;
   std::mutex mu_;

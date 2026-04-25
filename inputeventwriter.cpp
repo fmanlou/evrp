@@ -5,6 +5,7 @@
 #include <sys/time.h>
 
 #include <cstdio>
+#include <vector>
 
 #include "cursor/cursorpos.h"
 #include "evdev.h"
@@ -31,25 +32,29 @@ int InputEventWriter::getFd(api::DeviceKind device) {
   auto it = kindToFd_.find(device);
   if (it != kindToFd_.end()) return it->second;
 
-  std::string devPath = findDevicePath(device);
-  if (devPath.empty()) {
+  const std::vector<std::string> paths = findAllDevicePaths(device);
+  if (paths.empty()) {
     logWarn("No {} device found, skipping events.",
-               api::deviceKindLabel(device));
+            api::deviceKindLabel(device));
     kindToFd_[device] = -1;
     return -1;
   }
-
-  int fd = fs_->openReadWrite(devPath.c_str());
-  if (fd < 0) {
-    logWarn("Failed to open {} for write (try: sudo)", devPath);
+  for (const std::string& devPath : paths) {
+    int fd = fs_->openReadWrite(devPath.c_str());
+    if (fd >= 0) {
+      kindToFd_[device] = fd;
+      logInfo("Playing back {} to {}", api::deviceKindLabel(device), devPath);
+      return fd;
+    }
     std::perror(devPath.c_str());
-    kindToFd_[device] = -1;
-    return -1;
   }
-
-  kindToFd_[device] = fd;
-  logInfo("Playing back {} to {}", api::deviceKindLabel(device), devPath);
-  return fd;
+  logWarn(
+      "Failed to open any of {} {} device path(s) for write (try: sudo or "
+      "input group)",
+      paths.size(),
+      api::deviceKindLabel(device));
+  kindToFd_[device] = -1;
+  return -1;
 }
 
 bool InputEventWriter::write(api::DeviceKind device, unsigned short type,

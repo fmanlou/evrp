@@ -5,8 +5,10 @@
 #include <cerrno>
 #include <cstring>
 #include <unordered_set>
+#include <vector>
 
 #include "evdev.h"
+#include "eventformat.h"
 #include "evrp/device/api/types.h"
 #include "inputdevice.h"
 #include "logger.h"
@@ -36,7 +38,25 @@ void LocalInputListener::dispose() {
 
 LocalInputListener::~LocalInputListener() { dispose(); }
 
+std::string LocalInputListener::listenDevicesSummary() const {
+  std::string list;
+  for (const auto& d : devices_) {
+    if (!list.empty()) {
+      list += ", ";
+    }
+    list += api::deviceKindLabel(d.kind);
+    list += "=";
+    list += d.path;
+  }
+  return list;
+}
+
 void LocalInputListener::closeDevices() {
+  if (!devices_.empty()) {
+    logInfo("LocalInputListener: stop listening ({}): {}",
+            devices_.size(),
+            listenDevicesSummary());
+  }
   for (auto& d : devices_) {
     if (d.fd >= 0) {
       fs_.closeFd(d.fd);
@@ -68,32 +88,37 @@ bool LocalInputListener::startListening(
       continue;
     }
     const std::string kindLabel = api::deviceKindLabel(k);
-    std::string path = findDevicePath(k);
-    if (path.empty()) {
+    const std::vector<std::string> paths = findAllDevicePaths(k);
+    if (paths.empty()) {
       logWarn(
           "LocalInputListener: kind {} has no matching /dev/input node "
-          "(findDevicePath empty)",
+          "(findAllDevicePaths empty)",
           kindLabel);
       continue;
     }
-    if (!opened_paths.insert(path).second) {
-      logInfo(
-          "LocalInputListener: skip kind {} path {} (same node already opened "
-          "for this session)",
-          kindLabel,
-          path);
-      continue;
+    for (const std::string& path : paths) {
+      if (new_devices.size() >= 32) {
+        break;
+      }
+      if (!opened_paths.insert(path).second) {
+        logInfo(
+            "LocalInputListener: skip kind {} path {} (same node already "
+            "opened for this session)",
+            kindLabel,
+            path);
+        continue;
+      }
+      int fd = fs_.openReadOnly(path.c_str(), true);
+      if (fd < 0) {
+        logWarn(
+            "LocalInputListener: kind {} path {} open(O_RDONLY) failed: {}",
+            kindLabel,
+            path,
+            std::strerror(errno));
+        continue;
+      }
+      new_devices.push_back(TrackedDevice{fd, k, path});
     }
-    int fd = fs_.openReadOnly(path.c_str(), true);
-    if (fd < 0) {
-      logWarn(
-          "LocalInputListener: kind {} path {} open(O_RDONLY) failed: {}",
-          kindLabel,
-          path,
-          std::strerror(errno));
-      continue;
-    }
-    new_devices.push_back(TrackedDevice{fd, k});
     if (new_devices.size() >= 32) {
       break;
     }
@@ -108,6 +133,9 @@ bool LocalInputListener::startListening(
 
   devices_ = std::move(new_devices);
   listeningActive_ = true;
+  logInfo("LocalInputListener: start listening ({}): {}",
+          devices_.size(),
+          listenDevicesSummary());
   return true;
 }
 
@@ -150,6 +178,9 @@ std::vector<api::InputEvent> LocalInputListener::readInputEvents() {
       if (evbuf[j].type == EV_SYN) {
         continue;
       }
+      logDebug("LocalInputListener: evdev={} {}",
+               devices_[i].path,
+               formatEventLine(devices_[i].kind, evbuf[j], 0));
       out.push_back(toApiInputEvent(devices_[i].kind, evbuf[j]));
     }
   }

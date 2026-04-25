@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "evrp/device/api/types.h"
 #include "evdev.h"
@@ -19,3 +20,6 @@ std::string findFirstMouse();
 std::string findFirstKeyboard();
 
 std::string findDevicePath(evrp::device::api::DeviceKind kind);
+
+std::vector<std::string> findAllDevicePaths(
+    evrp::device::api::DeviceKind kind);

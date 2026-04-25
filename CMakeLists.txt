@@ -289,7 +289,7 @@ target_include_directories(localinputlistener
 target_link_libraries(
   localinputlistener
   PUBLIC evrp_device_api asio::asio
-  PRIVATE inputdevice logger)
+  PRIVATE eventformat inputdevice logger)
 set_target_properties(
   localinputlistener
   PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)

@@ -19,19 +19,20 @@ Record::Record(const RunOptions &options) : options_(options) {}
 std::vector<RecordTarget> Record::collectTargets() {
   std::vector<RecordTarget> result;
   for (const auto &kind : options_.kinds) {
-    std::string path = findDevicePath(kind);
-    if (path.empty()) {
+    const std::vector<std::string> paths = findAllDevicePaths(kind);
+    if (paths.empty()) {
       logWarn("No {} detected. Try running with sudo.",
-                 evrp::device::api::deviceKindLabel(kind));
+              evrp::device::api::deviceKindLabel(kind));
       continue;
     }
-
-    int fd = fs_.openReadOnly(path.c_str(), false);
-    if (fd < 0) {
-      std::perror(path.c_str());
-      continue;
+    for (const std::string &path : paths) {
+      int fd = fs_.openReadOnly(path.c_str(), false);
+      if (fd < 0) {
+        std::perror(path.c_str());
+        continue;
+      }
+      result.push_back({fd, kind, path});
     }
-    result.push_back({fd, kind, path});
   }
   return result;
 }

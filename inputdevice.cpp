@@ -2,6 +2,7 @@
 
 #include <cctype>
 #include <string>
+#include <vector>
 
 #include "evdev.h"
 #include "filesystem.h"
@@ -59,51 +60,58 @@ Event makeEvent(unsigned short type, unsigned short code, int value) {
   return ev;
 }
 
-std::string findFirstTouchpad() {
-  for (int i = 0; i < 32; ++i) {
-    std::string dev = "/dev/input/event" + std::to_string(i);
-    if (isTouchpad(dev.c_str())) return dev;
+std::vector<std::string> findAllDevicePaths(
+    evrp::device::api::DeviceKind kind) {
+  using evrp::device::api::DeviceKind;
+  std::vector<std::string> out;
+  auto pushIf = [&](bool (*pred)(const char*)) {
+    for (int i = 0; i < 32; ++i) {
+      std::string dev = "/dev/input/event" + std::to_string(i);
+      if (pred(dev.c_str())) {
+        out.push_back(std::move(dev));
+      }
+    }
+  };
+  switch (kind) {
+    case DeviceKind::kTouchpad:
+      pushIf(isTouchpad);
+      break;
+    case DeviceKind::kTouchscreen:
+      pushIf(isTouchscreen);
+      break;
+    case DeviceKind::kMouse:
+      pushIf(isMouse);
+      break;
+    case DeviceKind::kKeyboard:
+      pushIf(isKeyboard);
+      break;
+    case DeviceKind::kUnspecified:
+    default:
+      break;
   }
-  return {};
-}
-
-std::string findFirstTouchscreen() {
-  for (int i = 0; i < 32; ++i) {
-    std::string dev = "/dev/input/event" + std::to_string(i);
-    if (isTouchscreen(dev.c_str())) return dev;
-  }
-  return {};
-}
-
-std::string findFirstMouse() {
-  for (int i = 0; i < 32; ++i) {
-    std::string dev = "/dev/input/event" + std::to_string(i);
-    if (isMouse(dev.c_str())) return dev;
-  }
-  return {};
-}
-
-std::string findFirstKeyboard() {
-  for (int i = 0; i < 32; ++i) {
-    std::string dev = "/dev/input/event" + std::to_string(i);
-    if (isKeyboard(dev.c_str())) return dev;
-  }
-  return {};
+  return out;
 }
 
 std::string findDevicePath(evrp::device::api::DeviceKind kind) {
-  using evrp::device::api::DeviceKind;
-  switch (kind) {
-    case DeviceKind::kTouchpad:
-      return findFirstTouchpad();
-    case DeviceKind::kTouchscreen:
-      return findFirstTouchscreen();
-    case DeviceKind::kMouse:
-      return findFirstMouse();
-    case DeviceKind::kKeyboard:
-      return findFirstKeyboard();
-    case DeviceKind::kUnspecified:
-    default:
-      return "";
+  const std::vector<std::string> all = findAllDevicePaths(kind);
+  if (all.empty()) {
+    return {};
   }
+  return all.front();
+}
+
+std::string findFirstTouchpad() {
+  return findDevicePath(evrp::device::api::DeviceKind::kTouchpad);
+}
+
+std::string findFirstTouchscreen() {
+  return findDevicePath(evrp::device::api::DeviceKind::kTouchscreen);
+}
+
+std::string findFirstMouse() {
+  return findDevicePath(evrp::device::api::DeviceKind::kMouse);
+}
+
+std::string findFirstKeyboard() {
+  return findDevicePath(evrp::device::api::DeviceKind::kKeyboard);
 }

@@ -3,6 +3,8 @@
 #include <gtest/gtest.h>
 #include <linux/input-event-codes.h>
 
+#include <vector>
+
 #include "keyboard/keyboarddevice.h"
 #include "touchdevice.h"
 
@@ -40,6 +42,12 @@ TEST(InputDevice, RejectTouchscreenWhenTouchpad) {
   caps.absX = true;
   caps.btnToolFinger = true;
   EXPECT_FALSE(isTouchscreenFromCapabilities(caps));
+}
+
+TEST(InputDevice, FindAllUnspecifiedYieldsEmpty) {
+  const std::vector<std::string> v =
+      findAllDevicePaths(evrp::device::api::DeviceKind::kUnspecified);
+  EXPECT_TRUE(v.empty());
 }
 
 TEST(InputDevice, DetectMouseFromCapabilities) {

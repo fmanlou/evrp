@@ -21,7 +21,6 @@
 #include <sys/wait.h>
 #include <signal.h>
 
-#include "evrp/device/api/countingsemaphore.h"
 #include "evrp/device/api/deviceclient.h"
 #include "evrp/device/api/types.h"
 #include "logger.h"
@@ -61,6 +60,10 @@ DEFINE_bool(
     "If true, InputListen requires a non-SYN evdev event per supported kind "
     "(sequential sessions); if false, one short listen round without requiring "
     "events (CI / no hardware)");
+DEFINE_string(
+    log_level, "info",
+    "This process log level: error|warn|info|debug|trace|off; with "
+    "--device_binary, also passed to the spawned evrp-device");
 
 namespace {
 
@@ -281,6 +284,11 @@ bool testInputListen(
           kindLabel);
       return false;
     }
+    logInfo(
+        "InputListen: waiting for a non-EV_SYN event on kind {} ({} ms per "
+        "kind; operate that device or wait for timeout)",
+        kindLabel,
+        FLAGS_listen_per_kind_timeout_ms);
     const auto deadline = std::chrono::steady_clock::now() +
                           std::chrono::milliseconds(
                               FLAGS_listen_per_kind_timeout_ms);
@@ -350,22 +358,15 @@ bool testPlayback(const std::shared_ptr<grpc::Channel>& channel,
   }
   logInfo("Playback: Upload ok ({} events)", events.size());
 
-  evrp::CountingSemaphore progressSem;
-  const int n = static_cast<int>(events.size());
-  std::thread consumer([&]() {
-    for (int i = 0; i < n; ++i) {
-      progressSem.acquire();
-    }
-  });
-
   evrp::device::api::OperationResult play;
-  const bool ok = playback->playback(&play, &progressSem);
-  consumer.join();
-
+  const bool ok = playback->playback(&play, nullptr);
   if (!ok) {
-    logError("Playback: Playback failed code={} msg={}",
-             play.code,
-             play.message);
+    logError(
+        "Playback: Playback failed code={} msg={} (evrp-device must be able to "
+        "open a keyboard evdev for O_RDWR and inject KEY events; try sudo or "
+        "a device with injectable /dev/input/event*)",
+        play.code,
+        play.message);
     return false;
   }
   logInfo("Playback: Playback RPC finished ok");
@@ -410,6 +411,7 @@ int main(int argc, char** argv) {
       "evrp-device (--target or --host/--port; optional --device_binary for "
       "CI)");
   gflags::ParseCommandLineFlags(&argc, &argv, true);
+  logService->setLevel(logLevelFromString(FLAGS_log_level));
 
   std::string target;
   DeviceProcess proc;
@@ -433,8 +435,10 @@ int main(int argc, char** argv) {
       return 1;
     }
     if (proc.pid == 0) {
+      const std::string logFlag =
+          std::string("--log_level=") + FLAGS_log_level;
       execl(binary.c_str(), binary.c_str(), "-listen", listenArg.c_str(),
-            static_cast<char*>(nullptr));
+            logFlag.c_str(), static_cast<char*>(nullptr));
       _exit(127);
     }
   } else {
