@@ -414,7 +414,7 @@ set_target_properties(
 
 add_library(
   evrp_device_grpc STATIC
-  evrp/device/impl/server/grpc/grpcserverimpl.cpp
+  evrp/device/impl/server/server.cpp
   evrp/device/impl/server/grpc/grpcsessionservice.cpp
   evrp/device/impl/server/grpc/grpcinputlisten.cpp
   evrp/device/impl/server/grpc/grpcinputdeviceservice.cpp

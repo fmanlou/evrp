@@ -23,9 +23,9 @@ namespace evrp::device::api {
 
 namespace {
 
-class DeviceGrpcServer final : public IServer {
+class ServerImpl final : public IServer {
  public:
-  DeviceGrpcServer(std::string listen_address, const evrp::Ioc& ioc)
+  ServerImpl(std::string listen_address, const evrp::Ioc& ioc)
       : listen_address_(std::move(listen_address)), ioc_(ioc) {}
 
   int run() override {
@@ -75,7 +75,7 @@ class DeviceGrpcServer final : public IServer {
 
 std::unique_ptr<IServer> makeServer(const std::string& listen_address,
                                     const evrp::Ioc& ioc) {
-  return std::make_unique<DeviceGrpcServer>(listen_address, ioc);
+  return std::make_unique<ServerImpl>(listen_address, ioc);
 }
 
 }  // namespace evrp::device::api
