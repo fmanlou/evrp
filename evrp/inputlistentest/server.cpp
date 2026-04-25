@@ -20,5 +20,5 @@ int main(int argc, char** argv) {
   evrp::device::server::DeviceRuntime device;
   evrp::Ioc ioc;
   device.registerWith(ioc);
-  return evrp::device::api::makeServer()->run(FLAGS_listen, ioc);
+  return evrp::device::api::makeServer(FLAGS_listen, ioc)->run();
 }

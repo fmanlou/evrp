@@ -56,5 +56,5 @@ int main(int argc, char** argv) {
           &deviceKindsProvider));
   ioc.emplace<evrp::device::api::IPlayback>(
       static_cast<evrp::device::api::IPlayback*>(&playback));
-  return evrp::device::api::makeServer()->run(FLAGS_listen, ioc);
+  return evrp::device::api::makeServer(FLAGS_listen, ioc)->run();
 }

@@ -1,6 +1,6 @@
 # evrp-device
 
-设备端进程：入口 **`main.cpp`** 构造 **`DeviceRuntime`**（Asio `io_context` + 本地设备实现），写入 **`Ioc`** 后通过 **`makeServer()->run`** 启动 gRPC，**`main` 等 API 头文件不**包含 gRPC 头文件。
+设备端进程：入口 **`main.cpp`** 构造 **`DeviceRuntime`**（Asio `io_context` + 本地设备实现），写入 **`Ioc`** 后通过 **`makeServer(FLAGS_listen, ioc)->run()`** 启动 gRPC，**`main` 等 API 头文件不**包含 gRPC 头文件。
 
 传输与 proto 全部在 **`evrp/device/impl/server/*.cpp`** 与 CMake 目标 **`evrp_device_grpc`** 中实现。
 
