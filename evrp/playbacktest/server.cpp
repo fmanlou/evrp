@@ -5,9 +5,9 @@
 #include "logger.h"
 #include "evrp/device/api/server.h"
 #include "evrp/device/api/inputlistener.h"
-#include "evrp/device/server/localcursorposition.h"
-#include "evrp/device/server/localplayback.h"
-#include "evrp/device/server/localinputdevicekindsprovider.h"
+#include "evrp/device/impl/server/localcursorposition.h"
+#include "evrp/device/impl/server/localplayback.h"
+#include "evrp/device/impl/server/localinputdevicekindsprovider.h"
 #include "evrp/sdk/ioc.h"
 
 DEFINE_string(listen, "127.0.0.1:50051",

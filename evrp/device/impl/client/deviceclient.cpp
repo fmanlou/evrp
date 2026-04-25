@@ -5,9 +5,9 @@
 #include <grpc/grpc.h>
 #include <grpcpp/grpcpp.h>
 
-#include "evrp/device/client/remoteinputdeviceclient.h"
-#include "evrp/device/client/remoteinputlistener.h"
-#include "evrp/device/client/remoteplayback.h"
+#include "evrp/device/impl/client/remoteinputdeviceclient.h"
+#include "evrp/device/impl/client/remoteinputlistener.h"
+#include "evrp/device/impl/client/remoteplayback.h"
 #include "evrp/device/common/devicesessionmetadata.h"
 #include "evrp/device/v1/service/session.grpc.pb.h"
 

@@ -1,10 +1,10 @@
-#include "evrp/device/server/grpcplaybackservice.h"
+#include "evrp/device/impl/server/grpc/grpcplaybackservice.h"
 
 #include <google/protobuf/empty.pb.h>
 
 #include "evrp/device/internal/tofromproto.h"
-#include "evrp/device/server/devicesessioncheck.h"
-#include "evrp/device/server/devicesessionregistry.h"
+#include "evrp/device/impl/server/devicesessioncheck.h"
+#include "evrp/device/impl/server/devicesessionregistry.h"
 #include "evrp/sdk/ioc.h"
 
 namespace evrp::device::server {

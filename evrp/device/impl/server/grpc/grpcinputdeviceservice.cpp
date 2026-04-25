@@ -1,8 +1,8 @@
-#include "evrp/device/server/grpcinputdeviceservice.h"
+#include "evrp/device/impl/server/grpc/grpcinputdeviceservice.h"
 
 #include "evrp/device/internal/tofromproto.h"
-#include "evrp/device/server/devicesessioncheck.h"
-#include "evrp/device/server/devicesessionregistry.h"
+#include "evrp/device/impl/server/devicesessioncheck.h"
+#include "evrp/device/impl/server/devicesessionregistry.h"
 #include "evrp/sdk/ioc.h"
 #include "logger.h"
 

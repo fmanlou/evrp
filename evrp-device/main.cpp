@@ -3,7 +3,7 @@
 #include <string>
 
 #include "evrp/device/api/server.h"
-#include "evrp/device/server/deviceruntime.h"
+#include "evrp/device/impl/server/deviceruntime.h"
 #include "evrp/sdk/ioc.h"
 #include "logger.h"
 

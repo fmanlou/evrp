@@ -260,7 +260,7 @@ add_library(evrp_device_api INTERFACE)
 target_include_directories(evrp_device_api
                            INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_library(countingsemaphore STATIC evrp/device/api/countingsemaphore.cpp)
+add_library(countingsemaphore STATIC evrp/device/impl/countingsemaphore.cpp)
 target_include_directories(countingsemaphore
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 set_target_properties(
@@ -276,14 +276,14 @@ set_target_properties(
   PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
 
 add_library(
-  localinputlistener STATIC evrp/device/server/localinputlistener.cpp
+  localinputlistener STATIC evrp/device/impl/server/localinputlistener.cpp
                            evrp/sdk/iocontextpostedbase.cpp
-                           evrp/device/server/posted/postedinputlistener.cpp
-                           evrp/device/server/posted/postedcursorposition.cpp
-                           evrp/device/server/posted/postedinputdevicekindsprovider.cpp
-                           evrp/device/server/posted/postedplayback.cpp
+                           evrp/device/impl/server/posted/postedinputlistener.cpp
+                           evrp/device/impl/server/posted/postedcursorposition.cpp
+                           evrp/device/impl/server/posted/postedinputdevicekindsprovider.cpp
+                           evrp/device/impl/server/posted/postedplayback.cpp
                            evrp/sdk/syncdispatchqueue.cpp
-                           evrp/device/server/deviceruntime.cpp)
+                           evrp/device/impl/server/deviceruntime.cpp)
 target_include_directories(localinputlistener
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(
@@ -294,7 +294,7 @@ set_target_properties(
   localinputlistener
   PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
 
-add_library(localplayback STATIC evrp/device/server/localplayback.cpp)
+add_library(localplayback STATIC evrp/device/impl/server/localplayback.cpp)
 target_include_directories(localplayback PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(localplayback PUBLIC evrp_device_api inputeventwriter
                                            countingsemaphore)
@@ -303,20 +303,20 @@ set_target_properties(
   PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
 
 add_library(localcursorposition STATIC
-            evrp/device/server/localcursorposition.cpp)
+            evrp/device/impl/server/localcursorposition.cpp)
 target_include_directories(localcursorposition
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(localcursorposition PUBLIC evrp_device_api cursorpos)
 
 add_library(localinputdevicekindsprovider STATIC
-            evrp/device/server/localinputdevicekindsprovider.cpp)
+            evrp/device/impl/server/localinputdevicekindsprovider.cpp)
 target_include_directories(localinputdevicekindsprovider
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(localinputdevicekindsprovider
                       PUBLIC evrp_device_api PRIVATE inputdevice logger)
 
 add_library(device_remote_inputlistener STATIC
-            evrp/device/client/remoteinputlistener.cpp)
+            evrp/device/impl/client/remoteinputlistener.cpp)
 target_include_directories(device_remote_inputlistener
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(device_remote_inputlistener PUBLIC evrp_device_proto
@@ -326,7 +326,7 @@ set_target_properties(
   device_remote_inputlistener
   PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
 
-add_library(device_remote_playback STATIC evrp/device/client/remoteplayback.cpp)
+add_library(device_remote_playback STATIC evrp/device/impl/client/remoteplayback.cpp)
 target_include_directories(device_remote_playback
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(device_remote_playback PUBLIC evrp_device_proto tofromproto
@@ -337,8 +337,8 @@ set_target_properties(
 
 add_library(
   device_client STATIC
-  evrp/device/client/deviceclient.cpp
-  evrp/device/client/remoteinputdeviceclient.cpp)
+  evrp/device/impl/client/deviceclient.cpp
+  evrp/device/impl/client/remoteinputdeviceclient.cpp)
 target_include_directories(device_client PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(
   device_client
@@ -354,13 +354,13 @@ set_target_properties(
 
 add_library(
   evrp_device_grpc STATIC
-  evrp/device/server/grpcserverimpl.cpp
-  evrp/device/server/devicesessionregistry.cpp
-  evrp/device/server/devicesessioncheck.cpp
-  evrp/device/server/grpcdevicesessionservice.cpp
-  evrp/device/server/grpcinputlisten.cpp
-  evrp/device/server/grpcinputdeviceservice.cpp
-  evrp/device/server/grpcplaybackservice.cpp)
+  evrp/device/impl/server/grpc/grpcserverimpl.cpp
+  evrp/device/impl/server/devicesessionregistry.cpp
+  evrp/device/impl/server/devicesessioncheck.cpp
+  evrp/device/impl/server/grpc/grpcdevicesessionservice.cpp
+  evrp/device/impl/server/grpc/grpcinputlisten.cpp
+  evrp/device/impl/server/grpc/grpcinputdeviceservice.cpp
+  evrp/device/impl/server/grpc/grpcplaybackservice.cpp)
 target_include_directories(evrp_device_grpc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(evrp_device_grpc PUBLIC evrp_device_proto tofromproto
                                               countingsemaphore asio::asio

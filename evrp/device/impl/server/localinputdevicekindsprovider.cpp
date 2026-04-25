@@ -1,4 +1,4 @@
-#include "evrp/device/server/localinputdevicekindsprovider.h"
+#include "evrp/device/impl/server/localinputdevicekindsprovider.h"
 
 #include <sys/stat.h>
 

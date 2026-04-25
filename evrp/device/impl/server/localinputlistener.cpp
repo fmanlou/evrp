@@ -1,4 +1,4 @@
-#include "evrp/device/server/localinputlistener.h"
+#include "evrp/device/impl/server/localinputlistener.h"
 
 #include <linux/input-event-codes.h>
 

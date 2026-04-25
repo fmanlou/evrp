@@ -1,4 +1,4 @@
-#include "evrp/device/server/posted/postedinputdevicekindsprovider.h"
+#include "evrp/device/impl/server/posted/postedinputdevicekindsprovider.h"
 
 #include <asio/io_context.hpp>
 

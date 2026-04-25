@@ -5,14 +5,14 @@
 #include <optional>
 #include <thread>
 
-#include "evrp/device/server/localcursorposition.h"
-#include "evrp/device/server/localinputdevicekindsprovider.h"
-#include "evrp/device/server/localinputlistener.h"
-#include "evrp/device/server/localplayback.h"
-#include "evrp/device/server/posted/postedcursorposition.h"
-#include "evrp/device/server/posted/postedinputdevicekindsprovider.h"
-#include "evrp/device/server/posted/postedinputlistener.h"
-#include "evrp/device/server/posted/postedplayback.h"
+#include "evrp/device/impl/server/localcursorposition.h"
+#include "evrp/device/impl/server/localinputdevicekindsprovider.h"
+#include "evrp/device/impl/server/localinputlistener.h"
+#include "evrp/device/impl/server/localplayback.h"
+#include "evrp/device/impl/server/posted/postedcursorposition.h"
+#include "evrp/device/impl/server/posted/postedinputdevicekindsprovider.h"
+#include "evrp/device/impl/server/posted/postedinputlistener.h"
+#include "evrp/device/impl/server/posted/postedplayback.h"
 
 namespace evrp {
 class Ioc;

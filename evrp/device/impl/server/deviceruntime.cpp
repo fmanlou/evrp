@@ -1,4 +1,4 @@
-#include "evrp/device/server/deviceruntime.h"
+#include "evrp/device/impl/server/deviceruntime.h"
 
 #include "evrp/device/api/cursorposition.h"
 #include "evrp/device/api/inputdevicekindsprovider.h"

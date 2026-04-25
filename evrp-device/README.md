@@ -2,7 +2,7 @@
 
 设备端进程：入口 **`main.cpp`** 构造 **`DeviceRuntime`**（Asio `io_context` + 本地设备实现），写入 **`Ioc`** 后调用 **`runDeviceServer`**，**不包含** gRPC 头文件。
 
-传输与 proto 全部在 **`evrp/device/server/*.cpp`** 与 CMake 目标 **`evrp_device_grpc`** 中实现。
+传输与 proto 全部在 **`evrp/device/impl/server/*.cpp`** 与 CMake 目标 **`evrp_device_grpc`** 中实现。
 
 ## 依赖（构建）
 
@@ -32,4 +32,4 @@ cmake --build build
 # 或 --listen=... ；查看帮助：./build/evrp-device -help
 ```
 
-设备 RPC 实现见 **`evrp/device/server/*.cpp`**（**`evrp_device_grpc`** 目标）。
+设备 RPC 实现见 **`evrp/device/impl/server/*.cpp`**（**`evrp_device_grpc`** 目标）。

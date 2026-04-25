@@ -10,11 +10,11 @@
 #include <grpcpp/grpcpp.h>
 #include <grpcpp/health_check_service_interface.h>
 
-#include "evrp/device/server/devicesessionregistry.h"
-#include "evrp/device/server/grpcdevicesessionservice.h"
-#include "evrp/device/server/grpcinputdeviceservice.h"
-#include "evrp/device/server/grpcinputlisten.h"
-#include "evrp/device/server/grpcplaybackservice.h"
+#include "evrp/device/impl/server/devicesessionregistry.h"
+#include "evrp/device/impl/server/grpc/grpcdevicesessionservice.h"
+#include "evrp/device/impl/server/grpc/grpcinputdeviceservice.h"
+#include "evrp/device/impl/server/grpc/grpcinputlisten.h"
+#include "evrp/device/impl/server/grpc/grpcplaybackservice.h"
 #include "logger.h"
 
 DECLARE_int32(device_session_lease_ms);

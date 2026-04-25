@@ -1,8 +1,8 @@
-#include "evrp/device/server/grpcdevicesessionservice.h"
+#include "evrp/device/impl/server/grpc/grpcdevicesessionservice.h"
 
 #include <google/protobuf/empty.pb.h>
 
-#include "evrp/device/server/devicesessioncheck.h"
+#include "evrp/device/impl/server/devicesessioncheck.h"
 
 namespace evrp::device::server {
 
