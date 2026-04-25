@@ -1,10 +1,8 @@
 #include <gflags/gflags.h>
-#include <grpcpp/grpcpp.h>
 #include <linux/input-event-codes.h>
 #include <linux/input.h>
 
 #include <algorithm>
-#include <atomic>
 #include <chrono>
 #include <cstdlib>
 #include <cstring>
@@ -23,7 +21,6 @@
 
 #include "evrp/device/api/client.h"
 #include "evrp/device/api/types.h"
-#include "evrp/sdk/sessionclient.h"
 #include "logger.h"
 
 DEFINE_string(
@@ -125,11 +122,12 @@ std::string remoteTargetFromFlags(bool* ok) {
   return FLAGS_host + ":" + std::to_string(FLAGS_port);
 }
 
-bool waitUntilGetCapabilitiesOk(const std::shared_ptr<grpc::Channel>& channel,
-                                const std::string& deviceSessionId,
+bool waitUntilGetCapabilitiesOk(evrp::device::api::IClient& client,
                                 int totalTimeoutMs) {
-  const std::unique_ptr<evrp::device::api::IInputDeviceClient> device =
-      evrp::device::api::makeRemoteInputDeviceClient(channel, deviceSessionId);
+  evrp::device::api::IInputDeviceClient* const device = client.inputDevice();
+  if (!device) {
+    return false;
+  }
   const auto overall =
       std::chrono::steady_clock::now() + std::chrono::milliseconds(totalTimeoutMs);
   while (std::chrono::steady_clock::now() < overall) {
@@ -143,12 +141,14 @@ bool waitUntilGetCapabilitiesOk(const std::shared_ptr<grpc::Channel>& channel,
 }
 
 bool fetchCapabilities(
-    const std::shared_ptr<grpc::Channel>& channel,
-    const std::string& deviceSessionId,
+    evrp::device::api::IClient& client,
     std::vector<evrp::device::api::DeviceKind>* kindsOut) {
   kindsOut->clear();
-  const std::unique_ptr<evrp::device::api::IInputDeviceClient> device =
-      evrp::device::api::makeRemoteInputDeviceClient(channel, deviceSessionId);
+  evrp::device::api::IInputDeviceClient* const device = client.inputDevice();
+  if (!device) {
+    logError("GetCapabilities failed (no input device client)");
+    return false;
+  }
   if (!device->getCapabilities(kindsOut)) {
     logError("GetCapabilities failed");
     return false;
@@ -222,8 +222,7 @@ std::vector<evrp::device::api::InputEvent> minimalKeyTapEvents() {
 }
 
 bool testInputListen(
-    const std::shared_ptr<grpc::Channel>& channel,
-    const std::string& deviceSessionId,
+    evrp::device::api::IClient& client,
     const std::vector<evrp::device::api::DeviceKind>& caps) {
   if (!FLAGS_test_input_listen) {
     logInfo("InputListen: skipped (--test_input_listen=false)");
@@ -241,9 +240,13 @@ bool testInputListen(
     return false;
   }
 
+  evrp::device::api::IInputListener* const listener = client.inputListener();
+  if (!listener) {
+    logError("InputListen: no input listener");
+    return false;
+  }
+
   if (!FLAGS_listen_require_valid_event_per_kind) {
-    const std::unique_ptr<evrp::device::api::IInputListener> listener =
-        evrp::device::api::makeRemoteInputListener(channel, deviceSessionId);
     if (!listener->startListening(kinds)) {
       logError(
           "InputListen: StartRecording failed (no matching devices or error)");
@@ -275,8 +278,6 @@ bool testInputListen(
       std::this_thread::sleep_for(
           std::chrono::milliseconds(FLAGS_listen_between_kinds_ms));
     }
-    const std::unique_ptr<evrp::device::api::IInputListener> listener =
-        evrp::device::api::makeRemoteInputListener(channel, deviceSessionId);
     if (!listener->startListening({kind})) {
       logError(
           "InputListen: StartRecording failed for kind {} (client log shows "
@@ -335,9 +336,8 @@ bool testInputListen(
   return true;
 }
 
-bool testPlayback(const std::shared_ptr<grpc::Channel>& channel,
-                  const std::string& deviceSessionId,
-                  const std::vector<evrp::device::api::DeviceKind>& caps) {
+bool testPlayback(evrp::device::api::IClient& client,
+                    const std::vector<evrp::device::api::DeviceKind>& caps) {
   if (!FLAGS_test_playback) {
     logInfo("Playback: skipped (--test_playback=false)");
     return true;
@@ -350,8 +350,11 @@ bool testPlayback(const std::shared_ptr<grpc::Channel>& channel,
   }
 
   const auto events = minimalKeyTapEvents();
-  const std::unique_ptr<evrp::device::api::IPlayback> playback =
-      evrp::device::api::makeRemotePlayback(channel, deviceSessionId);
+  evrp::device::api::IPlayback* const playback = client.playback();
+  if (!playback) {
+    logError("Playback: no playback client");
+    return false;
+  }
   evrp::device::api::OperationResult up;
   if (!playback->upload(events, &up)) {
     logError("Playback: Upload failed code={} msg={}", up.code, up.message);
@@ -458,76 +461,41 @@ int main(int argc, char** argv) {
     }
   }
 
-  const std::shared_ptr<grpc::Channel> channel =
-      evrp::sdk::makeGrpcClientChannel(target);
-
-  evrp::sdk::SessionInfo session;
+  std::unique_ptr<evrp::device::api::IClient> client;
   {
     const auto connectDeadline =
         std::chrono::steady_clock::now() +
         std::chrono::milliseconds(FLAGS_rpc_wait_ms);
-    bool connected = false;
     while (std::chrono::steady_clock::now() < connectDeadline) {
-      if (evrp::sdk::sessionConnect(channel, &session)) {
-        connected = true;
+      client = evrp::device::api::makeClient(target);
+      if (client) {
         break;
       }
       std::this_thread::sleep_for(std::chrono::milliseconds(40));
     }
-    if (!connected) {
-      logError("Timed out waiting for SessionService/Connect on {}",
-               target);
-      return 1;
-    }
+  }
+  if (!client) {
+    logError("Timed out waiting for SessionService/Connect on {}", target);
+    return 1;
   }
 
-  std::atomic<bool> heartbeatStop{false};
-  std::thread heartbeatThread([&]() {
-    const int intervalMs =
-        std::max(500, session.leaseTimeoutMs / 3);
-    while (!heartbeatStop.load(std::memory_order_relaxed)) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(intervalMs));
-      if (heartbeatStop.load(std::memory_order_relaxed)) {
-        break;
-      }
-      if (!evrp::sdk::sessionHeartbeat(channel, session.sessionId)) {
-        logError("SessionService/Heartbeat failed (session may have "
-                 "expired)");
-        break;
-      }
-    }
-  });
-
-  if (!waitUntilGetCapabilitiesOk(channel, session.sessionId,
-                                  FLAGS_rpc_wait_ms)) {
-    heartbeatStop.store(true, std::memory_order_relaxed);
-    heartbeatThread.join();
+  if (!waitUntilGetCapabilitiesOk(*client, FLAGS_rpc_wait_ms)) {
     logError("Timed out waiting for GetCapabilities on {}", target);
     return 1;
   }
   logInfo("InputDeviceService (GetCapabilities) ok on {}", target);
 
   std::vector<evrp::device::api::DeviceKind> caps;
-  if (!fetchCapabilities(channel, session.sessionId, &caps)) {
-    heartbeatStop.store(true, std::memory_order_relaxed);
-    heartbeatThread.join();
+  if (!fetchCapabilities(*client, &caps)) {
     return 1;
   }
 
-  if (!testInputListen(channel, session.sessionId, caps)) {
-    heartbeatStop.store(true, std::memory_order_relaxed);
-    heartbeatThread.join();
+  if (!testInputListen(*client, caps)) {
     return 1;
   }
-  if (!testPlayback(channel, session.sessionId, caps)) {
-    heartbeatStop.store(true, std::memory_order_relaxed);
-    heartbeatThread.join();
+  if (!testPlayback(*client, caps)) {
     return 1;
   }
-
-  heartbeatStop.store(true, std::memory_order_relaxed);
-  heartbeatThread.join();
-  (void)evrp::sdk::sessionDisconnect(channel, session.sessionId);
 
   logInfo("evrp-device integration test passed");
   return 0;

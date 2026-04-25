@@ -7,22 +7,17 @@
 #include "evrp/device/api/inputlistener.h"
 #include "evrp/device/api/playback.h"
 
-namespace grpc {
-class Channel;
-}
-
 namespace evrp::device::api {
 
-std::unique_ptr<IInputListener> makeRemoteInputListener(
-    const std::shared_ptr<grpc::Channel>& channel,
-    const std::string& deviceSessionId);
+class IClient {
+ public:
+  virtual ~IClient() = default;
 
-std::unique_ptr<IPlayback> makeRemotePlayback(
-    const std::shared_ptr<grpc::Channel>& channel,
-    const std::string& deviceSessionId);
+  virtual IInputListener* inputListener() const = 0;
+  virtual IPlayback* playback() const = 0;
+  virtual IInputDeviceClient* inputDevice() const = 0;
+};
 
-std::unique_ptr<IInputDeviceClient> makeRemoteInputDeviceClient(
-    const std::shared_ptr<grpc::Channel>& channel,
-    const std::string& deviceSessionId);
+std::unique_ptr<IClient> makeClient(const std::string& targetHostPort);
 
 }

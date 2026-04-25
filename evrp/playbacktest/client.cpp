@@ -9,7 +9,6 @@
 #include "evrp/sdk/countingsemaphore.h"
 #include "evrp/device/api/client.h"
 #include "evrp/device/api/types.h"
-#include "evrp/sdk/sessionclient.h"
 #include "logger.h"
 
 DEFINE_string(target, "127.0.0.1:50051", "Server address (host:port)");
@@ -82,22 +81,23 @@ int main(int argc, char** argv) {
       "press/release) for \"hello world\"",
       events.size());
 
-  const std::shared_ptr<grpc::Channel> channel =
-      evrp::sdk::makeGrpcClientChannel(FLAGS_target);
-  evrp::sdk::SessionInfo session;
-  if (!evrp::sdk::sessionConnect(channel, &session)) {
+  std::unique_ptr<evrp::device::api::IClient> app =
+      evrp::device::api::makeClient(FLAGS_target);
+  if (!app) {
     logError("evrp_playback_test_client: SessionService/Connect failed");
     return 1;
   }
-  const std::unique_ptr<evrp::device::api::IPlayback> remote =
-      evrp::device::api::makeRemotePlayback(channel, session.sessionId);
+  evrp::device::api::IPlayback* const remote = app->playback();
+  if (!remote) {
+    logError("evrp_playback_test_client: no playback client");
+    return 1;
+  }
 
   evrp::device::api::OperationResult up;
   if (!remote->upload(events, &up)) {
     logError("evrp_playback_test_client: upload failed code={} msg={}",
              up.code,
              up.message);
-    (void)evrp::sdk::sessionDisconnect(channel, session.sessionId);
     return 1;
   }
 
@@ -106,11 +106,12 @@ int main(int argc, char** argv) {
   const int n = static_cast<int>(events.size());
 
   if (FLAGS_progress) {
-    consumer = std::thread([&]() {
+    evrp::device::api::IPlayback* pb = remote;
+    consumer = std::thread([pb, n, &progress_sem]() {
       for (int i = 0; i < n; ++i) {
         progress_sem.acquire();
         logInfo("evrp_playback_test_client: progress idx={}",
-                remote->playbackIndex());
+                pb->playbackIndex());
       }
     });
   }
@@ -127,13 +128,11 @@ int main(int argc, char** argv) {
     logError("evrp_playback_test_client: playback failed code={} msg={}",
              play.code,
              play.message);
-    (void)evrp::sdk::sessionDisconnect(channel, session.sessionId);
     return 1;
   }
   logInfo("hello world");
   logInfo(
       "evrp_playback_test_client: playback finished (keyboard injection "
       "requires focus in a text field)");
-  (void)evrp::sdk::sessionDisconnect(channel, session.sessionId);
   return 0;
 }

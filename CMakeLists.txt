@@ -405,6 +405,7 @@ target_link_libraries(
          device_remote_inputlistener
          device_remote_playback
          evrp_device_proto
+         sdk_session_client
          tofromproto
          gRPC::grpc++)
 set_target_properties(
@@ -440,7 +441,7 @@ set_target_properties(
   PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
 target_link_libraries(
   evrp_device_integration_test
-  PRIVATE device_client sdk_session_client gflags::gflags logger)
+  PRIVATE device_client gflags::gflags logger)
 add_dependencies(evrp_device_integration_test evrp-device)
 add_test(
   NAME evrp_device_integration_test
@@ -462,8 +463,7 @@ target_include_directories(evrp_inputlisten_test_client
                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(
   evrp_inputlisten_test_client
-  PRIVATE evrp_device_api device_client sdk_session_client
-          gflags::gflags logger)
+  PRIVATE evrp_device_api device_client gflags::gflags logger)
 
 add_executable(evrp_playback_test_server evrp/playbacktest/server.cpp)
 target_include_directories(evrp_playback_test_server
@@ -478,5 +478,4 @@ target_include_directories(evrp_playback_test_client
                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(
   evrp_playback_test_client
-  PRIVATE evrp_device_api device_client sdk_session_client
-          gflags::gflags logger)
+  PRIVATE evrp_device_api device_client gflags::gflags logger)
