@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package evrp.device.v1;
+
+import "evrp/device/v1/types/common.proto";
+
+// Types for `service/playback.proto` (PlaybackService).
+message OperationResult {
+  int32 code = 1;
+  string message = 2;
+}
+
+message UploadRecordingRequest {
+  repeated InputEvent events = 1;
+}
+
+message PlaybackRecordingRequest {}
+
+message PlaybackProgress {
+  int32 event_index = 1;
+}

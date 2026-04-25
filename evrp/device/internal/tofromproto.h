@@ -6,7 +6,8 @@
 #include <google/protobuf/repeated_ptr_field.h>
 
 #include "evrp/device/api/types.h"
-#include "evrp/device/v1/types.pb.h"
+#include "evrp/device/v1/types/common.pb.h"
+#include "evrp/device/v1/types/playback.pb.h"
 
 namespace evrp::device::api {
 

@@ -9,7 +9,7 @@
 #include "evrp/device/impl/client/remoteinputlistener.h"
 #include "evrp/device/impl/client/remoteplayback.h"
 #include "evrp/sdk/sessionmetadata.h"
-#include "evrp/device/v1/service/session.grpc.pb.h"
+#include "evrp/sdk/v1/services/session.grpc.pb.h"
 
 namespace evrp::device::api {
 
@@ -35,10 +35,10 @@ bool deviceSessionConnect(const std::shared_ptr<grpc::Channel>& channel,
   }
   out->sessionId.clear();
   out->leaseTimeoutMs = 0;
-  evrp::device::v1::DeviceSessionService::Stub stub(channel);
+  evrp::sdk::v1::SessionService::Stub stub(channel);
   grpc::ClientContext ctx;
   google::protobuf::Empty req;
-  evrp::device::v1::ConnectResponse resp;
+  evrp::sdk::v1::ConnectResponse resp;
   grpc::Status s = stub.Connect(&ctx, req, &resp);
   if (!s.ok()) {
     return false;
@@ -50,7 +50,7 @@ bool deviceSessionConnect(const std::shared_ptr<grpc::Channel>& channel,
 
 bool deviceSessionHeartbeat(const std::shared_ptr<grpc::Channel>& channel,
                             const std::string& sessionId) {
-  evrp::device::v1::DeviceSessionService::Stub stub(channel);
+  evrp::sdk::v1::SessionService::Stub stub(channel);
   grpc::ClientContext ctx;
   evrp::session::addSessionMetadata(&ctx, sessionId);
   google::protobuf::Empty req;
@@ -60,7 +60,7 @@ bool deviceSessionHeartbeat(const std::shared_ptr<grpc::Channel>& channel,
 
 bool deviceSessionDisconnect(const std::shared_ptr<grpc::Channel>& channel,
                              const std::string& sessionId) {
-  evrp::device::v1::DeviceSessionService::Stub stub(channel);
+  evrp::sdk::v1::SessionService::Stub stub(channel);
   grpc::ClientContext ctx;
   evrp::session::addSessionMetadata(&ctx, sessionId);
   google::protobuf::Empty req;

@@ -1,16 +1,12 @@
 syntax = "proto3";
 
-package evrp.device.v1;
+package evrp.sdk.v1;
 
 import "google/protobuf/empty.proto";
+import "evrp/sdk/v1/types/session.proto";
 
-service DeviceSessionService {
+service SessionService {
   rpc Connect(google.protobuf.Empty) returns (ConnectResponse);
   rpc Heartbeat(google.protobuf.Empty) returns (google.protobuf.Empty);
   rpc Disconnect(google.protobuf.Empty) returns (google.protobuf.Empty);
-}
-
-message ConnectResponse {
-  string session_id = 1;
-  int32 lease_timeout_ms = 2;
 }

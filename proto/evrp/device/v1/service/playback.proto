@@ -3,7 +3,7 @@ syntax = "proto3";
 package evrp.device.v1;
 
 import "google/protobuf/empty.proto";
-import "evrp/device/v1/types.proto";
+import "evrp/device/v1/types/playback.proto";
 
 service PlaybackService {
   rpc Upload(UploadRecordingRequest) returns (OperationResult);

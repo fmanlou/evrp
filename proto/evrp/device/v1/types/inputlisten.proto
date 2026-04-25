@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package evrp.device.v1;
+
+import "evrp/device/v1/types/common.proto";
+
+// Types for `service/inputlisten.proto` (InputListenService).
+message StartRecordingRequest {
+  repeated DeviceKind kinds = 1;
+}
+
+message WaitForInputEventRequest {
+  int32 timeout_ms = 1;
+}
+
+message WaitForInputEventResponse {
+  bool ready = 1;
+}
+
+message ReadInputEventsResponse {
+  repeated InputEvent events = 1;
+}

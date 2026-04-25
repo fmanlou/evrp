@@ -474,7 +474,7 @@ int main(int argc, char** argv) {
       std::this_thread::sleep_for(std::chrono::milliseconds(40));
     }
     if (!connected) {
-      logError("Timed out waiting for DeviceSessionService/Connect on {}",
+      logError("Timed out waiting for SessionService/Connect on {}",
                target);
       return 1;
     }
@@ -491,7 +491,7 @@ int main(int argc, char** argv) {
       }
       if (!evrp::device::api::deviceSessionHeartbeat(channel,
                                                      session.sessionId)) {
-        logError("DeviceSessionService/Heartbeat failed (session may have "
+        logError("SessionService/Heartbeat failed (session may have "
                  "expired)");
         break;
       }

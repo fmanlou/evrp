@@ -85,7 +85,7 @@ int main(int argc, char** argv) {
       evrp::device::api::makeDeviceChannel(FLAGS_target);
   evrp::device::api::SessionInfo session;
   if (!evrp::device::api::deviceSessionConnect(channel, &session)) {
-    logError("evrp_playback_test_client: DeviceSessionService/Connect failed");
+    logError("evrp_playback_test_client: SessionService/Connect failed");
     return 1;
   }
   const std::unique_ptr<evrp::device::api::IPlayback> remote =

@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package evrp.device.v1;
+
+import "evrp/device/v1/types/common.proto";
+
+// Types for `service/service.proto` (InputDeviceService).
+message GetCursorPositionAvailabilityRequest {}
+
+message GetCursorPositionAvailabilityResponse {
+  bool available = 1;
+}
+
+message ReadCursorPositionRequest {}
+
+message ReadCursorPositionResponse {
+  int32 x = 1;
+  int32 y = 2;
+}
+
+message GetCapabilitiesRequest {}
+
+message GetCapabilitiesResponse {
+  repeated DeviceKind supported_kinds = 1;
+}

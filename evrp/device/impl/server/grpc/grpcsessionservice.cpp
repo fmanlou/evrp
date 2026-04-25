@@ -1,4 +1,4 @@
-#include "evrp/device/impl/server/grpc/grpcdevicesessionservice.h"
+#include "evrp/device/impl/server/grpc/grpcsessionservice.h"
 
 #include <google/protobuf/empty.pb.h>
 
@@ -6,21 +6,21 @@
 
 namespace evrp::device::server {
 
-GrpcDeviceSessionService::GrpcDeviceSessionService(
+GrpcSessionService::GrpcSessionService(
     evrp::session::SessionRegistry& registry)
     : registry_(registry) {}
 
-grpc::Status GrpcDeviceSessionService::Connect(
+grpc::Status GrpcSessionService::Connect(
     grpc::ServerContext* context,
     const google::protobuf::Empty* ,
-    v1::ConnectResponse* response) {
+    ::evrp::sdk::v1::ConnectResponse* response) {
   const std::string id = registry_.connect(context->peer());
   response->set_session_id(id);
   response->set_lease_timeout_ms(registry_.leaseTimeoutMs());
   return grpc::Status::OK;
 }
 
-grpc::Status GrpcDeviceSessionService::Heartbeat(
+grpc::Status GrpcSessionService::Heartbeat(
     grpc::ServerContext* context,
     const google::protobuf::Empty* ,
     google::protobuf::Empty* ) {
@@ -30,7 +30,7 @@ grpc::Status GrpcDeviceSessionService::Heartbeat(
   return registry_.heartbeat(sv, context->peer());
 }
 
-grpc::Status GrpcDeviceSessionService::Disconnect(
+grpc::Status GrpcSessionService::Disconnect(
     grpc::ServerContext* context,
     const google::protobuf::Empty* ,
     google::protobuf::Empty* ) {

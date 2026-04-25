@@ -38,12 +38,11 @@ Unary 输入监听（**`device_client` 远程实现**走本服务）。
 
 ## 布局
 
-- `evrp/device/v1/types.proto` — v1 消息与枚举（无 `service`）
-- `evrp/device/v1/service/inputlisten.proto` — `InputListenService`
-- `evrp/device/v1/service/playback.proto` — `PlaybackService`
-- `evrp/device/v1/service/service.proto` — `InputDeviceService`
+- `evrp/device/v1/types/common.proto` — 跨服务类型（`DeviceKind`、`InputEvent`）
+- `evrp/device/v1/types/{inputlisten,playback,service}.proto` — 与同名 `service/*.proto` 一一对应的消息
+- `evrp/device/v1/service/{inputlisten,playback,service}.proto` — 各 gRPC `service` 定义
 
-（上述 service 文件均 `import` `evrp/device/v1/types.proto`。）
+（每个 `service/*.proto` 只 `import` 与之同名的 `types/<name>.proto`；后者按需再 `import` `types/common.proto`。）
 
 ## 生成 C++ 代码（示例）
 
@@ -52,7 +51,10 @@ protoc -I proto \
   --cpp_out=generated/cpp \
   --grpc_out=generated/cpp \
   --plugin=protoc-gen-grpc="$(which grpc_cpp_plugin)" \
-  proto/evrp/device/v1/types.proto \
+  proto/evrp/device/v1/types/common.proto \
+  proto/evrp/device/v1/types/inputlisten.proto \
+  proto/evrp/device/v1/types/playback.proto \
+  proto/evrp/device/v1/types/service.proto \
   proto/evrp/device/v1/service/inputlisten.proto \
   proto/evrp/device/v1/service/playback.proto \
   proto/evrp/device/v1/service/service.proto
