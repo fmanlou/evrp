@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "evrp/device/api/countingsemaphore.h"
+#include "evrp/sdk/countingsemaphore.h"
 #include "evrp/device/api/playback.h"
 #include "evrp/sdk/iocontextpostedbase.h"
 

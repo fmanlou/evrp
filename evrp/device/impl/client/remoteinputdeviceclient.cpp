@@ -2,7 +2,7 @@
 
 #include <chrono>
 
-#include "evrp/sdk/devicesessionmetadata.h"
+#include "evrp/sdk/sessionmetadata.h"
 #include "evrp/device/internal/tofromproto.h"
 
 namespace evrp::device::client {
@@ -18,7 +18,7 @@ bool RemoteInputDeviceClient::getCapabilities(
     std::vector<api::DeviceKind>* out) {
   out->clear();
   grpc::ClientContext ctx;
-  addDeviceSessionMetadata(&ctx, deviceSessionId_);
+  evrp::session::addSessionMetadata(&ctx, deviceSessionId_);
   ctx.set_deadline(std::chrono::system_clock::now() + std::chrono::seconds(5));
   v1::GetCapabilitiesRequest req;
   v1::GetCapabilitiesResponse resp;
@@ -34,7 +34,7 @@ bool RemoteInputDeviceClient::getCapabilities(
 
 bool RemoteInputDeviceClient::getCursorPositionAvailability(bool* available) {
   grpc::ClientContext ctx;
-  addDeviceSessionMetadata(&ctx, deviceSessionId_);
+  evrp::session::addSessionMetadata(&ctx, deviceSessionId_);
   ctx.set_deadline(std::chrono::system_clock::now() + std::chrono::seconds(5));
   v1::GetCursorPositionAvailabilityRequest req;
   v1::GetCursorPositionAvailabilityResponse resp;
@@ -49,7 +49,7 @@ bool RemoteInputDeviceClient::getCursorPositionAvailability(bool* available) {
 
 bool RemoteInputDeviceClient::readCursorPosition(int* outX, int* outY) {
   grpc::ClientContext ctx;
-  addDeviceSessionMetadata(&ctx, deviceSessionId_);
+  evrp::session::addSessionMetadata(&ctx, deviceSessionId_);
   ctx.set_deadline(std::chrono::system_clock::now() + std::chrono::seconds(5));
   v1::ReadCursorPositionRequest req;
   v1::ReadCursorPositionResponse resp;

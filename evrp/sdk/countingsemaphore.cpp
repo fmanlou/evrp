@@ -1,4 +1,4 @@
-#include "evrp/device/api/countingsemaphore.h"
+#include "evrp/sdk/countingsemaphore.h"
 
 namespace evrp {
 

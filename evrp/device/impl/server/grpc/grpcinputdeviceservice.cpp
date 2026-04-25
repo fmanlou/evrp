@@ -1,15 +1,15 @@
 #include "evrp/device/impl/server/grpc/grpcinputdeviceservice.h"
 
 #include "evrp/device/internal/tofromproto.h"
-#include "evrp/sdk/devicesessioncheck.h"
-#include "evrp/sdk/devicesessionregistry.h"
+#include "evrp/sdk/sessioncheck.h"
+#include "evrp/sdk/sessionregistry.h"
 #include "evrp/sdk/ioc.h"
 #include "logger.h"
 
 namespace evrp::device::server {
 
-GrpcInputDeviceService::GrpcInputDeviceService(const evrp::Ioc& ioc,
-                                               DeviceSessionRegistry& sessions)
+GrpcInputDeviceService::GrpcInputDeviceService(
+    const evrp::Ioc& ioc, evrp::session::SessionRegistry& sessions)
     : cursorPosition_(ioc.get<api::ICursorPosition>()),
       deviceKindsProvider_(ioc.get<api::IInputDeviceKindsProvider>()),
       sessions_(sessions) {}
@@ -18,7 +18,7 @@ grpc::Status GrpcInputDeviceService::GetCursorPositionAvailability(
     grpc::ServerContext* context,
     const v1::GetCursorPositionAvailabilityRequest* ,
     v1::GetCursorPositionAvailabilityResponse* response) {
-  if (grpc::Status st = requireDeviceBusinessSession(context, sessions_); !st.ok()) {
+  if (grpc::Status st = evrp::session::requireBusinessSession(context, sessions_); !st.ok()) {
     return st;
   }
   if (!cursorPosition_) {
@@ -33,7 +33,7 @@ grpc::Status GrpcInputDeviceService::ReadCursorPosition(
     grpc::ServerContext* context,
     const v1::ReadCursorPositionRequest* ,
     v1::ReadCursorPositionResponse* response) {
-  if (grpc::Status st = requireDeviceBusinessSession(context, sessions_); !st.ok()) {
+  if (grpc::Status st = evrp::session::requireBusinessSession(context, sessions_); !st.ok()) {
     return st;
   }
   if (!cursorPosition_) {
@@ -58,7 +58,7 @@ grpc::Status GrpcInputDeviceService::GetCapabilities(
     grpc::ServerContext* context,
     const v1::GetCapabilitiesRequest* ,
     v1::GetCapabilitiesResponse* response) {
-  if (grpc::Status st = requireDeviceBusinessSession(context, sessions_); !st.ok()) {
+  if (grpc::Status st = evrp::session::requireBusinessSession(context, sessions_); !st.ok()) {
     return st;
   }
   if (!deviceKindsProvider_) {

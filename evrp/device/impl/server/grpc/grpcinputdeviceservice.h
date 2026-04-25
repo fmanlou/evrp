@@ -10,14 +10,16 @@ namespace evrp {
 class Ioc;
 }
 
-namespace evrp::device::server {
+namespace evrp::session {
+class SessionRegistry;
+}
 
-class DeviceSessionRegistry;
+namespace evrp::device::server {
 
 class GrpcInputDeviceService final
     : public v1::InputDeviceService::Service {
  public:
-  GrpcInputDeviceService(const evrp::Ioc& ioc, DeviceSessionRegistry& sessions);
+  GrpcInputDeviceService(const evrp::Ioc& ioc, evrp::session::SessionRegistry& sessions);
 
   GrpcInputDeviceService(const GrpcInputDeviceService&) = delete;
   GrpcInputDeviceService& operator=(const GrpcInputDeviceService&) = delete;
@@ -40,7 +42,7 @@ class GrpcInputDeviceService final
  private:
   api::ICursorPosition* cursorPosition_;
   api::IInputDeviceKindsProvider* deviceKindsProvider_;
-  DeviceSessionRegistry& sessions_;
+  evrp::session::SessionRegistry& sessions_;
 };
 
 }

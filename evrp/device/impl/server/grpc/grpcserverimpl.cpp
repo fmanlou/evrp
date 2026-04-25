@@ -10,19 +10,19 @@
 #include <grpcpp/grpcpp.h>
 #include <grpcpp/health_check_service_interface.h>
 
-#include "evrp/sdk/devicesessionregistry.h"
+#include "evrp/sdk/sessionregistry.h"
 #include "evrp/device/impl/server/grpc/grpcdevicesessionservice.h"
 #include "evrp/device/impl/server/grpc/grpcinputdeviceservice.h"
 #include "evrp/device/impl/server/grpc/grpcinputlisten.h"
 #include "evrp/device/impl/server/grpc/grpcplaybackservice.h"
 #include "logger.h"
 
-DECLARE_int32(device_session_lease_ms);
+DECLARE_int32(session_lease_ms);
 
 namespace evrp::device::api {
 
 int runDeviceServer(const std::string& listen_address, const evrp::Ioc& ioc) {
-  server::DeviceSessionRegistry sessionRegistry(FLAGS_device_session_lease_ms);
+  evrp::session::SessionRegistry sessionRegistry(FLAGS_session_lease_ms);
   server::GrpcDeviceSessionService session_service(sessionRegistry);
   server::GrpcInputListenService listen_service(ioc, sessionRegistry);
   server::GrpcInputDeviceService device_service(ioc, sessionRegistry);

@@ -1,8 +1,8 @@
 #include "evrp/device/impl/server/grpc/grpcinputlisten.h"
 
 #include "evrp/device/internal/tofromproto.h"
-#include "evrp/sdk/devicesessioncheck.h"
-#include "evrp/sdk/devicesessionregistry.h"
+#include "evrp/sdk/sessioncheck.h"
+#include "evrp/sdk/sessionregistry.h"
 #include "evrp/sdk/ioc.h"
 #include "logger.h"
 
@@ -31,8 +31,8 @@ int64_t steadyNowNs() {
 
 }  
 
-GrpcInputListenService::GrpcInputListenService(const evrp::Ioc& ioc,
-                                               DeviceSessionRegistry& sessions)
+GrpcInputListenService::GrpcInputListenService(
+    const evrp::Ioc& ioc, evrp::session::SessionRegistry& sessions)
     : listener_(ioc.get<api::IInputListener>()), sessions_(sessions) {
   lastRecordingActivityNs_.store(steadyNowNs(), std::memory_order_relaxed);
   watchdogThread_ = std::thread([this] { watchdogLoop(); });
@@ -73,7 +73,7 @@ grpc::Status GrpcInputListenService::StartRecording(
     grpc::ServerContext* context,
     const v1::StartRecordingRequest* request,
     google::protobuf::Empty* ) {
-  if (grpc::Status st = requireDeviceBusinessSession(context, sessions_); !st.ok()) {
+  if (grpc::Status st = evrp::session::requireBusinessSession(context, sessions_); !st.ok()) {
     return st;
   }
   if (!listener_) {
@@ -110,7 +110,7 @@ grpc::Status GrpcInputListenService::WaitForInputEvent(
     grpc::ServerContext* context,
     const v1::WaitForInputEventRequest* request,
     v1::WaitForInputEventResponse* response) {
-  if (grpc::Status st = requireDeviceBusinessSession(context, sessions_); !st.ok()) {
+  if (grpc::Status st = evrp::session::requireBusinessSession(context, sessions_); !st.ok()) {
     return st;
   }
   if (!listener_) {
@@ -177,7 +177,7 @@ grpc::Status GrpcInputListenService::ReadInputEvents(
     grpc::ServerContext* context,
     const google::protobuf::Empty* ,
     v1::ReadInputEventsResponse* response) {
-  if (grpc::Status st = requireDeviceBusinessSession(context, sessions_); !st.ok()) {
+  if (grpc::Status st = evrp::session::requireBusinessSession(context, sessions_); !st.ok()) {
     return st;
   }
   if (!listener_) {
@@ -202,7 +202,7 @@ grpc::Status GrpcInputListenService::ReadInputEvents(
 grpc::Status GrpcInputListenService::StopRecording(
     grpc::ServerContext* context, const google::protobuf::Empty* ,
     google::protobuf::Empty* ) {
-  if (grpc::Status st = requireDeviceBusinessSession(context, sessions_); !st.ok()) {
+  if (grpc::Status st = evrp::session::requireBusinessSession(context, sessions_); !st.ok()) {
     return st;
   }
   if (!listener_) {

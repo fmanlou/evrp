@@ -260,7 +260,7 @@ add_library(evrp_device_api INTERFACE)
 target_include_directories(evrp_device_api
                            INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_library(countingsemaphore STATIC evrp/device/impl/countingsemaphore.cpp)
+add_library(countingsemaphore STATIC evrp/sdk/countingsemaphore.cpp)
 target_include_directories(countingsemaphore
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 set_target_properties(
@@ -268,17 +268,17 @@ set_target_properties(
   PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
 
 add_library(
-  sdk_devicesession STATIC
-  evrp/sdk/devicesessionregistry.cpp
-  evrp/sdk/devicesessioncheck.cpp)
-target_include_directories(sdk_devicesession
+  sdk_session STATIC
+  evrp/sdk/sessionregistry.cpp
+  evrp/sdk/sessioncheck.cpp)
+target_include_directories(sdk_session
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(
-  sdk_devicesession
+  sdk_session
   PUBLIC gRPC::grpc++ gflags::gflags
   PRIVATE logger)
 set_target_properties(
-  sdk_devicesession
+  sdk_session
   PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
 
 add_library(tofromproto STATIC evrp/device/internal/tofromproto.cpp)
@@ -377,7 +377,7 @@ target_include_directories(evrp_device_grpc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(evrp_device_grpc
                       PUBLIC evrp_device_proto tofromproto
                              countingsemaphore asio::asio
-                             gflags::gflags sdk_devicesession
+                             gflags::gflags sdk_session
                       PRIVATE logger)
 
 add_executable(evrp-device evrp-device/main.cpp)

@@ -2,11 +2,12 @@
 
 #include <google/protobuf/empty.pb.h>
 
-#include "evrp/sdk/devicesessioncheck.h"
+#include "evrp/sdk/sessioncheck.h"
 
 namespace evrp::device::server {
 
-GrpcDeviceSessionService::GrpcDeviceSessionService(DeviceSessionRegistry& registry)
+GrpcDeviceSessionService::GrpcDeviceSessionService(
+    evrp::session::SessionRegistry& registry)
     : registry_(registry) {}
 
 grpc::Status GrpcDeviceSessionService::Connect(
@@ -23,7 +24,7 @@ grpc::Status GrpcDeviceSessionService::Heartbeat(
     grpc::ServerContext* context,
     const google::protobuf::Empty* ,
     google::protobuf::Empty* ) {
-  const auto sid = deviceSessionIdFromContext(*context);
+  const auto sid = evrp::session::sessionIdFromContext(*context);
   const std::string_view sv =
       sid ? std::string_view(*sid) : std::string_view();
   return registry_.heartbeat(sv, context->peer());
@@ -33,7 +34,7 @@ grpc::Status GrpcDeviceSessionService::Disconnect(
     grpc::ServerContext* context,
     const google::protobuf::Empty* ,
     google::protobuf::Empty* ) {
-  const auto sid = deviceSessionIdFromContext(*context);
+  const auto sid = evrp::session::sessionIdFromContext(*context);
   const std::string_view sv =
       sid ? std::string_view(*sid) : std::string_view();
   return registry_.disconnect(sv, context->peer());

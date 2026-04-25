@@ -2,8 +2,8 @@
 
 #include <google/protobuf/empty.pb.h>
 
-#include "evrp/sdk/devicesessionmetadata.h"
-#include "evrp/device/internal/grpcstatuscodefmt.h"
+#include "evrp/sdk/sessionmetadata.h"
+#include "evrp/sdk/grpcstatuscodefmt.h"
 #include "evrp/device/internal/tofromproto.h"
 #include "logger.h"
 
@@ -29,7 +29,7 @@ bool RemoteInputListener::startListening(
   }
 
   grpc::ClientContext ctx;
-  addDeviceSessionMetadata(&ctx, deviceSessionId_);
+  evrp::session::addSessionMetadata(&ctx, deviceSessionId_);
   google::protobuf::Empty resp;
   grpc::Status st = stub_->StartRecording(&ctx, req, &resp);
   if (!st.ok()) {
@@ -50,7 +50,7 @@ std::vector<api::InputEvent> RemoteInputListener::readInputEvents() {
   }
 
   grpc::ClientContext ctx;
-  addDeviceSessionMetadata(&ctx, deviceSessionId_);
+  evrp::session::addSessionMetadata(&ctx, deviceSessionId_);
   google::protobuf::Empty req;
   v1::ReadInputEventsResponse resp;
   grpc::Status st = stub_->ReadInputEvents(&ctx, req, &resp);
@@ -70,7 +70,7 @@ bool RemoteInputListener::waitForInputEvent(int timeoutMs) {
   }
 
   grpc::ClientContext ctx;
-  addDeviceSessionMetadata(&ctx, deviceSessionId_);
+  evrp::session::addSessionMetadata(&ctx, deviceSessionId_);
   v1::WaitForInputEventRequest req;
   req.set_timeout_ms(timeoutMs);
   v1::WaitForInputEventResponse resp;
@@ -88,7 +88,7 @@ void RemoteInputListener::cancelListening() {
     return;
   }
   grpc::ClientContext ctx;
-  addDeviceSessionMetadata(&ctx, deviceSessionId_);
+  evrp::session::addSessionMetadata(&ctx, deviceSessionId_);
   google::protobuf::Empty req;
   google::protobuf::Empty resp;
   stub_->StopRecording(&ctx, req, &resp);

@@ -8,7 +8,7 @@
 #include "evrp/device/impl/client/remoteinputdeviceclient.h"
 #include "evrp/device/impl/client/remoteinputlistener.h"
 #include "evrp/device/impl/client/remoteplayback.h"
-#include "evrp/sdk/devicesessionmetadata.h"
+#include "evrp/sdk/sessionmetadata.h"
 #include "evrp/device/v1/service/session.grpc.pb.h"
 
 namespace evrp::device::api {
@@ -52,7 +52,7 @@ bool deviceSessionHeartbeat(const std::shared_ptr<grpc::Channel>& channel,
                             const std::string& sessionId) {
   evrp::device::v1::DeviceSessionService::Stub stub(channel);
   grpc::ClientContext ctx;
-  evrp::device::addDeviceSessionMetadata(&ctx, sessionId);
+  evrp::session::addSessionMetadata(&ctx, sessionId);
   google::protobuf::Empty req;
   google::protobuf::Empty resp;
   return stub.Heartbeat(&ctx, req, &resp).ok();
@@ -62,7 +62,7 @@ bool deviceSessionDisconnect(const std::shared_ptr<grpc::Channel>& channel,
                              const std::string& sessionId) {
   evrp::device::v1::DeviceSessionService::Stub stub(channel);
   grpc::ClientContext ctx;
-  evrp::device::addDeviceSessionMetadata(&ctx, sessionId);
+  evrp::session::addSessionMetadata(&ctx, sessionId);
   google::protobuf::Empty req;
   google::protobuf::Empty resp;
   return stub.Disconnect(&ctx, req, &resp).ok();

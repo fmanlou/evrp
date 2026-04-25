@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "evrp/device/api/countingsemaphore.h"
+#include "evrp/sdk/countingsemaphore.h"
 #include "evrp/device/api/types.h"
 
 namespace evrp::device::api {

@@ -1,20 +1,20 @@
-#include "evrp/sdk/devicesessionregistry.h"
+#include "evrp/sdk/sessionregistry.h"
 
 #include <random>
 #include <sstream>
 
 #include <gflags/gflags.h>
 
-#include "evrp/sdk/devicesessionmetadata.h"
+#include "evrp/sdk/sessionmetadata.h"
 #include "logger.h"
 
 DEFINE_int32(
-    device_session_lease_ms,
+    session_lease_ms,
     3000,
-    "evrp-device: business session expires if Heartbeat is not received within "
-    "this interval (ms).");
+    "Business session expires if Heartbeat is not received within this "
+    "interval (ms).");
 
-namespace evrp::device::server {
+namespace evrp::session {
 namespace {
 
 std::string randomSessionId() {
@@ -27,15 +27,15 @@ std::string randomSessionId() {
 
 }  
 
-DeviceSessionRegistry::DeviceSessionRegistry(int leaseTimeoutMs) {
-  int ms = leaseTimeoutMs > 0 ? leaseTimeoutMs : FLAGS_device_session_lease_ms;
+SessionRegistry::SessionRegistry(int leaseTimeoutMs) {
+  int ms = leaseTimeoutMs > 0 ? leaseTimeoutMs : FLAGS_session_lease_ms;
   if (ms <= 0) {
     ms = 3000;
   }
   leaseTimeoutMs_ = ms;
 }
 
-std::string DeviceSessionRegistry::connect(std::string_view peer) {
+std::string SessionRegistry::connect(std::string_view peer) {
   std::lock_guard<std::mutex> lock(mutex_);
   std::string id;
   do {
@@ -45,18 +45,16 @@ std::string DeviceSessionRegistry::connect(std::string_view peer) {
   r.peer = std::string(peer);
   r.lastHeartbeat = std::chrono::steady_clock::now();
   sessions_.emplace(id, std::move(r));
-  logInfo("evrp-device: business session online peer={} session={}",
-          peer,
-          id);
+  logInfo("evrp: business session online peer={} session={}", peer, id);
   return id;
 }
 
-grpc::Status DeviceSessionRegistry::heartbeat(std::string_view sessionId,
-                                              std::string_view peer) {
+grpc::Status SessionRegistry::heartbeat(std::string_view sessionId,
+                                        std::string_view peer) {
   if (sessionId.empty()) {
     return grpc::Status(
         grpc::StatusCode::FAILED_PRECONDITION,
-        std::string("metadata ") + evrp::device::kDeviceSessionMetadataKey +
+        std::string("metadata ") + kSessionMetadataKey +
             " required for Heartbeat");
   }
   std::lock_guard<std::mutex> lock(mutex_);
@@ -80,12 +78,12 @@ grpc::Status DeviceSessionRegistry::heartbeat(std::string_view sessionId,
   return grpc::Status::OK;
 }
 
-grpc::Status DeviceSessionRegistry::disconnect(std::string_view sessionId,
-                                               std::string_view peer) {
+grpc::Status SessionRegistry::disconnect(std::string_view sessionId,
+                                         std::string_view peer) {
   if (sessionId.empty()) {
     return grpc::Status(
         grpc::StatusCode::FAILED_PRECONDITION,
-        std::string("metadata ") + evrp::device::kDeviceSessionMetadataKey +
+        std::string("metadata ") + kSessionMetadataKey +
             " required for Disconnect");
   }
   std::lock_guard<std::mutex> lock(mutex_);
@@ -97,21 +95,21 @@ grpc::Status DeviceSessionRegistry::disconnect(std::string_view sessionId,
     return grpc::Status(grpc::StatusCode::PERMISSION_DENIED,
                         "session peer mismatch");
   }
-  logInfo("evrp-device: business session offline peer={} session={}",
+  logInfo("evrp: business session offline peer={} session={}",
           it->second.peer,
           sessionId);
   sessions_.erase(it);
   return grpc::Status::OK;
 }
 
-grpc::Status DeviceSessionRegistry::requireActiveBusinessCall(
+grpc::Status SessionRegistry::requireActiveBusinessCall(
     std::string_view sessionId, std::string_view peer) {
   if (sessionId.empty()) {
     return grpc::Status(
         grpc::StatusCode::FAILED_PRECONDITION,
-        std::string("device business session required: call ") +
-            "DeviceSessionService/Connect then attach metadata " +
-            evrp::device::kDeviceSessionMetadataKey + " on each RPC");
+        std::string("business session required: call session Connect then "
+                    "attach metadata ") +
+            kSessionMetadataKey + " on each RPC");
   }
   std::lock_guard<std::mutex> lock(mutex_);
   auto it = sessions_.find(std::string(sessionId));
@@ -134,16 +132,15 @@ grpc::Status DeviceSessionRegistry::requireActiveBusinessCall(
   return grpc::Status::OK;
 }
 
-void DeviceSessionRegistry::sweepExpiredForLogging() {
+void SessionRegistry::sweepExpiredForLogging() {
   const auto now = std::chrono::steady_clock::now();
   std::lock_guard<std::mutex> lock(mutex_);
   for (auto it = sessions_.begin(); it != sessions_.end();) {
     if (now - it->second.lastHeartbeat >
         std::chrono::milliseconds(leaseTimeoutMs_)) {
-      logWarn(
-          "evrp-device: business session timed out peer={} session={}",
-          it->second.peer,
-          it->first);
+      logWarn("evrp: business session timed out peer={} session={}",
+              it->second.peer,
+              it->first);
       it = sessions_.erase(it);
     } else {
       ++it;

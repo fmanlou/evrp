@@ -11,14 +11,16 @@ namespace evrp {
 class Ioc;
 }
 
-namespace evrp::device::server {
+namespace evrp::session {
+class SessionRegistry;
+}
 
-class DeviceSessionRegistry;
+namespace evrp::device::server {
 
 class GrpcPlaybackService final
     : public v1::PlaybackService::Service {
  public:
-  GrpcPlaybackService(const evrp::Ioc& ioc, DeviceSessionRegistry& sessions);
+  GrpcPlaybackService(const evrp::Ioc& ioc, evrp::session::SessionRegistry& sessions);
 
   grpc::Status Upload(
       grpc::ServerContext* context,
@@ -43,7 +45,7 @@ class GrpcPlaybackService final
   void markPlaybackStreamFinished();
 
   api::IPlayback* playback_;
-  DeviceSessionRegistry& sessions_;
+  evrp::session::SessionRegistry& sessions_;
 
   evrp::CountingSemaphore playbackProgressSem_;
 

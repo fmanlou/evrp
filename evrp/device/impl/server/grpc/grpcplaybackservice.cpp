@@ -3,14 +3,14 @@
 #include <google/protobuf/empty.pb.h>
 
 #include "evrp/device/internal/tofromproto.h"
-#include "evrp/sdk/devicesessioncheck.h"
-#include "evrp/sdk/devicesessionregistry.h"
+#include "evrp/sdk/sessioncheck.h"
+#include "evrp/sdk/sessionregistry.h"
 #include "evrp/sdk/ioc.h"
 
 namespace evrp::device::server {
 
 GrpcPlaybackService::GrpcPlaybackService(const evrp::Ioc& ioc,
-                                         DeviceSessionRegistry& sessions)
+                                        evrp::session::SessionRegistry& sessions)
     : playback_(ioc.get<api::IPlayback>()), sessions_(sessions) {}
 
 void GrpcPlaybackService::markPlaybackStreamFinished() {
@@ -22,7 +22,7 @@ grpc::Status GrpcPlaybackService::Upload(
     grpc::ServerContext* context,
     const v1::UploadRecordingRequest* request,
     v1::OperationResult* response) {
-  if (grpc::Status st = requireDeviceBusinessSession(context, sessions_); !st.ok()) {
+  if (grpc::Status st = evrp::session::requireBusinessSession(context, sessions_); !st.ok()) {
     return st;
   }
   if (!playback_) {
@@ -44,7 +44,7 @@ grpc::Status GrpcPlaybackService::Playback(
     grpc::ServerContext* context,
     const v1::PlaybackRecordingRequest* ,
     v1::OperationResult* response) {
-  if (grpc::Status st = requireDeviceBusinessSession(context, sessions_); !st.ok()) {
+  if (grpc::Status st = evrp::session::requireBusinessSession(context, sessions_); !st.ok()) {
     return st;
   }
   while (playbackProgressSem_.tryAcquire()) {
@@ -73,7 +73,7 @@ grpc::Status GrpcPlaybackService::SubscribePlayback(
     grpc::ServerContext* context,
     const google::protobuf::Empty* ,
     grpc::ServerWriter<v1::PlaybackProgress>* writer) {
-  if (grpc::Status st = requireDeviceBusinessSession(context, sessions_); !st.ok()) {
+  if (grpc::Status st = evrp::session::requireBusinessSession(context, sessions_); !st.ok()) {
     return st;
   }
   if (!playback_) {
@@ -128,7 +128,7 @@ grpc::Status GrpcPlaybackService::SubscribePlayback(
 grpc::Status GrpcPlaybackService::Stop(
     grpc::ServerContext* context, const google::protobuf::Empty* ,
     google::protobuf::Empty* ) {
-  if (grpc::Status st = requireDeviceBusinessSession(context, sessions_); !st.ok()) {
+  if (grpc::Status st = evrp::session::requireBusinessSession(context, sessions_); !st.ok()) {
     return st;
   }
   if (!playback_) {

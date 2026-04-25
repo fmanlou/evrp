@@ -8,14 +8,14 @@
 
 #include <grpcpp/support/status.h>
 
-namespace evrp::device::server {
+namespace evrp::session {
 
-class DeviceSessionRegistry {
+class SessionRegistry {
  public:
-  explicit DeviceSessionRegistry(int leaseTimeoutMs);
+  explicit SessionRegistry(int leaseTimeoutMs);
 
-  DeviceSessionRegistry(const DeviceSessionRegistry&) = delete;
-  DeviceSessionRegistry& operator=(const DeviceSessionRegistry&) = delete;
+  SessionRegistry(const SessionRegistry&) = delete;
+  SessionRegistry& operator=(const SessionRegistry&) = delete;
 
   std::string connect(std::string_view peer);
   grpc::Status heartbeat(std::string_view sessionId, std::string_view peer);

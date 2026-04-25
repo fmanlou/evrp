@@ -2,7 +2,7 @@
 
 #include <grpcpp/grpcpp.h>
 
-#include "evrp/sdk/devicesessionregistry.h"
+#include "evrp/sdk/sessionregistry.h"
 #include "evrp/device/v1/service/session.grpc.pb.h"
 
 namespace evrp::device::server {
@@ -10,7 +10,7 @@ namespace evrp::device::server {
 class GrpcDeviceSessionService final
     : public v1::DeviceSessionService::Service {
  public:
-  explicit GrpcDeviceSessionService(DeviceSessionRegistry& registry);
+  explicit GrpcDeviceSessionService(evrp::session::SessionRegistry& registry);
 
   grpc::Status Connect(grpc::ServerContext* context,
                        const google::protobuf::Empty* request,
@@ -25,7 +25,7 @@ class GrpcDeviceSessionService final
                           google::protobuf::Empty* response) override;
 
  private:
-  DeviceSessionRegistry& registry_;
+  evrp::session::SessionRegistry& registry_;
 };
 
 }
