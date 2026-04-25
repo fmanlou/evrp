@@ -1,9 +1,9 @@
-#include "evrp/device/impl/server/devicesessioncheck.h"
+#include "evrp/sdk/devicesessioncheck.h"
 
 #include <string_view>
 
-#include "evrp/device/common/devicesessionmetadata.h"
-#include "evrp/device/impl/server/devicesessionregistry.h"
+#include "evrp/sdk/devicesessionmetadata.h"
+#include "evrp/sdk/devicesessionregistry.h"
 
 namespace evrp::device::server {
 

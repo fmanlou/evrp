@@ -2,7 +2,7 @@
 
 #include <google/protobuf/empty.pb.h>
 
-#include "evrp/device/impl/server/devicesessioncheck.h"
+#include "evrp/sdk/devicesessioncheck.h"
 
 namespace evrp::device::server {
 

@@ -267,6 +267,20 @@ set_target_properties(
   countingsemaphore
   PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
 
+add_library(
+  sdk_devicesession STATIC
+  evrp/sdk/devicesessionregistry.cpp
+  evrp/sdk/devicesessioncheck.cpp)
+target_include_directories(sdk_devicesession
+                           PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(
+  sdk_devicesession
+  PUBLIC gRPC::grpc++ gflags::gflags
+  PRIVATE logger)
+set_target_properties(
+  sdk_devicesession
+  PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
+
 add_library(tofromproto STATIC evrp/device/internal/tofromproto.cpp)
 target_include_directories(tofromproto
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
@@ -355,17 +369,16 @@ set_target_properties(
 add_library(
   evrp_device_grpc STATIC
   evrp/device/impl/server/grpc/grpcserverimpl.cpp
-  evrp/device/impl/server/devicesessionregistry.cpp
-  evrp/device/impl/server/devicesessioncheck.cpp
   evrp/device/impl/server/grpc/grpcdevicesessionservice.cpp
   evrp/device/impl/server/grpc/grpcinputlisten.cpp
   evrp/device/impl/server/grpc/grpcinputdeviceservice.cpp
   evrp/device/impl/server/grpc/grpcplaybackservice.cpp)
 target_include_directories(evrp_device_grpc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(evrp_device_grpc PUBLIC evrp_device_proto tofromproto
-                                              countingsemaphore asio::asio
-                                              gflags::gflags
-                       PRIVATE logger)
+target_link_libraries(evrp_device_grpc
+                      PUBLIC evrp_device_proto tofromproto
+                             countingsemaphore asio::asio
+                             gflags::gflags sdk_devicesession
+                      PRIVATE logger)
 
 add_executable(evrp-device evrp-device/main.cpp)
 target_link_libraries(

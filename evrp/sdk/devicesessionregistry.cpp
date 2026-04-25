@@ -1,11 +1,11 @@
-#include "evrp/device/impl/server/devicesessionregistry.h"
+#include "evrp/sdk/devicesessionregistry.h"
 
 #include <random>
 #include <sstream>
 
 #include <gflags/gflags.h>
 
-#include "evrp/device/common/devicesessionmetadata.h"
+#include "evrp/sdk/devicesessionmetadata.h"
 #include "logger.h"
 
 DEFINE_int32(

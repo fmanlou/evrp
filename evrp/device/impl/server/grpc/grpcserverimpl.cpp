@@ -10,7 +10,7 @@
 #include <grpcpp/grpcpp.h>
 #include <grpcpp/health_check_service_interface.h>
 
-#include "evrp/device/impl/server/devicesessionregistry.h"
+#include "evrp/sdk/devicesessionregistry.h"
 #include "evrp/device/impl/server/grpc/grpcdevicesessionservice.h"
 #include "evrp/device/impl/server/grpc/grpcinputdeviceservice.h"
 #include "evrp/device/impl/server/grpc/grpcinputlisten.h"

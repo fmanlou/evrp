@@ -2,7 +2,7 @@
 
 #include <chrono>
 
-#include "evrp/device/common/devicesessionmetadata.h"
+#include "evrp/sdk/devicesessionmetadata.h"
 #include "evrp/device/internal/tofromproto.h"
 
 namespace evrp::device::client {
