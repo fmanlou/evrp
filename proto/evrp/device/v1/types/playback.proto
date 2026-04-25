@@ -4,7 +4,6 @@ package evrp.device.v1;
 
 import "evrp/device/v1/types/common.proto";
 
-// Types for `service/playback.proto` (PlaybackService).
 message OperationResult {
   int32 code = 1;
   string message = 2;

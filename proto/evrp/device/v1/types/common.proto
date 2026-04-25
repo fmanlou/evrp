@@ -4,7 +4,6 @@ package evrp.device.v1;
 
 option cc_enable_arenas = true;
 
-// Shared by InputListen, Playback, and InputDevice.
 enum DeviceKind {
   DEVICE_KIND_UNSPECIFIED = 0;
   DEVICE_KIND_TOUCHPAD = 1;

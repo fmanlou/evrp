@@ -4,7 +4,6 @@ package evrp.device.v1;
 
 import "evrp/device/v1/types/common.proto";
 
-// Types for `service/service.proto` (InputDeviceService).
 message GetCursorPositionAvailabilityRequest {}
 
 message GetCursorPositionAvailabilityResponse {
