@@ -23,6 +23,7 @@
 
 #include "evrp/device/api/deviceclient.h"
 #include "evrp/device/api/types.h"
+#include "evrp/sdk/sessionclient.h"
 #include "logger.h"
 
 DEFINE_string(
@@ -458,16 +459,16 @@ int main(int argc, char** argv) {
   }
 
   const std::shared_ptr<grpc::Channel> channel =
-      evrp::device::api::makeDeviceChannel(target);
+      evrp::sdk::makeGrpcClientChannel(target);
 
-  evrp::device::api::SessionInfo session;
+  evrp::sdk::SessionInfo session;
   {
     const auto connectDeadline =
         std::chrono::steady_clock::now() +
         std::chrono::milliseconds(FLAGS_rpc_wait_ms);
     bool connected = false;
     while (std::chrono::steady_clock::now() < connectDeadline) {
-      if (evrp::device::api::deviceSessionConnect(channel, &session)) {
+      if (evrp::sdk::sessionConnect(channel, &session)) {
         connected = true;
         break;
       }
@@ -489,8 +490,7 @@ int main(int argc, char** argv) {
       if (heartbeatStop.load(std::memory_order_relaxed)) {
         break;
       }
-      if (!evrp::device::api::deviceSessionHeartbeat(channel,
-                                                     session.sessionId)) {
+      if (!evrp::sdk::sessionHeartbeat(channel, session.sessionId)) {
         logError("SessionService/Heartbeat failed (session may have "
                  "expired)");
         break;
@@ -527,7 +527,7 @@ int main(int argc, char** argv) {
 
   heartbeatStop.store(true, std::memory_order_relaxed);
   heartbeatThread.join();
-  (void)evrp::device::api::deviceSessionDisconnect(channel, session.sessionId);
+  (void)evrp::sdk::sessionDisconnect(channel, session.sessionId);
 
   logInfo("evrp-device integration test passed");
   return 0;

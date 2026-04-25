@@ -302,6 +302,16 @@ set_target_properties(
   sdk_fml
   PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
 
+add_library(sdk_session_client STATIC evrp/sdk/sessionclient.cpp)
+target_include_directories(sdk_session_client
+                           PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(
+  sdk_session_client
+  PUBLIC evrp_device_proto gRPC::grpc++)
+set_target_properties(
+  sdk_session_client
+  PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
+
 add_library(
   sdk_session STATIC
   evrp/sdk/sessionregistry.cpp
@@ -430,7 +440,7 @@ set_target_properties(
   PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
 target_link_libraries(
   evrp_device_integration_test
-  PRIVATE device_client gflags::gflags logger)
+  PRIVATE device_client sdk_session_client gflags::gflags logger)
 add_dependencies(evrp_device_integration_test evrp-device)
 add_test(
   NAME evrp_device_integration_test
@@ -452,7 +462,8 @@ target_include_directories(evrp_inputlisten_test_client
                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(
   evrp_inputlisten_test_client
-  PRIVATE evrp_device_api device_client gflags::gflags logger)
+  PRIVATE evrp_device_api device_client sdk_session_client
+          gflags::gflags logger)
 
 add_executable(evrp_playback_test_server evrp/playbacktest/server.cpp)
 target_include_directories(evrp_playback_test_server
@@ -467,4 +478,5 @@ target_include_directories(evrp_playback_test_client
                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(
   evrp_playback_test_client
-  PRIVATE evrp_device_api device_client gflags::gflags logger)
+  PRIVATE evrp_device_api device_client sdk_session_client
+          gflags::gflags logger)

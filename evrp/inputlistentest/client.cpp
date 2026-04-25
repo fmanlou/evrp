@@ -8,6 +8,7 @@
 
 #include "evrp/device/api/deviceclient.h"
 #include "evrp/device/api/types.h"
+#include "evrp/sdk/sessionclient.h"
 #include "logger.h"
 
 DEFINE_string(target, "127.0.0.1:50051", "Server address (host:port)");
@@ -130,9 +131,9 @@ int main(int argc, char** argv) {
   }
 
   const std::shared_ptr<grpc::Channel> channel =
-      evrp::device::api::makeDeviceChannel(FLAGS_target);
-  evrp::device::api::SessionInfo session;
-  if (!evrp::device::api::deviceSessionConnect(channel, &session)) {
+      evrp::sdk::makeGrpcClientChannel(FLAGS_target);
+  evrp::sdk::SessionInfo session;
+  if (!evrp::sdk::sessionConnect(channel, &session)) {
     logError(
         "evrp_inputlisten_test_client: SessionService/Connect failed");
     return 1;
@@ -145,7 +146,7 @@ int main(int argc, char** argv) {
         "evrp_inputlisten_test_client: startListening failed (no devices "
         "or server error?). Is evrp_inputlisten_test_server running on {}?",
         FLAGS_target);
-    (void)evrp::device::api::deviceSessionDisconnect(channel, session.sessionId);
+    (void)evrp::sdk::sessionDisconnect(channel, session.sessionId);
     return 1;
   }
 
@@ -168,6 +169,6 @@ int main(int argc, char** argv) {
   listener->cancelListening();
   logInfo("evrp_inputlisten_test_client: done, total events={}",
           total_events);
-  (void)evrp::device::api::deviceSessionDisconnect(channel, session.sessionId);
+  (void)evrp::sdk::sessionDisconnect(channel, session.sessionId);
   return 0;
 }

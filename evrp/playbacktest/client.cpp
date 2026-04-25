@@ -9,6 +9,7 @@
 #include "evrp/sdk/countingsemaphore.h"
 #include "evrp/device/api/deviceclient.h"
 #include "evrp/device/api/types.h"
+#include "evrp/sdk/sessionclient.h"
 #include "logger.h"
 
 DEFINE_string(target, "127.0.0.1:50051", "Server address (host:port)");
@@ -82,9 +83,9 @@ int main(int argc, char** argv) {
       events.size());
 
   const std::shared_ptr<grpc::Channel> channel =
-      evrp::device::api::makeDeviceChannel(FLAGS_target);
-  evrp::device::api::SessionInfo session;
-  if (!evrp::device::api::deviceSessionConnect(channel, &session)) {
+      evrp::sdk::makeGrpcClientChannel(FLAGS_target);
+  evrp::sdk::SessionInfo session;
+  if (!evrp::sdk::sessionConnect(channel, &session)) {
     logError("evrp_playback_test_client: SessionService/Connect failed");
     return 1;
   }
@@ -96,7 +97,7 @@ int main(int argc, char** argv) {
     logError("evrp_playback_test_client: upload failed code={} msg={}",
              up.code,
              up.message);
-    (void)evrp::device::api::deviceSessionDisconnect(channel, session.sessionId);
+    (void)evrp::sdk::sessionDisconnect(channel, session.sessionId);
     return 1;
   }
 
@@ -126,13 +127,13 @@ int main(int argc, char** argv) {
     logError("evrp_playback_test_client: playback failed code={} msg={}",
              play.code,
              play.message);
-    (void)evrp::device::api::deviceSessionDisconnect(channel, session.sessionId);
+    (void)evrp::sdk::sessionDisconnect(channel, session.sessionId);
     return 1;
   }
   logInfo("hello world");
   logInfo(
       "evrp_playback_test_client: playback finished (keyboard injection "
       "requires focus in a text field)");
-  (void)evrp::device::api::deviceSessionDisconnect(channel, session.sessionId);
+  (void)evrp::sdk::sessionDisconnect(channel, session.sessionId);
   return 0;
 }
