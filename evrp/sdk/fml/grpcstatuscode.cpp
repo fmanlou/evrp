@@ -1,12 +1,6 @@
-#pragma once
+#include "evrp/sdk/fml/grpcstatuscode.h"
 
-#include <grpcpp/support/status_code_enum.h>
-
-#include <fmt/format.h>
-
-#include <string_view>
-
-inline std::string_view toString(grpc::StatusCode code) {
+std::string_view toString(grpc::StatusCode code) {
   switch (code) {
     case grpc::StatusCode::OK:
       return "OK";
@@ -48,18 +42,3 @@ inline std::string_view toString(grpc::StatusCode code) {
       return {};
   }
 }
-
-template <>
-struct fmt::formatter<grpc::StatusCode> {
-  constexpr auto parse(fmt::format_parse_context& ctx) { return ctx.begin(); }
-
-  template <typename FormatContext>
-  auto format(grpc::StatusCode c, FormatContext& ctx) const
-      -> decltype(ctx.out()) {
-    const std::string_view label = toString(c);
-    if (!label.empty()) {
-      return fmt::format_to(ctx.out(), "{}", label);
-    }
-    return fmt::format_to(ctx.out(), "StatusCode({})", static_cast<int>(c));
-  }
-};

@@ -188,6 +188,8 @@ gtest_discover_tests(evrp_tests)
 # find_dependency(Protobuf)， 若重复加载 protobuf-targets.cmake 会报错「Some targets in
 # this export set were already defined」。
 find_package(gRPC CONFIG REQUIRED)
+find_package(fmt CONFIG REQUIRED PATHS "${EVRP_LIBRARY_DIR}/fmt"
+             NO_DEFAULT_PATH)
 
 set(PROTO_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/proto")
 set(DEVICE_TYPES_PROTO "${PROTO_ROOT}/evrp/device/v1/types.proto")
@@ -267,6 +269,13 @@ set_target_properties(
   countingsemaphore
   PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
 
+add_library(sdk_fml STATIC evrp/sdk/fml/grpcstatuscode.cpp)
+target_include_directories(sdk_fml PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(sdk_fml PUBLIC gRPC::grpc++ fmt::fmt)
+set_target_properties(
+  sdk_fml
+  PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
+
 add_library(
   sdk_session STATIC
   evrp/sdk/sessionregistry.cpp
@@ -333,9 +342,9 @@ add_library(device_remote_inputlistener STATIC
             evrp/device/impl/client/remoteinputlistener.cpp)
 target_include_directories(device_remote_inputlistener
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(device_remote_inputlistener PUBLIC evrp_device_proto
-                                                         tofromproto PRIVATE
-                                                         logger)
+target_link_libraries(device_remote_inputlistener
+                      PUBLIC evrp_device_proto tofromproto sdk_fml
+                      PRIVATE logger)
 set_target_properties(
   device_remote_inputlistener
   PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)

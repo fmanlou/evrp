@@ -3,7 +3,7 @@
 #include <google/protobuf/empty.pb.h>
 
 #include "evrp/sdk/sessionmetadata.h"
-#include "evrp/sdk/grpcstatuscodefmt.h"
+#include "evrp/sdk/fml/grpcstatuscode.h"
 #include "evrp/device/internal/tofromproto.h"
 #include "logger.h"
 
