@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include "evrp/device/api/deviceclient.h"
+#include "evrp/device/api/client.h"
 #include "evrp/device/api/types.h"
 #include "evrp/sdk/sessionclient.h"
 #include "logger.h"

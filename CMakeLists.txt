@@ -396,7 +396,7 @@ set_target_properties(
 
 add_library(
   device_client STATIC
-  evrp/device/impl/client/deviceclient.cpp
+  evrp/device/impl/client/client.cpp
   evrp/device/impl/client/remoteinputdeviceclient.cpp)
 target_include_directories(device_client PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(

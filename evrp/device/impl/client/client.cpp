@@ -1,4 +1,4 @@
-#include "evrp/device/api/deviceclient.h"
+#include "evrp/device/api/client.h"
 
 #include "evrp/device/impl/client/remoteinputdeviceclient.h"
 #include "evrp/device/impl/client/remoteinputlistener.h"
