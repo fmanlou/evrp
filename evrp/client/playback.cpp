@@ -22,14 +22,15 @@ bool deviceUploadAndPlay(evrp::device::api::IPlayback *remote,
   if (events.empty()) {
     return true;
   }
-  evrp::device::api::OperationResult up;
-  if (!remote->upload(events, &up) || up.code != 0) {
-    logError("Upload to evrp-device failed (code={}): {}", up.code, up.message);
+  evrp::device::api::OperationResult uploadResult;
+  if (!remote->upload(events, &uploadResult) || uploadResult.code != 0) {
+    logError("Upload to evrp-device failed (code={}): {}", uploadResult.code,
+             uploadResult.message);
     return false;
   }
-  evrp::device::api::OperationResult play;
-  if (!remote->playback(&play) || play.code != 0) {
-    logError("Playback failed (code={}): {}", play.code, play.message);
+  evrp::device::api::OperationResult playResult;
+  if (!remote->playback(&playResult) || playResult.code != 0) {
+    logError("Playback failed (code={}): {}", playResult.code, playResult.message);
     return false;
   }
   return true;
@@ -59,14 +60,14 @@ int Playback::run() {
     return 1;
   }
 
-  std::ostringstream buf;
-  buf << fs_.inputStream().rdbuf();
-  const std::string content = buf.str();
+  std::ostringstream contentStream;
+  contentStream << fs_.inputStream().rdbuf();
+  const std::string content = contentStream.str();
 
-  LuaEventComposer event_composer;
+  LuaEventComposer eventComposer;
   std::vector<evrp::device::api::InputEvent> events;
-  const int cerr = event_composer.toEvents(content, &events);
-  if (cerr != 0) {
+  const int composeErr = eventComposer.toEvents(content, &events);
+  if (composeErr != 0) {
     logError("Replay compose failed (e.g. Lua error).");
     return 1;
   }

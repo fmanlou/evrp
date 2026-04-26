@@ -20,15 +20,15 @@ namespace lua {
 
 namespace {
 
-KeyboardEventWriter* g_keyboard = nullptr;
-MouseEventWriter* g_mouse = nullptr;
+KeyboardEventWriter* gKeyboard = nullptr;
+MouseEventWriter* gMouse = nullptr;
 
 static bool getDryRun(lua_State* L) {
   lua_getglobal(L, "evrp");
   lua_getfield(L, -1, "dry_run");
-  bool dry_run = lua_toboolean(L, -1);
+  bool dryRun = lua_toboolean(L, -1);
   lua_pop(L, 2);
-  return dry_run;
+  return dryRun;
 }
 
 int luaPress(lua_State* L) {
@@ -40,10 +40,10 @@ int luaPress(lua_State* L) {
     lua_pushboolean(L, true);
     return 1;
   }
-  if (!g_keyboard) {
+  if (!gKeyboard) {
     return luaL_error(L, "evrp keyboard not initialized");
   }
-  bool ok = g_keyboard->press(static_cast<unsigned short>(code));
+  bool ok = gKeyboard->press(static_cast<unsigned short>(code));
   lua_pushboolean(L, ok);
   return 1;
 }
@@ -57,10 +57,10 @@ int luaRelease(lua_State* L) {
     lua_pushboolean(L, true);
     return 1;
   }
-  if (!g_keyboard) {
+  if (!gKeyboard) {
     return luaL_error(L, "evrp keyboard not initialized");
   }
-  bool ok = g_keyboard->release(static_cast<unsigned short>(code));
+  bool ok = gKeyboard->release(static_cast<unsigned short>(code));
   lua_pushboolean(L, ok);
   return 1;
 }
@@ -74,11 +74,11 @@ int luaClick(lua_State* L) {
     lua_pushboolean(L, true);
     return 1;
   }
-  if (!g_keyboard) {
+  if (!gKeyboard) {
     return luaL_error(L, "evrp keyboard not initialized");
   }
   unsigned short c = static_cast<unsigned short>(code);
-  bool ok = g_keyboard->press(c) && g_keyboard->release(c);
+  bool ok = gKeyboard->press(c) && gKeyboard->release(c);
   lua_pushboolean(L, ok);
   return 1;
 }
@@ -90,10 +90,10 @@ int luaMouseMove(lua_State* L) {
     lua_pushboolean(L, true);
     return 1;
   }
-  if (!g_mouse) {
+  if (!gMouse) {
     return luaL_error(L, "evrp mouse not initialized");
   }
-  bool ok = g_mouse->move(static_cast<int>(dx), static_cast<int>(dy));
+  bool ok = gMouse->move(static_cast<int>(dx), static_cast<int>(dy));
   lua_pushboolean(L, ok);
   return 1;
 }
@@ -105,10 +105,10 @@ int luaMouseMoveToScreen(lua_State* L) {
     lua_pushboolean(L, true);
     return 1;
   }
-  if (!g_mouse) {
+  if (!gMouse) {
     return luaL_error(L, "evrp mouse not initialized");
   }
-  bool ok = g_mouse->moveToScreen(static_cast<int>(x), static_cast<int>(y));
+  bool ok = gMouse->moveToScreen(static_cast<int>(x), static_cast<int>(y));
   lua_pushboolean(L, ok);
   return 1;
 }
@@ -137,10 +137,10 @@ int luaMouseMoveTo(lua_State* L) {
     lua_pushboolean(L, true);
     return 1;
   }
-  if (!g_mouse) {
+  if (!gMouse) {
     return luaL_error(L, "evrp mouse not initialized");
   }
-  bool ok = g_mouse->moveTo(static_cast<int>(x), static_cast<int>(y));
+  bool ok = gMouse->moveTo(static_cast<int>(x), static_cast<int>(y));
   lua_pushboolean(L, ok);
   return 1;
 }
@@ -154,10 +154,10 @@ int luaMouseMoveToScaled(lua_State* L) {
     lua_pushboolean(L, true);
     return 1;
   }
-  if (!g_mouse) {
+  if (!gMouse) {
     return luaL_error(L, "evrp mouse not initialized");
   }
-  bool ok = g_mouse->moveToScaled(static_cast<int>(x), static_cast<int>(y),
+  bool ok = gMouse->moveToScaled(static_cast<int>(x), static_cast<int>(y),
                                     static_cast<int>(width),
                                     static_cast<int>(height));
   lua_pushboolean(L, ok);
@@ -170,10 +170,10 @@ int luaMouseScrollV(lua_State* L) {
     lua_pushboolean(L, true);
     return 1;
   }
-  if (!g_mouse) {
+  if (!gMouse) {
     return luaL_error(L, "evrp mouse not initialized");
   }
-  bool ok = g_mouse->scrollV(static_cast<int>(value));
+  bool ok = gMouse->scrollV(static_cast<int>(value));
   lua_pushboolean(L, ok);
   return 1;
 }
@@ -184,10 +184,10 @@ int luaMouseScrollH(lua_State* L) {
     lua_pushboolean(L, true);
     return 1;
   }
-  if (!g_mouse) {
+  if (!gMouse) {
     return luaL_error(L, "evrp mouse not initialized");
   }
-  bool ok = g_mouse->scrollH(static_cast<int>(value));
+  bool ok = gMouse->scrollH(static_cast<int>(value));
   lua_pushboolean(L, ok);
   return 1;
 }
@@ -201,10 +201,10 @@ int luaMouseButtonDown(lua_State* L) {
     lua_pushboolean(L, true);
     return 1;
   }
-  if (!g_mouse) {
+  if (!gMouse) {
     return luaL_error(L, "evrp mouse not initialized");
   }
-  bool ok = g_mouse->buttonDown(static_cast<unsigned short>(btn));
+  bool ok = gMouse->buttonDown(static_cast<unsigned short>(btn));
   lua_pushboolean(L, ok);
   return 1;
 }
@@ -218,10 +218,10 @@ int luaMouseButtonUp(lua_State* L) {
     lua_pushboolean(L, true);
     return 1;
   }
-  if (!g_mouse) {
+  if (!gMouse) {
     return luaL_error(L, "evrp mouse not initialized");
   }
-  bool ok = g_mouse->buttonUp(static_cast<unsigned short>(btn));
+  bool ok = gMouse->buttonUp(static_cast<unsigned short>(btn));
   lua_pushboolean(L, ok);
   return 1;
 }
@@ -235,10 +235,10 @@ int luaMouseButtonClick(lua_State* L) {
     lua_pushboolean(L, true);
     return 1;
   }
-  if (!g_mouse) {
+  if (!gMouse) {
     return luaL_error(L, "evrp mouse not initialized");
   }
-  bool ok = g_mouse->buttonClick(static_cast<unsigned short>(btn));
+  bool ok = gMouse->buttonClick(static_cast<unsigned short>(btn));
   lua_pushboolean(L, ok);
   return 1;
 }
@@ -381,8 +381,8 @@ int runLuaWithBindings(KeyboardEventWriter* keyboard, MouseEventWriter* mouse,
   }
   luaL_openlibs(L);
 
-  g_keyboard = keyboard;
-  g_mouse = mouse;
+  gKeyboard = keyboard;
+  gMouse = mouse;
   registerEvrpTable(L);
 
   int err;
@@ -394,8 +394,8 @@ int runLuaWithBindings(KeyboardEventWriter* keyboard, MouseEventWriter* mouse,
       err = lua_pcall(L, 0, 0, 0);
     }
   }
-  g_keyboard = nullptr;
-  g_mouse = nullptr;
+  gKeyboard = nullptr;
+  gMouse = nullptr;
 
   if (err != LUA_OK) {
     const char* msg = lua_tostring(L, -1);

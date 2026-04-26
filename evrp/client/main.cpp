@@ -18,14 +18,14 @@ int main(int argc, char *argv[]) {
   RunOptions options = parseOptions(argc, argv);
   logService->setLevel(options.logLevel);
 
-  int mode_count = (options.recording ? 1 : 0) + (options.playback ? 1 : 0);
-  if (mode_count > 1) {
+  int modeCount = (options.recording ? 1 : 0) + (options.playback ? 1 : 0);
+  if (modeCount > 1) {
     logError("Cannot use --record and --playback at the same time.");
     printUsage(argv[0]);
     return 1;
   }
 
-  if (mode_count == 0) {
+  if (modeCount == 0) {
     printUsage(argv[0]);
     return 1;
   }

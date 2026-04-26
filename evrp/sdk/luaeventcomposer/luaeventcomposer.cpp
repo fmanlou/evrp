@@ -21,9 +21,9 @@ int64_t eventTimeUs(const api::InputEvent& e) {
          static_cast<int64_t>(e.timeUsec);
 }
 
-void setEventTimeUs(api::InputEvent& e, int64_t t_us) {
-  e.timeSec = static_cast<decltype(e.timeSec)>(t_us / 1000000LL);
-  e.timeUsec = static_cast<decltype(e.timeUsec)>(t_us % 1000000LL);
+void setEventTimeUs(api::InputEvent& e, int64_t tUs) {
+  e.timeSec = static_cast<decltype(e.timeSec)>(tUs / 1000000LL);
+  e.timeUsec = static_cast<decltype(e.timeUsec)>(tUs % 1000000LL);
 }
 
 api::InputEvent recordFieldsToEvent(api::DeviceKind device, unsigned short type,
@@ -66,15 +66,15 @@ bool textLooksLikeRecordingFormat(const std::string& text) {
 }
 
 void appendShiftedLuaBatch(std::vector<api::InputEvent>* out,
-                           std::vector<api::InputEvent> batch, int64_t placement_us) {
+                           std::vector<api::InputEvent> batch, int64_t placementUs) {
   if (batch.empty() || !out) {
     return;
   }
-  int64_t t_min = eventTimeUs(batch[0]);
+  int64_t tMin = eventTimeUs(batch[0]);
   for (const auto& e : batch) {
-    t_min = std::min(t_min, eventTimeUs(e));
+    tMin = std::min(tMin, eventTimeUs(e));
   }
-  const int64_t shift = placement_us - t_min;
+  const int64_t shift = placementUs - tMin;
   for (auto& e : batch) {
     setEventTimeUs(e, eventTimeUs(e) + shift);
     out->push_back(std::move(e));
@@ -104,9 +104,9 @@ void normalizeTimelineToZero(std::vector<api::InputEvent>* events) {
   if (!events || events->empty()) {
     return;
   }
-  const int64_t t_min = vectorMinTimeUs(*events);
+  const int64_t tMin = vectorMinTimeUs(*events);
   for (auto& e : *events) {
-    setEventTimeUs(e, eventTimeUs(e) - t_min);
+    setEventTimeUs(e, eventTimeUs(e) - tMin);
   }
 }
 
@@ -131,12 +131,12 @@ int LuaEventComposer::toEvents(const std::string& text,
     return 0;
   }
 
-  long long leading_delta_us = -1;
-  int64_t file_anchor_us = 0;
-  int64_t stream_max_us = 0;
-  int64_t recorded_time_adjust_us = 0;
-  bool had_lua = false;
-  bool saw_first_recorded = false;
+  long long leadingDeltaUs = -1;
+  int64_t fileAnchorUs = 0;
+  int64_t streamMaxUs = 0;
+  int64_t recordedTimeAdjustUs = 0;
+  bool hadLua = false;
+  bool sawFirstRecorded = false;
 
   std::istringstream in(text);
   std::string line;
@@ -149,7 +149,7 @@ int LuaEventComposer::toEvents(const std::string& text,
     long long tmp = 0;
     if (label == "leading") {
       if (parseLeadingLine(line, &tmp)) {
-        leading_delta_us = tmp;
+        leadingDeltaUs = tmp;
       }
       continue;
     }
@@ -162,10 +162,10 @@ int LuaEventComposer::toEvents(const std::string& text,
     long long deltaUs = 0;
     unsigned short type = 0, code = 0;
     int value = 0;
-    bool is_event = (device != api::DeviceKind::kUnspecified) &&
+    bool isEvent = (device != api::DeviceKind::kUnspecified) &&
                     parseEventLine(line, &deltaUs, &type, &code, &value);
 
-    if (!is_event) {
+    if (!isEvent) {
       PlaybackEventCollector collector;
       int err =
           evrp::lua::playbackLuaChunkIntoCollector(line.c_str(), &collector);
@@ -173,25 +173,25 @@ int LuaEventComposer::toEvents(const std::string& text,
         return err;
       }
       std::vector<api::InputEvent> batch = collector.takeEvents();
-      const int64_t placement_us = std::max(stream_max_us, file_anchor_us);
-      appendShiftedLuaBatch(events, std::move(batch), placement_us);
-      stream_max_us = vectorMaxTimeUs(*events);
-      had_lua = true;
+      const int64_t placementUs = std::max(streamMaxUs, fileAnchorUs);
+      appendShiftedLuaBatch(events, std::move(batch), placementUs);
+      streamMaxUs = vectorMaxTimeUs(*events);
+      hadLua = true;
       continue;
     }
 
-    if (!saw_first_recorded) {
-      if (had_lua && leading_delta_us > 0) {
-        recorded_time_adjust_us = leading_delta_us;
+    if (!sawFirstRecorded) {
+      if (hadLua && leadingDeltaUs > 0) {
+        recordedTimeAdjustUs = leadingDeltaUs;
       }
-      saw_first_recorded = true;
+      sawFirstRecorded = true;
     }
 
     api::InputEvent e = recordFieldsToEvent(device, type, code, value);
-    setEventTimeUs(e, deltaUs + recorded_time_adjust_us);
+    setEventTimeUs(e, deltaUs + recordedTimeAdjustUs);
     events->push_back(e);
-    file_anchor_us = eventTimeUs(e);
-    stream_max_us = std::max(stream_max_us, file_anchor_us);
+    fileAnchorUs = eventTimeUs(e);
+    streamMaxUs = std::max(streamMaxUs, fileAnchorUs);
   }
 
   if (!events->empty()) {
