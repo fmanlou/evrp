@@ -87,11 +87,15 @@ target_link_libraries(standalone_asio INTERFACE asio_separate)
 
 enable_testing()
 
-add_library(evdev STATIC evdev.cpp)
-target_include_directories(evdev PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+set(EVRP_SDK_DIR "${CMAKE_CURRENT_SOURCE_DIR}/evrp/sdk")
 
-add_library(filesystem STATIC filesystem.cpp)
-target_include_directories(filesystem PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+add_library(evdev STATIC evrp/sdk/evdev.cpp)
+target_include_directories(evdev PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+                                        ${EVRP_SDK_DIR})
+
+add_library(filesystem STATIC evrp/sdk/filesystem.cpp)
+target_include_directories(filesystem PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+                                             ${EVRP_SDK_DIR})
 target_link_libraries(evdev PRIVATE filesystem)
 
 option(EVRP_USE_X11_CURSOR "Enable X11 cursor position backend" ON)
@@ -110,14 +114,20 @@ if(EVRP_USE_X11_CURSOR)
   target_link_libraries(cursorpos PUBLIC X11::X11)
 endif()
 
-add_library(argparser STATIC argparser.cpp)
-target_include_directories(argparser PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+set(EVRP_CLIENT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/evrp/client")
+
+add_library(argparser STATIC evrp/client/argparser.cpp)
+target_include_directories(argparser PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+                                            ${EVRP_CLIENT_DIR}
+                                            ${EVRP_SDK_DIR})
 target_link_libraries(argparser PRIVATE logger gflags::gflags)
 
 add_library(
-  inputeventwriter STATIC inputeventwriter.cpp keyboard/keyboardeventwriter.cpp
-                          mouse/mouseeventwriter.cpp)
-target_include_directories(inputeventwriter PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+  inputeventwriter STATIC
+  evrp/sdk/inputeventwriter.cpp evrp/sdk/keyboard/keyboardeventwriter.cpp
+  evrp/sdk/mouse/mouseeventwriter.cpp)
+target_include_directories(inputeventwriter PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+                                                   ${EVRP_SDK_DIR})
 target_link_libraries(
   inputeventwriter
   PRIVATE evdev
@@ -127,26 +137,35 @@ target_link_libraries(
           logger
           cursorpos)
 
-add_library(eventformat STATIC eventformat.cpp)
-target_include_directories(eventformat PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+add_library(eventformat STATIC evrp/sdk/eventformat.cpp)
+target_include_directories(eventformat PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+                                              ${EVRP_SDK_DIR})
 target_link_libraries(eventformat PRIVATE evdev inputdevice)
 
-add_library(inputdevice STATIC inputdevice.cpp keyboard/keyboarddevice.cpp
-                               touchdevice.cpp)
-target_include_directories(inputdevice PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+add_library(
+  inputdevice STATIC
+  evrp/sdk/inputdevice.cpp evrp/sdk/keyboard/keyboarddevice.cpp
+  evrp/sdk/touchdevice.cpp)
+target_include_directories(inputdevice PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+                                              ${EVRP_SDK_DIR})
 target_link_libraries(inputdevice PUBLIC evdev filesystem)
 
-add_library(record STATIC record.cpp)
-target_include_directories(record PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+add_library(record STATIC evrp/client/record.cpp)
+target_include_directories(record PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+                                         ${EVRP_CLIENT_DIR}
+                                         ${EVRP_SDK_DIR})
 target_link_libraries(record PRIVATE evdev eventformat filesystem inputdevice
                                      logger)
 
-add_library(logger STATIC logger.cpp)
-target_include_directories(logger PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+add_library(logger STATIC evrp/sdk/logger.cpp)
+target_include_directories(logger PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+                                         ${EVRP_SDK_DIR})
 target_link_libraries(logger PUBLIC log::log)
 
-add_library(playback STATIC playback.cpp)
-target_include_directories(playback PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+add_library(playback STATIC evrp/client/playback.cpp)
+target_include_directories(playback PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+                                           ${EVRP_CLIENT_DIR}
+                                           ${EVRP_SDK_DIR})
 target_link_libraries(
   playback
   PRIVATE evdev
@@ -158,11 +177,12 @@ target_link_libraries(
           luabindings)
 
 add_library(luabindings STATIC lua/luabindings.cpp)
-target_include_directories(luabindings PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(luabindings PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+                                              ${EVRP_SDK_DIR})
 target_link_libraries(luabindings PUBLIC lua inputeventwriter filesystem logger
                                          cursorpos)
 
-add_executable(evrp main.cpp)
+add_executable(evrp evrp/client/main.cpp)
 target_link_libraries(
   evrp
   PRIVATE inputdevice
@@ -173,7 +193,8 @@ target_link_libraries(
           record
           luabindings
           logger
-          cursorpos)
+          cursorpos
+          device_client)
 
 add_executable(evrp_tests tests/inputdevice_test.cpp tests/argparser_test.cpp)
 target_link_libraries(evrp_tests PRIVATE inputdevice argparser logger
@@ -344,7 +365,8 @@ add_library(
                            evrp/sdk/syncdispatchqueue.cpp
                            evrp/device/impl/server/deviceruntime.cpp)
 target_include_directories(localinputlistener
-                           PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+                           PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+                                  ${EVRP_SDK_DIR})
 target_link_libraries(
   localinputlistener
   PUBLIC evrp_device_api asio::asio

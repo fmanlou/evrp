@@ -19,6 +19,8 @@ DEFINE_bool(wait_leading, true,
             "Playback: execute [leading] wait (see --nowait_leading to disable).");
 DEFINE_bool(wait_trailing, true,
             "Playback: execute [trailing] wait (see --nowait_trailing to disable).");
+DEFINE_string(device, "127.0.0.1:50051",
+              "evrp-device gRPC address (host:port; same default listen as evrp-device).");
 
 namespace {
 
@@ -29,6 +31,7 @@ void resetArgFlags() {
   FLAGS_log_level = "info";
   FLAGS_wait_leading = true;
   FLAGS_wait_trailing = true;
+  FLAGS_device = "127.0.0.1:50051";
 }
 
 void normalizeLegacyArgs(std::vector<std::string> *args) {
@@ -82,6 +85,7 @@ void printUsage(const char *prog) {
          "playback, execute [leading] wait (default: wait).\n"
       << "  --wait_trailing / --nowait_trailing (or --wait-trailing=yes|no): during "
          "playback, execute [trailing] wait (default: wait).\n"
+      << "  --device=HOST:PORT: evrp-device server (default: 127.0.0.1:50051).\n"
       << "  --help: show gflags help.\n";
 }
 
@@ -120,6 +124,7 @@ RunOptions parseOptions(int argc, char *argv[]) {
   options.playback = !FLAGS_playback.empty();
   options.playbackPath = FLAGS_playback;
   options.outputPath = FLAGS_output;
+  options.device = FLAGS_device;
   options.logLevel = logLevelFromString(FLAGS_log_level);
   options.executeWaitBeforeFirst = FLAGS_wait_leading;
   options.executeWaitAfterLast = FLAGS_wait_trailing;

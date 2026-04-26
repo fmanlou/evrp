@@ -8,6 +8,10 @@
 #include "evrp/device/api/types.h"
 #include "filesystem.h"
 
+namespace evrp::device::api {
+class IClient;
+}
+
 struct RecordTarget {
   int fd;
   evrp::device::api::DeviceKind kind;
@@ -18,6 +22,8 @@ class Record {
  public:
   explicit Record(const RunOptions &options);
   int run();
+  /// Records via evrp-device (InputListen gRPC); requires a connected client.
+  int runWithDeviceClient(evrp::device::api::IClient *client);
 
  private:
   std::vector<RecordTarget> collectTargets();

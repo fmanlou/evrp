@@ -364,15 +364,18 @@ void registerEvrpTable(lua_State* L) {
 
 }  
 
-int runScript(const char* path) {
+int runScriptWithWriter(const char* path, InputEventWriter* writer) {
+  if (!path || !writer) {
+    return LUA_ERRRUN;
+  }
   lua_State* L = luaL_newstate();
-  if (!L) return -1;
+  if (!L) {
+    return LUA_ERRMEM;
+  }
   luaL_openlibs(L);
 
-  FileSystem fs;
-  InputEventWriter writer(&fs);
-  g_keyboard = writer.keyboardWriter();
-  g_mouse = writer.mouseWriter();
+  g_keyboard = writer->keyboardWriter();
+  g_mouse = writer->mouseWriter();
   registerEvrpTable(L);
 
   int err = luaL_dofile(L, path);
@@ -386,6 +389,12 @@ int runScript(const char* path) {
   }
   lua_close(L);
   return err;
+}
+
+int runScript(const char* path) {
+  FileSystem fs;
+  InputEventWriter writer(&fs);
+  return runScriptWithWriter(path, &writer);
 }
 
 int executeChunk(InputEventWriter* writer, const char* chunk) {

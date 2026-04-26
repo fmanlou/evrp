@@ -12,6 +12,8 @@ struct RunOptions {
   logging::LogLevel logLevel;
   std::string playbackPath;
   std::string outputPath;
+  /// gRPC target for evrp-device (host:port).
+  std::string device;
   std::vector<evrp::device::api::DeviceKind> kinds;
   
   bool executeWaitBeforeFirst;

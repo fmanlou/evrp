@@ -1,7 +1,9 @@
 #include "argparser.h"
 #include "cursor/cursorpos.h"
+#include "evrp/device/api/client.h"
+
+#include <memory>
 #include "logger.h"
-#include "lua/luabindings.h"
 #include "playback.h"
 #include "record.h"
 
@@ -27,14 +29,24 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
+  std::unique_ptr<evrp::device::api::IClient> deviceClient =
+      evrp::device::api::makeClient(options.device);
+  if (!deviceClient) {
+    logError(
+        "Could not connect to evrp-device at {} (session handshake failed). "
+        "Start `evrp-device` or pass --device=HOST:PORT.",
+        options.device);
+    return 1;
+  }
+
   if (options.playback) {
     if (options.playbackPath.empty()) {
       logError("Playback (--playback) requires a file path.");
       printUsage(argv[0]);
       return 1;
     }
-    return Playback(options).run();
+    return Playback(options).runWithDeviceClient(deviceClient.get());
   }
 
-  return Record(options).run();
+  return Record(options).runWithDeviceClient(deviceClient.get());
 }

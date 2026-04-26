@@ -138,3 +138,16 @@ TEST(ArgParser, ParseOptionsPlaybackWithLogLevel) {
   EXPECT_EQ(options.logLevel, logging::LogLevel::Error);
   EXPECT_EQ(options.playbackPath, "events.log");
 }
+
+TEST(ArgParser, ParseOptionsDeviceOverride) {
+  std::vector<std::string> storage = {"evrp", "-r", "--device=10.0.0.5:9999",
+                                      "mouse"};
+  std::vector<char *> argv = buildArgv(&storage);
+
+  RunOptions options =
+      parseOptions(static_cast<int>(argv.size()), argv.data());
+  EXPECT_TRUE(options.recording);
+  EXPECT_EQ(options.device, "10.0.0.5:9999");
+  ASSERT_EQ(options.kinds.size(), 1u);
+  EXPECT_EQ(options.kinds[0], api::DeviceKind::kMouse);
+}
