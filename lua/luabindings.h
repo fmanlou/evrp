@@ -19,8 +19,7 @@ namespace lua {
 
 int runScript(const char* path);
 
-/// Runs a .lua file using the given writer (local evdev or remote via
-/// InputEventWriter::setRemotePlayback).
+/// Runs a .lua file using the given writer (local evdev).
 int runScriptWithWriter(const char* path, InputEventWriter* writer);
 
 int executeChunk(InputEventWriter* writer, const char* chunk);

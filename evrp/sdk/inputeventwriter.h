@@ -1,7 +1,6 @@
 #pragma once
 
 #include <map>
-#include <memory>
 
 #include "evrp/device/api/types.h"
 #include "iraweventwriter.h"
@@ -9,12 +8,6 @@
 #include "mouse/mouseeventwriter.h"
 
 class FileSystem;
-
-namespace evrp::device::api {
-class IPlayback;
-}
-
-class RemotePlaybackInjector;
 
 class InputEventWriter : public IRawEventWriter {
  public:
@@ -26,10 +19,6 @@ class InputEventWriter : public IRawEventWriter {
 
   KeyboardEventWriter *keyboardWriter() { return &keyboardWriter_; }
   MouseEventWriter *mouseWriter() { return &mouseWriter_; }
-
-  /// When non-null, writeRaw sends evdev-shaped events to the device service
-  /// (upload + playback per flush) instead of opening local nodes.
-  void setRemotePlayback(evrp::device::api::IPlayback *playback);
 
   bool writeRaw(evrp::device::api::DeviceKind device, unsigned short type,
                 unsigned short code, int value) override;
@@ -44,6 +33,4 @@ class InputEventWriter : public IRawEventWriter {
   std::map<evrp::device::api::DeviceKind, int> kindToFd_;
   KeyboardEventWriter keyboardWriter_;
   MouseEventWriter mouseWriter_;
-
-  std::unique_ptr<RemotePlaybackInjector> remoteInject_;
 };

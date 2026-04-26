@@ -141,8 +141,7 @@ target_link_libraries(
           filesystem
           inputdevice
           logger
-          cursorpos
-          remoteplaybackinjector)
+          cursorpos)
 
 add_library(eventformat STATIC evrp/sdk/eventformat.cpp)
 target_include_directories(eventformat PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}

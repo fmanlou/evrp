@@ -14,7 +14,6 @@
 #include "keyboard/keyboardeventwriter.h"
 #include "logger.h"
 #include "mouse/mouseeventwriter.h"
-#include "remoteplaybackinjector.h"
 
 namespace api = evrp::device::api;
 
@@ -24,14 +23,6 @@ InputEventWriter::InputEventWriter(FileSystem *fs)
 InputEventWriter::~InputEventWriter() {
   for (const auto &p : kindToFd_) {
     if (p.second >= 0) fs_->closeFd(p.second);
-  }
-}
-
-void InputEventWriter::setRemotePlayback(api::IPlayback *playback) {
-  if (playback) {
-    remoteInject_ = std::make_unique<RemotePlaybackInjector>(playback);
-  } else {
-    remoteInject_.reset();
   }
 }
 
@@ -78,15 +69,6 @@ bool InputEventWriter::write(api::DeviceKind device, unsigned short type,
 
 bool InputEventWriter::writeRaw(api::DeviceKind device, unsigned short type,
                                 unsigned short code, int value) {
-  if (remoteInject_) {
-    if (type != EV_SYN) {
-      struct timeval tv;
-      gettimeofday(&tv, nullptr);
-      Event ev = {tv.tv_sec, tv.tv_usec, type, code, value};
-      logDebug("{}", formatEventLine(device, ev, 0));
-    }
-    return remoteInject_->writeRaw(device, type, code, value);
-  }
   int fd = getFd(device);
   if (fd < 0) return true;  
   if (type != EV_SYN) {
