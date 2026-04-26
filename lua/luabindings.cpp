@@ -8,6 +8,7 @@
 #include <cstring>
 
 #include "cursor/cursorpos.h"
+#include "evrp/device/api/playback.h"
 #include "filesystem.h"
 #include "inputeventwriter.h"
 #include "keyboard/keyboardeventwriter.h"
@@ -421,6 +422,36 @@ int executeChunk(InputEventWriter* writer, const char* chunk) {
   }
   lua_close(L);
   return err;
+}
+
+int runScriptWithPlayback(const char* path, device::api::IPlayback* playback) {
+  if (!path || !playback) {
+    return LUA_ERRRUN;
+  }
+  FileSystem fs;
+  InputEventWriter writer(&fs);
+  writer.setRemotePlayback(playback);
+  return runScriptWithWriter(path, &writer);
+}
+
+struct RemoteLuaChunkRunner::Impl {
+  FileSystem fs;
+  InputEventWriter writer;
+  explicit Impl(device::api::IPlayback* playback) : writer(&fs) {
+    writer.setRemotePlayback(playback);
+  }
+};
+
+RemoteLuaChunkRunner::RemoteLuaChunkRunner(device::api::IPlayback* playback)
+    : impl_(playback ? std::make_unique<Impl>(playback) : nullptr) {}
+
+RemoteLuaChunkRunner::~RemoteLuaChunkRunner() = default;
+
+int RemoteLuaChunkRunner::executeChunk(const char* chunk) {
+  if (!impl_) {
+    return LUA_ERRRUN;
+  }
+  return evrp::lua::executeChunk(&impl_->writer, chunk);
 }
 
 }  

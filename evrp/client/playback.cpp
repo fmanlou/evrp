@@ -10,8 +10,6 @@
 #include "evrp/device/api/types.h"
 #include "evdev.h"
 #include "eventformat.h"
-#include "filesystem.h"
-#include "inputeventwriter.h"
 #include "logger.h"
 #include "lua/luabindings.h"
 #include "scopeguard.h"
@@ -38,12 +36,9 @@ int Playback::run() {
   logService->setLevel(options_.logLevel);
 
   if (dot != std::string::npos && path.substr(dot) == ".lua") {
-    FileSystem fs;
-    InputEventWriter writer(&fs);
-    writer.setRemotePlayback(remote);
     logInfo("Lua (local parse) injecting via evrp-device at {}...",
             options_.device);
-    int err = evrp::lua::runScriptWithWriter(path.c_str(), &writer);
+    int err = evrp::lua::runScriptWithPlayback(path.c_str(), remote);
     return (err == LUA_OK) ? 0 : 1;
   }
 
@@ -55,9 +50,7 @@ int Playback::run() {
   logInfo("Playing back via evrp-device at {} (Ctrl+C tries to stop)...",
           options_.device);
 
-  FileSystem fs_lua;
-  InputEventWriter lua_writer(&fs_lua);
-  lua_writer.setRemotePlayback(remote);
+  evrp::lua::RemoteLuaChunkRunner lua_runner(remote);
 
   auto flush_one = [&](const evrp::device::api::InputEvent &e) -> bool {
     const std::vector<evrp::device::api::InputEvent> one{e};
@@ -113,7 +106,7 @@ int Playback::run() {
                     parseEventLine(line, &deltaUs, &type, &code, &value);
 
     if (!is_event) {
-      int err = evrp::lua::executeChunk(&lua_writer, line.c_str());
+      int err = lua_runner.executeChunk(line.c_str());
       if (err != LUA_OK) {
         logError("Lua execution failed, aborting playback");
         return 1;

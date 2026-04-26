@@ -169,7 +169,6 @@ target_link_libraries(
   playback
   PRIVATE evdev
           eventformat
-          inputeventwriter
           filesystem
           logger
           luabindings)
