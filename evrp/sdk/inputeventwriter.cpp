@@ -1,4 +1,4 @@
-#include "inputeventwriter.h"
+#include "evrp/sdk/inputeventwriter.h"
 
 #include <linux/input-event-codes.h>
 #include <linux/input.h>
@@ -7,13 +7,13 @@
 #include <cstdio>
 
 #include "cursor/cursorpos.h"
-#include "evdev.h"
-#include "eventformat.h"
-#include "filesystem.h"
-#include "inputdevice.h"
-#include "keyboard/keyboardeventwriter.h"
-#include "logger.h"
-#include "mouse/mouseeventwriter.h"
+#include "evrp/sdk/evdev.h"
+#include "evrp/sdk/eventformat.h"
+#include "evrp/sdk/filesystem.h"
+#include "evrp/sdk/inputdevice.h"
+#include "evrp/sdk/keyboard/keyboardeventwriter.h"
+#include "evrp/sdk/logger.h"
+#include "evrp/sdk/mouse/mouseeventwriter.h"
 
 namespace api = evrp::device::api;
 

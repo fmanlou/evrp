@@ -5,7 +5,7 @@
 #include "evrp/device/api/server.h"
 #include "evrp/device/impl/server/deviceruntime.h"
 #include "evrp/sdk/ioc.h"
-#include "logger.h"
+#include "evrp/sdk/logger.h"
 
 DEFINE_string(listen, "0.0.0.0:50051",
               "Listen address for the device service (e.g. host:port; default all IPv4 interfaces)");

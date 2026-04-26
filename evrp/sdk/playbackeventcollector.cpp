@@ -1,10 +1,10 @@
-#include "playbackeventcollector.h"
+#include "evrp/sdk/playbackeventcollector.h"
 
 #include <linux/input-event-codes.h>
 #include <linux/input.h>
 
 #include "evrp/device/api/playback.h"
-#include "logger.h"
+#include "evrp/sdk/logger.h"
 
 namespace api = evrp::device::api;
 
@@ -62,6 +62,12 @@ bool PlaybackEventCollector::writeRaw(api::DeviceKind device, unsigned short typ
   }
   appendBatchWithTimeline(std::move(batch));
   return true;
+}
+
+std::vector<api::InputEvent> PlaybackEventCollector::takeEvents() {
+  std::vector<api::InputEvent> out = std::move(events_);
+  clear();
+  return out;
 }
 
 bool PlaybackEventCollector::uploadAndPlay(api::IPlayback* playback) {

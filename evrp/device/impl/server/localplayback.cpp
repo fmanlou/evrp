@@ -3,8 +3,8 @@
 #include <chrono>
 #include <thread>
 
-#include "filesystem.h"
-#include "inputeventwriter.h"
+#include "evrp/sdk/filesystem.h"
+#include "evrp/sdk/inputeventwriter.h"
 
 namespace evrp::device::server {
 

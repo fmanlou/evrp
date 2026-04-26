@@ -8,12 +8,12 @@
 #include <cstring>
 
 #include "cursor/cursorpos.h"
-#include "filesystem.h"
-#include "inputeventwriter.h"
-#include "keyboard/keyboardeventwriter.h"
-#include "logger.h"
-#include "mouse/mouseeventwriter.h"
-#include "playbackeventcollector.h"
+#include "evrp/sdk/filesystem.h"
+#include "evrp/sdk/inputeventwriter.h"
+#include "evrp/sdk/keyboard/keyboardeventwriter.h"
+#include "evrp/sdk/logger.h"
+#include "evrp/sdk/mouse/mouseeventwriter.h"
+#include "evrp/sdk/playbackeventcollector.h"
 
 namespace evrp {
 namespace lua {

@@ -8,7 +8,7 @@
 
 #include "evrp/device/api/client.h"
 #include "evrp/device/api/types.h"
-#include "logger.h"
+#include "evrp/sdk/logger.h"
 
 DEFINE_string(target, "127.0.0.1:50051", "Server address (host:port)");
 DEFINE_string(

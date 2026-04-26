@@ -1,11 +1,11 @@
-#include "mouse/mouseeventwriter.h"
+#include "evrp/sdk/mouse/mouseeventwriter.h"
 
 #include <linux/input-event-codes.h>
 #include <linux/input.h>
 
 #include "cursor/cursorpos.h"
 #include "evrp/device/api/types.h"
-#include "iraweventwriter.h"
+#include "evrp/sdk/iraweventwriter.h"
 
 MouseEventWriter::MouseEventWriter(IRawEventWriter *writer, CursorPos *cursor)
     : writer_(writer), cursor_(cursor) {}

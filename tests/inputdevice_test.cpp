@@ -1,12 +1,12 @@
-#include "inputdevice.h"
+#include "evrp/sdk/inputdevice.h"
 
 #include <gtest/gtest.h>
 #include <linux/input-event-codes.h>
 
 #include <vector>
 
-#include "keyboard/keyboarddevice.h"
-#include "touchdevice.h"
+#include "evrp/sdk/keyboard/keyboarddevice.h"
+#include "evrp/sdk/touchdevice.h"
 
 static Capabilities makeBaseCaps(const std::string &name) {
   Capabilities caps = {};

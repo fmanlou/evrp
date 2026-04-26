@@ -7,11 +7,11 @@
 #include <unordered_set>
 #include <vector>
 
-#include "evdev.h"
-#include "eventformat.h"
+#include "evrp/sdk/evdev.h"
+#include "evrp/sdk/eventformat.h"
 #include "evrp/device/api/types.h"
-#include "inputdevice.h"
-#include "logger.h"
+#include "evrp/sdk/inputdevice.h"
+#include "evrp/sdk/logger.h"
 
 namespace evrp::device::server {
 

@@ -6,7 +6,7 @@
 #include <gflags/gflags.h>
 
 #include "evrp/sdk/sessionmetadata.h"
-#include "logger.h"
+#include "evrp/sdk/logger.h"
 
 DEFINE_int32(
     session_lease_ms,

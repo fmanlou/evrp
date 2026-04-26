@@ -1,11 +1,11 @@
-#include "eventformat.h"
+#include "evrp/sdk/eventformat.h"
 
 #include <linux/input-event-codes.h>
 
 #include <sstream>
 #include <string>
 
-#include "keyboard/keyboarddevice.h"
+#include "evrp/sdk/keyboard/keyboarddevice.h"
 
 std::string parseEventLabel(const std::string &line) {
   std::size_t lb = line.find('[');

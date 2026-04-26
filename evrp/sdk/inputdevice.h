@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "evrp/device/api/types.h"
-#include "evdev.h"
+#include "evrp/sdk/evdev.h"
 
 bool isTouchpad(const char *devPath);
 bool isTouchscreen(const char *devPath);

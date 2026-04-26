@@ -1,4 +1,4 @@
-#include "evdev.h"
+#include "evrp/sdk/evdev.h"
 
 #include <linux/input.h>
 #include <signal.h>
@@ -7,7 +7,7 @@
 #include <cerrno>
 #include <cstring>
 
-#include "filesystem.h"
+#include "evrp/sdk/filesystem.h"
 
 #define BITS_PER_LONG (sizeof(unsigned long) * 8)
 #define NBITS(x) ((((x) - 1) / BITS_PER_LONG) + 1)

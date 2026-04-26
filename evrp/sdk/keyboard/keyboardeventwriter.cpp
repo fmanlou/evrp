@@ -1,10 +1,10 @@
-#include "keyboard/keyboardeventwriter.h"
+#include "evrp/sdk/keyboard/keyboardeventwriter.h"
 
 #include <linux/input-event-codes.h>
 #include <linux/input.h>
 
 #include "evrp/device/api/types.h"
-#include "iraweventwriter.h"
+#include "evrp/sdk/iraweventwriter.h"
 
 KeyboardEventWriter::KeyboardEventWriter(IRawEventWriter *writer)
     : writer_(writer) {}

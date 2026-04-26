@@ -174,11 +174,9 @@ target_include_directories(playback PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
 target_link_libraries(
   playback
   PRIVATE evdev
-          eventformat
           filesystem
           logger
-          luabindings
-          playbackeventcollector)
+          eventcomposer)
 
 add_library(luabindings STATIC lua/luabindings.cpp)
 target_include_directories(luabindings PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
@@ -191,6 +189,12 @@ target_link_libraries(
          filesystem
          logger
          cursorpos)
+
+add_library(eventcomposer STATIC evrp/sdk/eventcomposer.cpp)
+target_include_directories(eventcomposer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+                                                ${EVRP_SDK_DIR})
+target_link_libraries(eventcomposer PRIVATE eventformat luabindings
+                                            playbackeventcollector)
 
 add_executable(evrp evrp/client/main.cpp)
 target_link_libraries(
@@ -326,11 +330,11 @@ set_target_properties(
   countingsemaphore
   PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
 
-add_library(sdk_fml STATIC evrp/sdk/fml/grpcstatuscode.cpp)
-target_include_directories(sdk_fml PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(sdk_fml PUBLIC gRPC::grpc++ fmt::fmt)
+add_library(sdk_fmt STATIC evrp/sdk/fmt/grpcstatuscode.cpp)
+target_include_directories(sdk_fmt PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(sdk_fmt PUBLIC gRPC::grpc++ fmt::fmt)
 set_target_properties(
-  sdk_fml
+  sdk_fmt
   PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
 
 add_library(sdk_session_client STATIC evrp/sdk/sessionclient.cpp)
@@ -411,7 +415,7 @@ add_library(device_remote_inputlistener STATIC
 target_include_directories(device_remote_inputlistener
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(device_remote_inputlistener
-                      PUBLIC evrp_device_proto tofromproto sdk_fml
+                      PUBLIC evrp_device_proto tofromproto sdk_fmt
                       PRIVATE logger)
 set_target_properties(
   device_remote_inputlistener

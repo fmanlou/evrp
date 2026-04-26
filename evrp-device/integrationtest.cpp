@@ -21,7 +21,7 @@
 
 #include "evrp/device/api/client.h"
 #include "evrp/device/api/types.h"
-#include "logger.h"
+#include "evrp/sdk/logger.h"
 
 DEFINE_string(
     target, "",

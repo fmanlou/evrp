@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "evdev.h"
+#include "evrp/sdk/evdev.h"
 
 struct touch_segment_state {
   int current_slot;

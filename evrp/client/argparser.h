@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "evrp/device/api/types.h"
-#include "logger.h"
+#include "evrp/sdk/logger.h"
 
 struct RunOptions {
   bool recording;

@@ -9,10 +9,10 @@
 
 #include "evrp/device/api/inputlistener.h"
 #include "evrp/device/api/types.h"
-#include "evdev.h"
-#include "eventformat.h"
-#include "filesystem.h"
-#include "logger.h"
+#include "evrp/sdk/evdev.h"
+#include "evrp/sdk/eventformat.h"
+#include "evrp/sdk/filesystem.h"
+#include "evrp/sdk/logger.h"
 
 Record::Record(const RunOptions &options, const evrp::Ioc &ioc)
     : options_(options), ioc_(ioc) {}

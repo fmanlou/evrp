@@ -1,13 +1,13 @@
-#include "inputdevice.h"
+#include "evrp/sdk/inputdevice.h"
 
 #include <cctype>
 #include <string>
 #include <vector>
 
-#include "evdev.h"
-#include "filesystem.h"
-#include "keyboard/keyboarddevice.h"
-#include "touchdevice.h"
+#include "evrp/sdk/evdev.h"
+#include "evrp/sdk/filesystem.h"
+#include "evrp/sdk/keyboard/keyboarddevice.h"
+#include "evrp/sdk/touchdevice.h"
 
 static bool nameLikeMouse(const std::string &name) {
   std::string n = name;

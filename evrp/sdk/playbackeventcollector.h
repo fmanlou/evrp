@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "evrp/device/api/types.h"
-#include "iraweventwriter.h"
+#include "evrp/sdk/iraweventwriter.h"
 
 namespace evrp::device::api {
 class IPlayback;
@@ -20,6 +20,9 @@ class PlaybackEventCollector final : public IRawEventWriter {
                 unsigned short code, int value) override;
 
   bool uploadAndPlay(evrp::device::api::IPlayback* playback);
+
+  /// Moves buffered events out and resets the collector (timeline + buffer).
+  std::vector<evrp::device::api::InputEvent> takeEvents();
 
  private:
   void appendBatchWithTimeline(std::vector<evrp::device::api::InputEvent> batch);

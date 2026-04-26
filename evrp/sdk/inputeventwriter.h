@@ -3,9 +3,9 @@
 #include <map>
 
 #include "evrp/device/api/types.h"
-#include "iraweventwriter.h"
-#include "keyboard/keyboardeventwriter.h"
-#include "mouse/mouseeventwriter.h"
+#include "evrp/sdk/iraweventwriter.h"
+#include "evrp/sdk/keyboard/keyboardeventwriter.h"
+#include "evrp/sdk/mouse/mouseeventwriter.h"
 
 class FileSystem;
 
