@@ -1,4 +1,4 @@
-#include "cursorposx11.h"
+#include "evrp/sdk/cursor/cursorposx11.h"
 
 #include <X11/Xlib.h>
 
@@ -35,7 +35,7 @@ class CursorPosBackendX11 : public CursorPosBackend {
   }
 };
 
-}  
+}
 
 CursorPosBackend *createCursorPosBackendX11() {
   static CursorPosBackendX11 instance;

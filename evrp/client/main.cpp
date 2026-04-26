@@ -1,12 +1,12 @@
-#include "argparser.h"
-#include "cursor/cursorpos.h"
+#include "evrp/client/argparser.h"
+#include "evrp/client/playback.h"
+#include "evrp/client/record.h"
 #include "evrp/device/api/client.h"
+#include "evrp/sdk/cursor/cursorpos.h"
 #include "evrp/sdk/ioc.h"
+#include "evrp/sdk/logger.h"
 
 #include <memory>
-#include "evrp/sdk/logger.h"
-#include "playback.h"
-#include "record.h"
 
 int main(int argc, char *argv[]) {
   logging::LogService logSvc("evrp");

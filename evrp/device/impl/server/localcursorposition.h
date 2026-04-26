@@ -1,6 +1,6 @@
 #pragma once
 
-#include "cursor/cursorpos.h"
+#include "evrp/sdk/cursor/cursorpos.h"
 #include "evrp/device/api/cursorposition.h"
 
 namespace evrp::device::server {

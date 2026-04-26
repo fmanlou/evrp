@@ -6,7 +6,7 @@
 
 #include <cstdio>
 
-#include "cursor/cursorpos.h"
+#include "evrp/sdk/cursor/cursorpos.h"
 #include "evrp/sdk/evdev.h"
 #include "evrp/sdk/eventformat.h"
 #include "evrp/sdk/filesystem.h"

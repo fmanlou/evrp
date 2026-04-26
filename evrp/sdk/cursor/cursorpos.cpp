@@ -1,8 +1,8 @@
-#include "cursorpos.h"
+#include "evrp/sdk/cursor/cursorpos.h"
 
-#include "cursorposbackend.h"
+#include "evrp/sdk/cursor/cursorposbackend.h"
 #ifdef EVRP_USE_X11_CURSOR
-#include "cursorposx11.h"
+#include "evrp/sdk/cursor/cursorposx11.h"
 #endif
 
 CursorPos *gCursor = nullptr;
@@ -10,7 +10,6 @@ CursorPos *gCursor = nullptr;
 void CursorPos::ensureInitialized() const {
   if (initialized_) return;
 
-  
   CursorPosBackend *b = nullptr;
 #ifdef EVRP_USE_X11_CURSOR
   b = createCursorPosBackendX11();
