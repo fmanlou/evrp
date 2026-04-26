@@ -1,4 +1,4 @@
-#include "lua/luabindings.h"
+#include "evrp/sdk/luaeventcomposer/luabindings.h"
 
 #include <linux/input-event-codes.h>
 #include <linux/input.h>
@@ -244,12 +244,11 @@ int luaMouseButtonClick(lua_State* L) {
 }
 
 void registerEvrpTable(lua_State* L) {
-  lua_newtable(L);  
+  lua_newtable(L);
 
   lua_pushboolean(L, false);
   lua_setfield(L, -2, "dry_run");
 
-  
   lua_newtable(L);
   lua_pushcfunction(L, luaPress);
   lua_setfield(L, -2, "press");
@@ -258,7 +257,6 @@ void registerEvrpTable(lua_State* L) {
   lua_pushcfunction(L, luaClick);
   lua_setfield(L, -2, "click");
 
-  
   lua_pushinteger(L, KEY_A);
   lua_setfield(L, -2, "KEY_A");
   lua_pushinteger(L, KEY_B);
@@ -328,7 +326,6 @@ void registerEvrpTable(lua_State* L) {
 
   lua_setglobal(L, "keyboard");
 
-  
   lua_newtable(L);
   lua_pushcfunction(L, luaMouseMove);
   lua_setfield(L, -2, "move");
@@ -363,7 +360,7 @@ void registerEvrpTable(lua_State* L) {
   lua_setglobal(L, "evrp");
 }
 
-}  
+}
 
 namespace {
 
@@ -409,7 +406,7 @@ int runLuaWithBindings(KeyboardEventWriter* keyboard, MouseEventWriter* mouse,
   return err;
 }
 
-}  
+}
 
 int runScriptWithWriter(const char* path, InputEventWriter* writer) {
   if (!path || !writer) {
@@ -426,7 +423,9 @@ int runScript(const char* path) {
 }
 
 int executeChunk(InputEventWriter* writer, const char* chunk) {
-  if (!writer || !chunk) return LUA_ERRRUN;
+  if (!writer || !chunk) {
+    return LUA_ERRRUN;
+  }
   return runLuaWithBindings(writer->keyboardWriter(), writer->mouseWriter(),
                             false, nullptr, chunk);
 }
@@ -453,5 +452,5 @@ int playbackLuaChunkIntoCollector(const char* chunk,
   return runLuaWithBindings(&keyboard, &mouse, false, nullptr, chunk);
 }
 
-}  
+}
 }

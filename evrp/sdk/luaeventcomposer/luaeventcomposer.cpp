@@ -1,12 +1,16 @@
-#include "evrp/sdk/eventcomposer.h"
+#include "evrp/sdk/luaeventcomposer/luaeventcomposer.h"
 
 #include <algorithm>
 #include <cstdint>
 #include <sstream>
 
 #include "evrp/sdk/eventformat.h"
-#include "lua/luabindings.h"
+#include "evrp/sdk/luaeventcomposer/luabindings.h"
 #include "evrp/sdk/playbackeventcollector.h"
+
+extern "C" {
+#include "lua.h"
+}
 
 namespace api = evrp::device::api;
 
@@ -108,8 +112,8 @@ void normalizeTimelineToZero(std::vector<api::InputEvent>* events) {
 
 }
 
-int EventComposer::toEvents(const std::string& text,
-                             std::vector<api::InputEvent>* events) {
+int LuaEventComposer::toEvents(const std::string& text,
+                               std::vector<api::InputEvent>* events) {
   if (!events) {
     return LUA_ERRRUN;
   }
@@ -117,7 +121,8 @@ int EventComposer::toEvents(const std::string& text,
 
   if (!textLooksLikeRecordingFormat(text)) {
     PlaybackEventCollector collector;
-    int err = evrp::lua::playbackLuaChunkIntoCollector(text.c_str(), &collector);
+    int err =
+        evrp::lua::playbackLuaChunkIntoCollector(text.c_str(), &collector);
     if (err != LUA_OK) {
       return err;
     }
@@ -162,7 +167,8 @@ int EventComposer::toEvents(const std::string& text,
 
     if (!is_event) {
       PlaybackEventCollector collector;
-      int err = evrp::lua::playbackLuaChunkIntoCollector(line.c_str(), &collector);
+      int err =
+          evrp::lua::playbackLuaChunkIntoCollector(line.c_str(), &collector);
       if (err != LUA_OK) {
         return err;
       }

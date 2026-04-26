@@ -176,9 +176,10 @@ target_link_libraries(
   PRIVATE evdev
           filesystem
           logger
-          eventcomposer)
+          luaeventcomposer)
 
-add_library(luabindings STATIC lua/luabindings.cpp)
+add_library(luabindings STATIC
+            evrp/sdk/luaeventcomposer/luabindings.cpp)
 target_include_directories(luabindings PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
                                               ${EVRP_SDK_DIR})
 target_link_libraries(
@@ -190,11 +191,12 @@ target_link_libraries(
          logger
          cursorpos)
 
-add_library(eventcomposer STATIC evrp/sdk/eventcomposer.cpp)
-target_include_directories(eventcomposer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
-                                                ${EVRP_SDK_DIR})
-target_link_libraries(eventcomposer PRIVATE eventformat luabindings
-                                            playbackeventcollector)
+add_library(luaeventcomposer STATIC
+            evrp/sdk/luaeventcomposer/luaeventcomposer.cpp)
+target_include_directories(luaeventcomposer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+                                                   ${EVRP_SDK_DIR})
+target_link_libraries(luaeventcomposer PRIVATE eventformat luabindings
+                                               playbackeventcollector)
 
 add_executable(evrp evrp/client/main.cpp)
 target_link_libraries(

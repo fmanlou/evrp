@@ -13,7 +13,7 @@ class IEventComposer {
                        std::vector<evrp::device::api::InputEvent>* events) = 0;
 };
 
-class EventComposer final : public IEventComposer {
+class LuaEventComposer final : public IEventComposer {
  public:
   int toEvents(const std::string& text,
                std::vector<evrp::device::api::InputEvent>* events) override;

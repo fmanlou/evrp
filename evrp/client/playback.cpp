@@ -8,7 +8,7 @@
 
 #include "evrp/device/api/playback.h"
 #include "evrp/device/api/types.h"
-#include "evrp/sdk/eventcomposer.h"
+#include "evrp/sdk/luaeventcomposer/luaeventcomposer.h"
 #include "evrp/sdk/evdev.h"
 #include "evrp/sdk/logger.h"
 
@@ -63,7 +63,7 @@ int Playback::run() {
   buf << fs_.inputStream().rdbuf();
   const std::string content = buf.str();
 
-  EventComposer event_composer;
+  LuaEventComposer event_composer;
   std::vector<evrp::device::api::InputEvent> events;
   const int cerr = event_composer.toEvents(content, &events);
   if (cerr != 0) {
