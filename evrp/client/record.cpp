@@ -5,7 +5,7 @@
 
 #include <cstdio>
 
-#include "evrp/device/api/client.h"
+#include "evrp/device/api/inputlistener.h"
 #include "evrp/device/api/types.h"
 #include "evdev.h"
 #include "eventformat.h"
@@ -165,15 +165,12 @@ void Record::recordEvents() {
   eventOut.flush();
 }
 
-int Record::runWithDeviceClient(evrp::device::api::IClient *client) {
+int Record::runWithIoc(const evrp::Ioc &ioc) {
   logService->setLevel(options_.logLevel);
-  if (!client) {
-    logError("No device client.");
-    return 1;
-  }
-  evrp::device::api::IInputListener *listener = client->inputListener();
+  evrp::device::api::IInputListener *listener =
+      ioc.get<evrp::device::api::IInputListener>();
   if (!listener) {
-    logError("No input listener.");
+    logError("Ioc has no IInputListener.");
     return 1;
   }
   if (!listener->startListening(options_.kinds)) {

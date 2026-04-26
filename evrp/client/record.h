@@ -6,11 +6,8 @@
 
 #include "argparser.h"
 #include "evrp/device/api/types.h"
+#include "evrp/sdk/ioc.h"
 #include "filesystem.h"
-
-namespace evrp::device::api {
-class IClient;
-}
 
 struct RecordTarget {
   int fd;
@@ -22,8 +19,8 @@ class Record {
  public:
   explicit Record(const RunOptions &options);
   int run();
-  /// Records via evrp-device (InputListen gRPC); requires a connected client.
-  int runWithDeviceClient(evrp::device::api::IClient *client);
+  /// Records via evrp-device (InputListen gRPC); Ioc must hold IInputListener.
+  int runWithIoc(const evrp::Ioc &ioc);
 
  private:
   std::vector<RecordTarget> collectTargets();

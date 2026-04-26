@@ -6,7 +6,7 @@
 #include <thread>
 #include <vector>
 
-#include "evrp/device/api/client.h"
+#include "evrp/device/api/playback.h"
 #include "evrp/device/api/types.h"
 #include "evdev.h"
 #include "eventformat.h"
@@ -19,7 +19,7 @@
 Playback::Playback(const RunOptions &options)
     : options_(options), eventWriter_(&fs_) {}
 
-int Playback::runWithDeviceClient(evrp::device::api::IClient *client) {
+int Playback::runWithIoc(const evrp::Ioc &ioc) {
   if (options_.playbackPath.empty()) {
     logError("Playback mode requires a file path after -p.");
     return 1;
@@ -28,13 +28,10 @@ int Playback::runWithDeviceClient(evrp::device::api::IClient *client) {
   const std::string &path = options_.playbackPath;
   std::string::size_type dot = path.rfind('.');
 
-  if (!client) {
-    logError("No device client.");
-    return 1;
-  }
-  evrp::device::api::IPlayback *remote = client->playback();
+  evrp::device::api::IPlayback *remote =
+      ioc.get<evrp::device::api::IPlayback>();
   if (!remote) {
-    logError("No playback handle.");
+    logError("Ioc has no IPlayback.");
     return 1;
   }
 

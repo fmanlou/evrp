@@ -3,20 +3,17 @@
 #include <string>
 
 #include "argparser.h"
+#include "evrp/sdk/ioc.h"
 #include "filesystem.h"
 #include "inputeventwriter.h"
-
-namespace evrp::device::api {
-class IClient;
-}
 
 class Playback {
  public:
   explicit Playback(const RunOptions &options);
   int run();
   /// Plays via evrp-device: event files (streaming), embedded Lua lines, or .lua
-  /// scripts (Lua runs locally; injection uses gRPC).
-  int runWithDeviceClient(evrp::device::api::IClient *client);
+  /// scripts (Lua runs locally; injection uses gRPC). Ioc must hold IPlayback.
+  int runWithIoc(const evrp::Ioc &ioc);
 
  private:
   RunOptions options_;

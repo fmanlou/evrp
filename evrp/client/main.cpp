@@ -1,6 +1,7 @@
 #include "argparser.h"
 #include "cursor/cursorpos.h"
 #include "evrp/device/api/client.h"
+#include "evrp/sdk/ioc.h"
 
 #include <memory>
 #include "logger.h"
@@ -39,14 +40,18 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
+  evrp::Ioc ioc;
+  ioc.emplace(deviceClient->playback());
+  ioc.emplace(deviceClient->inputListener());
+
   if (options.playback) {
     if (options.playbackPath.empty()) {
       logError("Playback (--playback) requires a file path.");
       printUsage(argv[0]);
       return 1;
     }
-    return Playback(options).runWithDeviceClient(deviceClient.get());
+    return Playback(options).runWithIoc(ioc);
   }
 
-  return Record(options).runWithDeviceClient(deviceClient.get());
+  return Record(options).runWithIoc(ioc);
 }
