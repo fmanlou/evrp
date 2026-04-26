@@ -154,8 +154,7 @@ add_library(record STATIC evrp/client/record.cpp)
 target_include_directories(record PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
                                          ${EVRP_CLIENT_DIR}
                                          ${EVRP_SDK_DIR})
-target_link_libraries(record PRIVATE evdev eventformat filesystem inputdevice
-                                     logger)
+target_link_libraries(record PRIVATE evdev eventformat filesystem logger)
 
 add_library(logger STATIC evrp/sdk/logger.cpp)
 target_include_directories(logger PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
@@ -171,7 +170,6 @@ target_link_libraries(
   PRIVATE evdev
           eventformat
           inputeventwriter
-          inputdevice
           filesystem
           logger
           luabindings)

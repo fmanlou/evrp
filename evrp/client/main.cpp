@@ -50,8 +50,8 @@ int main(int argc, char *argv[]) {
       printUsage(argv[0]);
       return 1;
     }
-    return Playback(options).runWithIoc(ioc);
+    return Playback(options, ioc).run();
   }
 
-  return Record(options).runWithIoc(ioc);
+  return Record(options, ioc).run();
 }

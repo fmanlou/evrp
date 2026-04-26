@@ -5,18 +5,14 @@
 #include "argparser.h"
 #include "evrp/sdk/ioc.h"
 #include "filesystem.h"
-#include "inputeventwriter.h"
 
 class Playback {
  public:
-  explicit Playback(const RunOptions &options);
+  Playback(const RunOptions &options, const evrp::Ioc &ioc);
   int run();
-  /// Plays via evrp-device: event files (streaming), embedded Lua lines, or .lua
-  /// scripts (Lua runs locally; injection uses gRPC). Ioc must hold IPlayback.
-  int runWithIoc(const evrp::Ioc &ioc);
 
  private:
   RunOptions options_;
+  const evrp::Ioc &ioc_;
   FileSystem fs_;
-  InputEventWriter eventWriter_;
 };
