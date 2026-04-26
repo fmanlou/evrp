@@ -122,6 +122,12 @@ target_include_directories(argparser PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
                                             ${EVRP_SDK_DIR})
 target_link_libraries(argparser PRIVATE logger gflags::gflags)
 
+add_library(remoteplaybackinjector STATIC
+            evrp/sdk/remoteplaybackinjector.cpp)
+target_include_directories(remoteplaybackinjector
+                           PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${EVRP_SDK_DIR})
+target_link_libraries(remoteplaybackinjector PRIVATE logger)
+
 add_library(
   inputeventwriter STATIC
   evrp/sdk/inputeventwriter.cpp evrp/sdk/keyboard/keyboardeventwriter.cpp
@@ -135,7 +141,8 @@ target_link_libraries(
           filesystem
           inputdevice
           logger
-          cursorpos)
+          cursorpos
+          remoteplaybackinjector)
 
 add_library(eventformat STATIC evrp/sdk/eventformat.cpp)
 target_include_directories(eventformat PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
@@ -176,8 +183,14 @@ target_link_libraries(
 add_library(luabindings STATIC lua/luabindings.cpp)
 target_include_directories(luabindings PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
                                               ${EVRP_SDK_DIR})
-target_link_libraries(luabindings PUBLIC lua inputeventwriter filesystem logger
-                                         cursorpos)
+target_link_libraries(
+  luabindings
+  PUBLIC lua
+         inputeventwriter
+         remoteplaybackinjector
+         filesystem
+         logger
+         cursorpos)
 
 add_executable(evrp evrp/client/main.cpp)
 target_link_libraries(

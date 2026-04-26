@@ -4,9 +4,9 @@
 #include <linux/input.h>
 
 #include "evrp/device/api/types.h"
-#include "inputeventwriter.h"
+#include "iraweventwriter.h"
 
-KeyboardEventWriter::KeyboardEventWriter(InputEventWriter *writer)
+KeyboardEventWriter::KeyboardEventWriter(IRawEventWriter *writer)
     : writer_(writer) {}
 
 bool KeyboardEventWriter::press(unsigned short key_code) {

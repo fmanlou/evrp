@@ -1,10 +1,10 @@
 #pragma once
 
-class InputEventWriter;
+class IRawEventWriter;
 
 class KeyboardEventWriter {
  public:
-  explicit KeyboardEventWriter(InputEventWriter *writer);
+  explicit KeyboardEventWriter(IRawEventWriter *writer);
 
   bool press(unsigned short key_code);
   bool release(unsigned short key_code);
@@ -14,5 +14,5 @@ class KeyboardEventWriter {
   bool write(unsigned short type, unsigned short code, int value);
 
  private:
-  InputEventWriter *writer_;
+  IRawEventWriter *writer_;
 };

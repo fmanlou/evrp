@@ -8,12 +8,12 @@
 #include <cstring>
 
 #include "cursor/cursorpos.h"
-#include "evrp/device/api/playback.h"
 #include "filesystem.h"
 #include "inputeventwriter.h"
 #include "keyboard/keyboardeventwriter.h"
 #include "logger.h"
 #include "mouse/mouseeventwriter.h"
+#include "remoteplaybackinjector.h"
 
 namespace evrp {
 namespace lua {
@@ -365,8 +365,17 @@ void registerEvrpTable(lua_State* L) {
 
 }  
 
-int runScriptWithWriter(const char* path, InputEventWriter* writer) {
-  if (!path || !writer) {
+namespace {
+
+int runLuaWithBindings(KeyboardEventWriter* keyboard, MouseEventWriter* mouse,
+                       bool fromFile, const char* path, const char* chunk) {
+  if (!keyboard || !mouse) {
+    return LUA_ERRRUN;
+  }
+  if (fromFile && !path) {
+    return LUA_ERRRUN;
+  }
+  if (!fromFile && (!chunk || !chunk[0])) {
     return LUA_ERRRUN;
   }
   lua_State* L = luaL_newstate();
@@ -375,11 +384,19 @@ int runScriptWithWriter(const char* path, InputEventWriter* writer) {
   }
   luaL_openlibs(L);
 
-  g_keyboard = writer->keyboardWriter();
-  g_mouse = writer->mouseWriter();
+  g_keyboard = keyboard;
+  g_mouse = mouse;
   registerEvrpTable(L);
 
-  int err = luaL_dofile(L, path);
+  int err;
+  if (fromFile) {
+    err = luaL_dofile(L, path);
+  } else {
+    err = luaL_loadbuffer(L, chunk, std::strlen(chunk), "=(playback)");
+    if (err == LUA_OK) {
+      err = lua_pcall(L, 0, 0, 0);
+    }
+  }
   g_keyboard = nullptr;
   g_mouse = nullptr;
 
@@ -390,6 +407,16 @@ int runScriptWithWriter(const char* path, InputEventWriter* writer) {
   }
   lua_close(L);
   return err;
+}
+
+}  
+
+int runScriptWithWriter(const char* path, InputEventWriter* writer) {
+  if (!path || !writer) {
+    return LUA_ERRRUN;
+  }
+  return runLuaWithBindings(writer->keyboardWriter(), writer->mouseWriter(),
+                            true, path, nullptr);
 }
 
 int runScript(const char* path) {
@@ -400,46 +427,26 @@ int runScript(const char* path) {
 
 int executeChunk(InputEventWriter* writer, const char* chunk) {
   if (!writer || !chunk) return LUA_ERRRUN;
-  lua_State* L = luaL_newstate();
-  if (!L) return LUA_ERRMEM;
-  luaL_openlibs(L);
-
-  g_keyboard = writer->keyboardWriter();
-  g_mouse = writer->mouseWriter();
-  registerEvrpTable(L);
-
-  int err = luaL_loadbuffer(L, chunk, std::strlen(chunk), "=(playback)");
-  if (err == LUA_OK) {
-    err = lua_pcall(L, 0, 0, 0);
-  }
-  g_keyboard = nullptr;
-  g_mouse = nullptr;
-
-  if (err != LUA_OK) {
-    const char* msg = lua_tostring(L, -1);
-    logError("Lua error: {}", msg ? msg : "(null)");
-    lua_pop(L, 1);
-  }
-  lua_close(L);
-  return err;
+  return runLuaWithBindings(writer->keyboardWriter(), writer->mouseWriter(),
+                            false, nullptr, chunk);
 }
 
 int runScriptWithPlayback(const char* path, device::api::IPlayback* playback) {
   if (!path || !playback) {
     return LUA_ERRRUN;
   }
-  FileSystem fs;
-  InputEventWriter writer(&fs);
-  writer.setRemotePlayback(playback);
-  return runScriptWithWriter(path, &writer);
+  RemotePlaybackInjector inject(playback);
+  KeyboardEventWriter keyboard(&inject);
+  MouseEventWriter mouse(&inject, gCursor);
+  return runLuaWithBindings(&keyboard, &mouse, true, path, nullptr);
 }
 
 struct RemoteLuaChunkRunner::Impl {
-  FileSystem fs;
-  InputEventWriter writer;
-  explicit Impl(device::api::IPlayback* playback) : writer(&fs) {
-    writer.setRemotePlayback(playback);
-  }
+  RemotePlaybackInjector inject;
+  KeyboardEventWriter keyboard;
+  MouseEventWriter mouse;
+  explicit Impl(device::api::IPlayback* playback)
+      : inject(playback), keyboard(&inject), mouse(&inject, gCursor) {}
 };
 
 RemoteLuaChunkRunner::RemoteLuaChunkRunner(device::api::IPlayback* playback)
@@ -451,7 +458,8 @@ int RemoteLuaChunkRunner::executeChunk(const char* chunk) {
   if (!impl_) {
     return LUA_ERRRUN;
   }
-  return evrp::lua::executeChunk(&impl_->writer, chunk);
+  return runLuaWithBindings(&impl_->keyboard, &impl_->mouse, false, nullptr,
+                            chunk);
 }
 
 }  

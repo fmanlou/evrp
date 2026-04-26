@@ -1,11 +1,11 @@
 #pragma once
 
 class CursorPos;
-class InputEventWriter;
+class IRawEventWriter;
 
 class MouseEventWriter {
  public:
-  MouseEventWriter(InputEventWriter *writer, CursorPos *cursor);
+  MouseEventWriter(IRawEventWriter *writer, CursorPos *cursor);
 
   bool move(int dx, int dy);
   
@@ -26,6 +26,6 @@ class MouseEventWriter {
   bool write(unsigned short type, unsigned short code, int value);
 
  private:
-  InputEventWriter *writer_;
+  IRawEventWriter *writer_;
   CursorPos *cursor_;
 };
