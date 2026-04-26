@@ -122,11 +122,11 @@ target_include_directories(argparser PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
                                             ${EVRP_SDK_DIR})
 target_link_libraries(argparser PRIVATE logger gflags::gflags)
 
-add_library(remoteplaybackinjector STATIC
-            evrp/sdk/remoteplaybackinjector.cpp)
-target_include_directories(remoteplaybackinjector
+add_library(playbackeventcollector STATIC
+            evrp/sdk/playbackeventcollector.cpp)
+target_include_directories(playbackeventcollector
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${EVRP_SDK_DIR})
-target_link_libraries(remoteplaybackinjector PRIVATE logger)
+target_link_libraries(playbackeventcollector PRIVATE logger)
 
 add_library(
   inputeventwriter STATIC
@@ -186,7 +186,7 @@ target_link_libraries(
   luabindings
   PUBLIC lua
          inputeventwriter
-         remoteplaybackinjector
+         playbackeventcollector
          filesystem
          logger
          cursorpos)

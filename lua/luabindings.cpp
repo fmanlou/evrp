@@ -13,7 +13,7 @@
 #include "keyboard/keyboardeventwriter.h"
 #include "logger.h"
 #include "mouse/mouseeventwriter.h"
-#include "remoteplaybackinjector.h"
+#include "playbackeventcollector.h"
 
 namespace evrp {
 namespace lua {
@@ -435,18 +435,24 @@ int runScriptWithPlayback(const char* path, device::api::IPlayback* playback) {
   if (!path || !playback) {
     return LUA_ERRRUN;
   }
-  RemotePlaybackInjector inject(playback);
-  KeyboardEventWriter keyboard(&inject);
-  MouseEventWriter mouse(&inject, gCursor);
-  return runLuaWithBindings(&keyboard, &mouse, true, path, nullptr);
+  PlaybackEventCollector collector;
+  KeyboardEventWriter keyboard(&collector);
+  MouseEventWriter mouse(&collector, gCursor);
+  int err =
+      runLuaWithBindings(&keyboard, &mouse, true, path, nullptr);
+  if (err != LUA_OK) {
+    return err;
+  }
+  return collector.uploadAndPlay(playback) ? LUA_OK : LUA_ERRRUN;
 }
 
 struct RemoteLuaChunkRunner::Impl {
-  RemotePlaybackInjector inject;
+  device::api::IPlayback* playback = nullptr;
+  PlaybackEventCollector collector;
   KeyboardEventWriter keyboard;
   MouseEventWriter mouse;
-  explicit Impl(device::api::IPlayback* playback)
-      : inject(playback), keyboard(&inject), mouse(&inject, gCursor) {}
+  explicit Impl(device::api::IPlayback* p)
+      : playback(p), keyboard(&collector), mouse(&collector, gCursor) {}
 };
 
 RemoteLuaChunkRunner::RemoteLuaChunkRunner(device::api::IPlayback* playback)
@@ -458,8 +464,13 @@ int RemoteLuaChunkRunner::executeChunk(const char* chunk) {
   if (!impl_) {
     return LUA_ERRRUN;
   }
-  return runLuaWithBindings(&impl_->keyboard, &impl_->mouse, false, nullptr,
-                            chunk);
+  impl_->collector.clear();
+  int err = runLuaWithBindings(&impl_->keyboard, &impl_->mouse, false, nullptr,
+                               chunk);
+  if (err != LUA_OK) {
+    return err;
+  }
+  return impl_->collector.uploadAndPlay(impl_->playback) ? LUA_OK : LUA_ERRRUN;
 }
 
 }  

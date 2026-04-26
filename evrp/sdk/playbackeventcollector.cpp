@@ -1,4 +1,4 @@
-#include "remoteplaybackinjector.h"
+#include "playbackeventcollector.h"
 
 #include <linux/input-event-codes.h>
 #include <linux/input.h>
@@ -8,12 +8,16 @@
 
 namespace api = evrp::device::api;
 
-RemotePlaybackInjector::RemotePlaybackInjector(api::IPlayback* playback)
-    : playback_(playback), timelineUs_(0), hasWall_(false) {}
+void PlaybackEventCollector::clear() {
+  events_.clear();
+  timelineUs_ = 0;
+  hasWall_ = false;
+}
 
-bool RemotePlaybackInjector::flushBatch(std::vector<api::InputEvent> batch) {
-  if (!playback_ || batch.empty()) {
-    return true;
+void PlaybackEventCollector::appendBatchWithTimeline(
+    std::vector<api::InputEvent> batch) {
+  if (batch.empty()) {
+    return;
   }
   const auto wall = std::chrono::steady_clock::now();
   if (hasWall_) {
@@ -31,21 +35,10 @@ bool RemotePlaybackInjector::flushBatch(std::vector<api::InputEvent> batch) {
     e.timeUsec = timelineUs_ % 1000000LL;
     timelineUs_ += 1;
   }
-  api::OperationResult up;
-  if (!playback_->upload(batch, &up) || up.code != 0) {
-    logError("Remote inject: upload failed (code={}): {}", up.code, up.message);
-    return false;
-  }
-  api::OperationResult play;
-  if (!playback_->playback(&play) || play.code != 0) {
-    logError("Remote inject: playback failed (code={}): {}", play.code,
-             play.message);
-    return false;
-  }
-  return true;
+  events_.insert(events_.end(), batch.begin(), batch.end());
 }
 
-bool RemotePlaybackInjector::writeRaw(api::DeviceKind device, unsigned short type,
+bool PlaybackEventCollector::writeRaw(api::DeviceKind device, unsigned short type,
                                       unsigned short code, int value) {
   std::vector<api::InputEvent> batch;
   auto push = [&](unsigned short t, unsigned short c, int v) {
@@ -67,5 +60,28 @@ bool RemotePlaybackInjector::writeRaw(api::DeviceKind device, unsigned short typ
     }
     push(EV_SYN, SYN_REPORT, 0);
   }
-  return flushBatch(std::move(batch));
+  appendBatchWithTimeline(std::move(batch));
+  return true;
+}
+
+bool PlaybackEventCollector::uploadAndPlay(api::IPlayback* playback) {
+  if (!playback) {
+    return false;
+  }
+  if (events_.empty()) {
+    return true;
+  }
+  api::OperationResult up;
+  if (!playback->upload(events_, &up) || up.code != 0) {
+    logError("Playback buffer: upload failed (code={}): {}", up.code, up.message);
+    return false;
+  }
+  api::OperationResult play;
+  if (!playback->playback(&play) || play.code != 0) {
+    logError("Playback buffer: playback failed (code={}): {}", play.code,
+             play.message);
+    return false;
+  }
+  clear();
+  return true;
 }
