@@ -431,46 +431,26 @@ int executeChunk(InputEventWriter* writer, const char* chunk) {
                             false, nullptr, chunk);
 }
 
-int runScriptWithPlayback(const char* path, device::api::IPlayback* playback) {
-  if (!path || !playback) {
+int playbackLuaFileIntoCollector(const char* path,
+                                 PlaybackEventCollector* collector) {
+  if (!path || !collector) {
     return LUA_ERRRUN;
   }
-  PlaybackEventCollector collector;
-  KeyboardEventWriter keyboard(&collector);
-  MouseEventWriter mouse(&collector, gCursor);
-  int err =
-      runLuaWithBindings(&keyboard, &mouse, true, path, nullptr);
-  if (err != LUA_OK) {
-    return err;
-  }
-  return collector.uploadAndPlay(playback) ? LUA_OK : LUA_ERRRUN;
+  collector->clear();
+  KeyboardEventWriter keyboard(collector);
+  MouseEventWriter mouse(collector, gCursor);
+  return runLuaWithBindings(&keyboard, &mouse, true, path, nullptr);
 }
 
-struct RemoteLuaChunkRunner::Impl {
-  device::api::IPlayback* playback = nullptr;
-  PlaybackEventCollector collector;
-  KeyboardEventWriter keyboard;
-  MouseEventWriter mouse;
-  explicit Impl(device::api::IPlayback* p)
-      : playback(p), keyboard(&collector), mouse(&collector, gCursor) {}
-};
-
-RemoteLuaChunkRunner::RemoteLuaChunkRunner(device::api::IPlayback* playback)
-    : impl_(playback ? std::make_unique<Impl>(playback) : nullptr) {}
-
-RemoteLuaChunkRunner::~RemoteLuaChunkRunner() = default;
-
-int RemoteLuaChunkRunner::executeChunk(const char* chunk) {
-  if (!impl_) {
+int playbackLuaChunkIntoCollector(const char* chunk,
+                                  PlaybackEventCollector* collector) {
+  if (!chunk || !collector) {
     return LUA_ERRRUN;
   }
-  impl_->collector.clear();
-  int err = runLuaWithBindings(&impl_->keyboard, &impl_->mouse, false, nullptr,
-                               chunk);
-  if (err != LUA_OK) {
-    return err;
-  }
-  return impl_->collector.uploadAndPlay(impl_->playback) ? LUA_OK : LUA_ERRRUN;
+  collector->clear();
+  KeyboardEventWriter keyboard(collector);
+  MouseEventWriter mouse(collector, gCursor);
+  return runLuaWithBindings(&keyboard, &mouse, false, nullptr, chunk);
 }
 
 }  

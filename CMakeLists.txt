@@ -177,7 +177,8 @@ target_link_libraries(
           eventformat
           filesystem
           logger
-          luabindings)
+          luabindings
+          playbackeventcollector)
 
 add_library(luabindings STATIC lua/luabindings.cpp)
 target_include_directories(luabindings PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}

@@ -12,10 +12,45 @@
 #include "eventformat.h"
 #include "logger.h"
 #include "lua/luabindings.h"
+#include "playbackeventcollector.h"
 #include "scopeguard.h"
 
 Playback::Playback(const RunOptions &options, const evrp::Ioc &ioc)
     : options_(options), ioc_(ioc) {}
+
+namespace {
+
+bool deviceUploadAndPlay(evrp::device::api::IPlayback *remote,
+                         const std::vector<evrp::device::api::InputEvent> &events) {
+  if (events.empty()) {
+    return true;
+  }
+  evrp::device::api::OperationResult up;
+  if (!remote->upload(events, &up) || up.code != 0) {
+    logError("Upload to evrp-device failed (code={}): {}", up.code, up.message);
+    return false;
+  }
+  evrp::device::api::OperationResult play;
+  if (!remote->playback(&play) || play.code != 0) {
+    logError("Playback failed (code={}): {}", play.code, play.message);
+    return false;
+  }
+  return true;
+}
+
+bool expandLuaThenDevice(evrp::device::api::IPlayback *remote,
+                         const char *path_or_chunk, bool from_file) {
+  PlaybackEventCollector collector;
+  int err =
+      from_file ? evrp::lua::playbackLuaFileIntoCollector(path_or_chunk, &collector)
+                : evrp::lua::playbackLuaChunkIntoCollector(path_or_chunk, &collector);
+  if (err != LUA_OK) {
+    return false;
+  }
+  return collector.uploadAndPlay(remote);
+}
+
+}  // namespace
 
 int Playback::run() {
   if (options_.playbackPath.empty()) {
@@ -36,10 +71,12 @@ int Playback::run() {
   logService->setLevel(options_.logLevel);
 
   if (dot != std::string::npos && path.substr(dot) == ".lua") {
-    logInfo("Lua (local parse) injecting via evrp-device at {}...",
-            options_.device);
-    int err = evrp::lua::runScriptWithPlayback(path.c_str(), remote);
-    return (err == LUA_OK) ? 0 : 1;
+    logInfo("Lua → events, playing via evrp-device at {}...", options_.device);
+    if (!expandLuaThenDevice(remote, path.c_str(), true)) {
+      logError("Lua playback failed.");
+      return 1;
+    }
+    return 0;
   }
 
   if (!fs_.openInput(path)) {
@@ -47,26 +84,8 @@ int Playback::run() {
     return 1;
   }
 
-  logInfo("Playing back via evrp-device at {} (Ctrl+C tries to stop)...",
+  logInfo("Recording → events, playing via evrp-device at {} (Ctrl+C tries to stop)...",
           options_.device);
-
-  evrp::lua::RemoteLuaChunkRunner lua_runner(remote);
-
-  auto flush_one = [&](const evrp::device::api::InputEvent &e) -> bool {
-    const std::vector<evrp::device::api::InputEvent> one{e};
-    evrp::device::api::OperationResult up;
-    if (!remote->upload(one, &up) || up.code != 0) {
-      logError("Upload to evrp-device failed (code={}): {}", up.code,
-               up.message);
-      return false;
-    }
-    evrp::device::api::OperationResult play;
-    if (!remote->playback(&play) || play.code != 0) {
-      logError("Playback failed (code={}): {}", play.code, play.message);
-      return false;
-    }
-    return true;
-  };
 
   SigintGuard sigint;
   std::istream &input = fs_.inputStream();
@@ -106,8 +125,7 @@ int Playback::run() {
                     parseEventLine(line, &deltaUs, &type, &code, &value);
 
     if (!is_event) {
-      int err = lua_runner.executeChunk(line.c_str());
-      if (err != LUA_OK) {
+      if (!expandLuaThenDevice(remote, line.c_str(), false)) {
         logError("Lua execution failed, aborting playback");
         return 1;
       }
@@ -135,7 +153,7 @@ int Playback::run() {
     e.type = static_cast<uint32_t>(type);
     e.code = static_cast<uint32_t>(code);
     e.value = value;
-    if (!flush_one(e)) {
+    if (!deviceUploadAndPlay(remote, {e})) {
       return 1;
     }
     had_content = true;
