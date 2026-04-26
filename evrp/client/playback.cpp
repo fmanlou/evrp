@@ -1,9 +1,6 @@
 #include "playback.h"
 
-#include <chrono>
-#include <sstream>
 #include <string>
-#include <thread>
 #include <vector>
 
 #include "evrp/device/api/playback.h"
@@ -55,14 +52,26 @@ int Playback::run() {
 
   logService->setLevel(options_.logLevel);
 
-  if (!fs_.openInput(path)) {
+  int inFd = fs_.openInput(path);
+  if (inFd < 0) {
     logError("{}", fs_.errorMessage());
     return 1;
   }
+  struct InputFdGuard {
+    FileSystem *fs;
+    int fd;
+    ~InputFdGuard() {
+      if (fd >= 0) {
+        fs->closeFd(fd);
+      }
+    }
+  } inputFdGuard{&fs_, inFd};
 
-  std::ostringstream contentStream;
-  contentStream << fs_.inputStream().rdbuf();
-  const std::string content = contentStream.str();
+  std::string content;
+  if (!fs_.readInputAll(inFd, &content)) {
+    logError("Failed to read replay file.");
+    return 1;
+  }
 
   LuaEventComposer eventComposer;
   std::vector<evrp::device::api::InputEvent> events;

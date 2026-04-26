@@ -4,11 +4,9 @@
 #include <poll.h>
 #include <unistd.h>
 
+#include <cerrno>
 #include <cstdio>
-#include <fstream>
-#include <iostream>
-
-FileSystem::FileSystem() : out_(&std::cout), in_(nullptr) {}
+#include <cstring>
 
 int FileSystem::openReadOnly(const char *path, bool nonblocking) const {
   int flags = O_RDONLY;
@@ -64,44 +62,94 @@ int FileSystem::pollFds(int *fds, int nfds, int timeoutMs,
   return count;
 }
 
-bool FileSystem::openOutput(const std::string &path) {
+int FileSystem::openOutput(const std::string &path) {
   errorMessage_.clear();
-
   if (path.empty()) {
-    ownedOut_.reset();
-    out_ = &std::cout;
-    return true;
+    return STDOUT_FILENO;
   }
-
-  std::unique_ptr<std::ofstream> file(new std::ofstream(path));
-  if (!file->is_open()) {
+  int fd = ::open(path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
+  if (fd < 0) {
     errorMessage_ = "Failed to open output file: " + path;
-    ownedOut_.reset();
-    out_ = &std::cout;
+    return -1;
+  }
+  return fd;
+}
+
+bool FileSystem::writeOutput(int fd, const void *data, size_t size) {
+  if (fd < 0) {
     return false;
   }
-
-  out_ = file.get();
-  ownedOut_ = std::move(file);
+  if (size == 0) {
+    return true;
+  }
+  if (!data) {
+    return false;
+  }
+  const char *p = static_cast<const char *>(data);
+  size_t remaining = size;
+  while (remaining > 0) {
+    ssize_t n = ::write(fd, p, remaining);
+    if (n < 0) {
+      if (errno == EINTR) {
+        continue;
+      }
+      return false;
+    }
+    if (n == 0) {
+      return false;
+    }
+    p += n;
+    remaining -= static_cast<size_t>(n);
+  }
   return true;
 }
 
-std::ostream &FileSystem::outputStream() { return *out_; }
+bool FileSystem::writeOutput(int fd, std::string_view data) {
+  return writeOutput(
+      fd, data.empty() ? static_cast<const void *>(nullptr) : data.data(),
+      data.size());
+}
+
+bool FileSystem::flushOutput(int fd) {
+  if (fd < 0) {
+    return false;
+  }
+  if (fd == STDOUT_FILENO) {
+    return std::fflush(stdout) == 0;
+  }
+  return ::fsync(fd) == 0;
+}
 
 const std::string &FileSystem::errorMessage() const { return errorMessage_; }
 
-bool FileSystem::openInput(const std::string &path) {
+int FileSystem::openInput(const std::string &path) {
   errorMessage_.clear();
-  std::unique_ptr<std::ifstream> file(new std::ifstream(path));
-  if (!file->is_open()) {
+  int fd = ::open(path.c_str(), O_RDONLY);
+  if (fd < 0) {
     errorMessage_ = "Failed to open input file: " + path;
-    ownedIn_.reset();
-    in_ = nullptr;
-    return false;
+    return -1;
   }
-  in_ = file.get();
-  ownedIn_ = std::move(file);
-  return true;
+  return fd;
 }
 
-std::istream &FileSystem::inputStream() { return *in_; }
+bool FileSystem::readInputAll(int fd, std::string *out) {
+  if (!out || fd < 0) {
+    return false;
+  }
+  out->clear();
+  char buf[8192];
+  for (;;) {
+    ssize_t n = ::read(fd, buf, sizeof buf);
+    if (n < 0) {
+      if (errno == EINTR) {
+        continue;
+      }
+      return false;
+    }
+    if (n == 0) {
+      break;
+    }
+    out->append(buf, static_cast<size_t>(n));
+  }
+  return true;
+}

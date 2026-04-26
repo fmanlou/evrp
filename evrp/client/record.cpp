@@ -3,7 +3,6 @@
 #include <sys/time.h>
 
 #include <cstdio>
-#include <ostream>
 #include <string>
 #include <vector>
 
@@ -41,24 +40,46 @@ int Record::run() {
     }
   } stopGuard{listener};
 
-  if (!fs_.openOutput(options_.outputPath)) {
+  int outFd = fs_.openOutput(options_.outputPath);
+  if (outFd < 0) {
     logError("{}", fs_.errorMessage());
     return 1;
   }
+  const bool ownOutputFd = !options_.outputPath.empty();
+  struct OutputFdGuard {
+    FileSystem *fs;
+    int fd;
+    bool own;
+    ~OutputFdGuard() {
+      if (own && fd >= 0) {
+        fs->closeFd(fd);
+      }
+    }
+  } outputFdGuard{&fs_, outFd, ownOutputFd};
 
-  std::ostream &eventOut = fs_.outputStream();
   struct timeval sessionStart = {};
   gettimeofday(&sessionStart, nullptr);
   long long baselineUs = -1;
   long long lastClientEventUs = -1;
+  bool writeOk = true;
 
   SigintGuard sigint;
   auto writeLine = [&](const std::string &line) {
-    eventOut << line << "\n";
+    if (!writeOk) {
+      return;
+    }
+    if (!fs_.writeOutput(outFd, line) || !fs_.writeOutput(outFd, "\n")) {
+      logError("Write to recording output failed.");
+      writeOk = false;
+      return;
+    }
     logDebug("{}", line);
   };
   auto writeEventLine = [&](evrp::device::api::DeviceKind device,
                             const evrp::device::api::InputEvent &ine) {
+    if (!writeOk) {
+      return;
+    }
     long long currentUs =
         ine.timeSec * 1000000LL + ine.timeUsec;
     if (baselineUs < 0) {
@@ -73,6 +94,9 @@ int Record::run() {
         writeLine(formatLeadingLine(leadingUs));
       }
     }
+    if (!writeOk) {
+      return;
+    }
     long long deltaUs = currentUs - baselineUs;
     Event ev = {static_cast<long>(ine.timeSec), static_cast<long>(ine.timeUsec),
                 static_cast<unsigned short>(ine.type),
@@ -86,7 +110,7 @@ int Record::run() {
   logInfo("Recording from evrp-device at {} (Ctrl+C to stop)",
           options_.device);
 
-  while (!sigint.stopRequested()) {
+  while (!sigint.stopRequested() && writeOk) {
     if (!listener->waitForInputEvent(kWaitMs)) {
       continue;
     }
@@ -94,10 +118,13 @@ int Record::run() {
         listener->readInputEvents();
     for (const auto &ine : batch) {
       writeEventLine(ine.device, ine);
+      if (!writeOk) {
+        break;
+      }
     }
   }
 
-  if (lastClientEventUs >= 0) {
+  if (writeOk && lastClientEventUs >= 0) {
     struct timeval t_end = {};
     gettimeofday(&t_end, nullptr);
     long long endUs = t_end.tv_sec * 1000000LL + t_end.tv_usec;
@@ -107,6 +134,12 @@ int Record::run() {
     }
   }
 
-  eventOut.flush();
+  if (!writeOk) {
+    return 1;
+  }
+  if (!fs_.flushOutput(outFd)) {
+    logError("Flush recording output failed.");
+    return 1;
+  }
   return 0;
 }
