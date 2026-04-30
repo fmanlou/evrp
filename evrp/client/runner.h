@@ -2,17 +2,18 @@
 
 #include <string>
 
-#include "evrp/client/argparser.h"
+#include "evrp/sdk/stringkeystore.h"
 #include "evrp/sdk/logger.h"
 
 class Runner {
  public:
-  explicit Runner(ParsedOptions options);
+  explicit Runner(MapStringKeyStore options);
 
   int run();
 
  private:
-  ParsedOptions options_;
+  MapStringKeyStore options_;
+  StringKeyStore optionsView_;
   std::string prog_;
   bool recording_{false};
   bool playback_{false};

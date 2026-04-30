@@ -1,5 +1,7 @@
 #include "argparser.h"
 
+#include "evrp/sdk/logger.h"
+
 #include <gflags/gflags.h>
 
 #include <iostream>
@@ -98,7 +100,7 @@ bool parseKind(const std::string &s, evrp::device::api::DeviceKind *outKind) {
   return false;
 }
 
-void parseArgvInto(ParsedOptions& options, int argc, char *argv[]) {
+void parseArgvInto(StringKeyStore& options, int argc, char *argv[]) {
   resetArgFlags();
 
   const std::string program =

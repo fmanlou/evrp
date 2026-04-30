@@ -5,8 +5,9 @@
 int main(int argc, char *argv[]) {
   logging::LogService logSvc("evrp");
   logService = &logSvc;
-  ParsedOptions options;
+  MapStringKeyStore storage;
+  StringKeyStore options(storage);
   parseArgvInto(options, argc, argv);
-  Runner runner(std::move(options));
+  Runner runner(std::move(storage));
   return runner.run();
 }

@@ -1,5 +1,6 @@
 #include "evrp/client/runner.h"
 
+#include "evrp/client/argparser.h"
 #include "evrp/client/playback.h"
 #include "evrp/client/record.h"
 #include "evrp/device/api/client.h"
@@ -10,14 +11,15 @@
 
 #include <memory>
 
-Runner::Runner(ParsedOptions options)
+Runner::Runner(MapStringKeyStore options)
     : options_(std::move(options)),
-      prog_(options_.get<std::string>("program", "evrp")),
-      recording_(options_.get<bool>("recording", false)),
-      playback_(options_.get<bool>("playback", false)),
-      device_(options_.get<std::string>("device", {})),
-      playbackPath_(options_.get<std::string>("playbackPath", {})),
-      logLevel_(options_.get("logLevel", logging::LogLevel::Info)) {}
+      optionsView_(options_),
+      prog_(optionsView_.get<std::string>("program", "evrp")),
+      recording_(optionsView_.get<bool>("recording", false)),
+      playback_(optionsView_.get<bool>("playback", false)),
+      device_(optionsView_.get<std::string>("device", {})),
+      playbackPath_(optionsView_.get<std::string>("playbackPath", {})),
+      logLevel_(optionsView_.get("logLevel", logging::LogLevel::Info)) {}
 
 int Runner::run() {
   logService->setLevel(logLevel_);
