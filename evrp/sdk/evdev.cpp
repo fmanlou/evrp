@@ -9,7 +9,7 @@
 #include <cstring>
 #include <string>
 
-#include "evrp/sdk/filesystem.h"
+#include "evrp/sdk/filesystem/enhancedfilesystem.h"
 
 #define BITS_PER_LONG (sizeof(unsigned long) * 8)
 #define NBITS(x) ((((x) - 1) / BITS_PER_LONG) + 1)

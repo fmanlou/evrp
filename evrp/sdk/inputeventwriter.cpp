@@ -11,7 +11,7 @@
 #include "evrp/sdk/cursor/cursorpos.h"
 #include "evrp/sdk/evdev.h"
 #include "evrp/sdk/eventformat.h"
-#include "evrp/sdk/filesystem.h"
+#include "evrp/sdk/filesystem/enhancedfilesystem.h"
 #include "evrp/sdk/inputdevice.h"
 #include "evrp/sdk/keyboard/keyboardeventwriter.h"
 #include "evrp/sdk/logger.h"

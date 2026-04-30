@@ -13,7 +13,7 @@
 #include "evrp/device/api/types.h"
 #include "evrp/sdk/evdev.h"
 #include "evrp/sdk/eventformat.h"
-#include "evrp/sdk/filesystem.h"
+#include "evrp/sdk/filesystem/enhancedfilesystem.h"
 #include "evrp/sdk/logger.h"
 
 Record::Record(const RunOptions &options, const evrp::Ioc &ioc)

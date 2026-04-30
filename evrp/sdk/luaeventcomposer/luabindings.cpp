@@ -8,7 +8,7 @@
 #include <cstring>
 
 #include "evrp/sdk/cursor/cursorpos.h"
-#include "evrp/sdk/filesystem.h"
+#include "evrp/sdk/filesystem/enhancedfilesystem.h"
 #include "evrp/sdk/inputeventwriter.h"
 #include "evrp/sdk/keyboard/keyboardeventwriter.h"
 #include "evrp/sdk/logger.h"
