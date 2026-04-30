@@ -1,15 +1,16 @@
+#include "harness.h"
+
 #include <gflags/gflags.h>
 #include <linux/input-event-codes.h>
 #include <linux/input.h>
 
 #include <algorithm>
 #include <chrono>
+#include <cstdint>
 #include <cstdlib>
 #include <cstring>
 #include <memory>
-#include <string>
 #include <thread>
-#include <vector>
 #include <unistd.h>
 
 #include <netinet/in.h>
@@ -19,9 +20,10 @@
 #include <sys/wait.h>
 #include <signal.h>
 
-#include "evrp/device/api/client.h"
-#include "evrp/device/api/types.h"
+#include "evrp/device/impl/client/devicediscovery.h"
 #include "evrp/sdk/logger.h"
+
+DECLARE_int32(discovery_port);
 
 DEFINE_string(
     target, "",
@@ -58,6 +60,11 @@ DEFINE_bool(
     "If true, InputListen requires a non-SYN evdev event per supported kind "
     "(sequential sessions); if false, one short listen round without requiring "
     "events (CI / no hardware)");
+DEFINE_bool(
+    test_udp_discovery, true,
+    "With --device_binary / EVRP_DEVICE_BINARY: verify makeClient(\"\") finds "
+    "the spawned evrp-device via UDP (--discovery_port must match between "
+    "processes; skipped for remote --target/--host).");
 DEFINE_string(
     log_level, "info",
     "This process log level: error|warn|info|debug|trace|off; with "
@@ -67,6 +74,29 @@ namespace {
 
 int pickFreeLoopbackPort() {
   int fd = socket(AF_INET, SOCK_STREAM, 0);
+  if (fd < 0) {
+    return -1;
+  }
+  sockaddr_in addr{};
+  addr.sin_family = AF_INET;
+  addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+  addr.sin_port = 0;
+  if (bind(fd, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) != 0) {
+    close(fd);
+    return -1;
+  }
+  socklen_t len = sizeof(addr);
+  if (getsockname(fd, reinterpret_cast<sockaddr*>(&addr), &len) != 0) {
+    close(fd);
+    return -1;
+  }
+  int port = ntohs(addr.sin_port);
+  close(fd);
+  return port;
+}
+
+int pickFreeUdpPort() {
+  int fd = socket(AF_INET, SOCK_DGRAM, 0);
   if (fd < 0) {
     return -1;
   }
@@ -122,40 +152,34 @@ std::string remoteTargetFromFlags(bool* ok) {
   return FLAGS_host + ":" + std::to_string(FLAGS_port);
 }
 
-bool waitUntilGetCapabilitiesOk(evrp::device::api::IClient& client,
-                                int totalTimeoutMs) {
-  evrp::device::api::IInputDeviceClient* const device = client.inputDevice();
-  if (!device) {
-    return false;
-  }
-  const auto overall =
-      std::chrono::steady_clock::now() + std::chrono::milliseconds(totalTimeoutMs);
-  while (std::chrono::steady_clock::now() < overall) {
-    std::vector<evrp::device::api::DeviceKind> kinds;
-    if (device->getCapabilities(&kinds)) {
-      return true;
-    }
-    std::this_thread::sleep_for(std::chrono::milliseconds(40));
-  }
-  return false;
-}
+struct DeviceProcess {
+  pid_t pid = -1;
 
-bool fetchCapabilities(
-    evrp::device::api::IClient& client,
-    std::vector<evrp::device::api::DeviceKind>* kindsOut) {
-  kindsOut->clear();
-  evrp::device::api::IInputDeviceClient* const device = client.inputDevice();
-  if (!device) {
-    logError("GetCapabilities failed (no input device client)");
-    return false;
+  ~DeviceProcess() {
+    if (pid <= 0) {
+      return;
+    }
+    kill(pid, SIGTERM);
+    int st = 0;
+    for (int i = 0; i < 200; ++i) {
+      pid_t r = waitpid(pid, &st, WNOHANG);
+      if (r == pid) {
+        pid = -1;
+        return;
+      }
+      if (r < 0) {
+        pid = -1;
+        return;
+      }
+      usleep(50000);
+    }
+    kill(pid, SIGKILL);
+    waitpid(pid, &st, 0);
+    pid = -1;
   }
-  if (!device->getCapabilities(kindsOut)) {
-    logError("GetCapabilities failed");
-    return false;
-  }
-  logInfo("GetCapabilities ok ({} kind(s))", kindsOut->size());
-  return true;
-}
+};
+
+std::unique_ptr<DeviceProcess> g_proc;
 
 std::vector<evrp::device::api::DeviceKind> kindsForRecording(
     const std::vector<evrp::device::api::DeviceKind>& caps) {
@@ -221,7 +245,136 @@ std::vector<evrp::device::api::InputEvent> minimalKeyTapEvents() {
   return v;
 }
 
-bool testInputListen(
+}  // namespace
+
+IntegrationEnv IntegrationHarness::env_{};
+bool IntegrationHarness::initialized_{false};
+
+bool IntegrationHarness::initialize() {
+  if (initialized_) {
+    return true;
+  }
+  env_ = IntegrationEnv{};
+
+  const std::string binary = deviceBinaryPath();
+  if (!binary.empty()) {
+    if (!isExecutableFile(binary)) {
+      logError("Not an executable file: {}", binary);
+      return false;
+    }
+    env_.discovery_udp_port = pickFreeUdpPort();
+    if (env_.discovery_udp_port <= 0) {
+      logError("pickFreeUdpPort failed (bind loopback ephemeral UDP port)");
+      return false;
+    }
+    const int ephemeral = pickFreeLoopbackPort();
+    if (ephemeral <= 0) {
+      logError("pickFreeLoopbackPort failed (bind loopback ephemeral port)");
+      return false;
+    }
+    env_.target = "127.0.0.1:" + std::to_string(ephemeral);
+    env_.spawned_local = true;
+    const std::string listenArg = env_.target;
+    const std::string discoveryFlag =
+        std::string("--discovery_port=") +
+        std::to_string(env_.discovery_udp_port);
+    g_proc = std::make_unique<DeviceProcess>();
+    g_proc->pid = fork();
+    if (g_proc->pid < 0) {
+      logError("fork failed: {}", std::strerror(errno));
+      g_proc.reset();
+      return false;
+    }
+    if (g_proc->pid == 0) {
+      const std::string logFlag =
+          std::string("--log_level=") + FLAGS_log_level;
+      execl(binary.c_str(), binary.c_str(), "-listen", listenArg.c_str(),
+            discoveryFlag.c_str(), logFlag.c_str(),
+            static_cast<char*>(nullptr));
+      _exit(127);
+    }
+  } else {
+    bool remoteOk = true;
+    env_.target = remoteTargetFromFlags(&remoteOk);
+    if (!remoteOk) {
+      logError("--port must be in 1..65535 when using --host");
+      return false;
+    }
+    if (env_.target.empty()) {
+      logError(
+          "Set --target=host:port or --host and --port for the device-side "
+          "evrp-device, or set --device_binary / EVRP_DEVICE_BINARY for local "
+          "spawn");
+      return false;
+    }
+  }
+
+  initialized_ = true;
+  return true;
+}
+
+void IntegrationHarness::shutdown() {
+  g_proc.reset();
+  env_ = IntegrationEnv{};
+  initialized_ = false;
+}
+
+const IntegrationEnv& IntegrationHarness::env() { return env_; }
+
+std::unique_ptr<evrp::device::api::IClient>
+IntegrationHarness::connectDirectClient(int timeout_ms) {
+  const auto connectDeadline =
+      std::chrono::steady_clock::now() +
+      std::chrono::milliseconds(timeout_ms);
+  while (std::chrono::steady_clock::now() < connectDeadline) {
+    auto client = evrp::device::api::makeClient(env_.target);
+    if (client) {
+      return client;
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(40));
+  }
+  logError("Timed out waiting for SessionService/Connect on {}", env_.target);
+  return nullptr;
+}
+
+bool IntegrationHarness::waitUntilGetCapabilitiesOk(
+    evrp::device::api::IClient& client, int total_timeout_ms) {
+  evrp::device::api::IInputDeviceClient* const device = client.inputDevice();
+  if (!device) {
+    return false;
+  }
+  const auto overall =
+      std::chrono::steady_clock::now() +
+      std::chrono::milliseconds(total_timeout_ms);
+  while (std::chrono::steady_clock::now() < overall) {
+    std::vector<evrp::device::api::DeviceKind> kinds;
+    if (device->getCapabilities(&kinds)) {
+      return true;
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(40));
+  }
+  logError("Timed out waiting for GetCapabilities on {}", env_.target);
+  return false;
+}
+
+bool IntegrationHarness::fetchCapabilities(
+    evrp::device::api::IClient& client,
+    std::vector<evrp::device::api::DeviceKind>* kinds_out) {
+  kinds_out->clear();
+  evrp::device::api::IInputDeviceClient* const device = client.inputDevice();
+  if (!device) {
+    logError("GetCapabilities failed (no input device client)");
+    return false;
+  }
+  if (!device->getCapabilities(kinds_out)) {
+    logError("GetCapabilities failed");
+    return false;
+  }
+  logInfo("GetCapabilities ok ({} kind(s))", kinds_out->size());
+  return true;
+}
+
+bool IntegrationHarness::runInputListenTest(
     evrp::device::api::IClient& client,
     const std::vector<evrp::device::api::DeviceKind>& caps) {
   if (!FLAGS_test_input_listen) {
@@ -296,8 +449,9 @@ bool testInputListen(
                               FLAGS_listen_per_kind_timeout_ms);
     bool gotValid = false;
     while (std::chrono::steady_clock::now() < deadline && !gotValid) {
-      const auto remaining = std::chrono::duration_cast<std::chrono::milliseconds>(
-          deadline - std::chrono::steady_clock::now());
+      const auto remaining =
+          std::chrono::duration_cast<std::chrono::milliseconds>(
+              deadline - std::chrono::steady_clock::now());
       int slice = FLAGS_listen_wait_ms;
       if (remaining.count() < slice) {
         slice = static_cast<int>(std::max<int64_t>(remaining.count(), 0));
@@ -336,8 +490,9 @@ bool testInputListen(
   return true;
 }
 
-bool testPlayback(evrp::device::api::IClient& client,
-                    const std::vector<evrp::device::api::DeviceKind>& caps) {
+bool IntegrationHarness::runPlaybackTest(
+    evrp::device::api::IClient& client,
+    const std::vector<evrp::device::api::DeviceKind>& caps) {
   if (!FLAGS_test_playback) {
     logInfo("Playback: skipped (--test_playback=false)");
     return true;
@@ -377,126 +532,49 @@ bool testPlayback(evrp::device::api::IClient& client,
   return true;
 }
 
-struct DeviceProcess {
-  pid_t pid = -1;
-
-  ~DeviceProcess() {
-    if (pid <= 0) {
-      return;
+bool IntegrationHarness::runUdpDiscoveryTest() {
+  if (env_.discovery_udp_port <= 0 || !FLAGS_test_udp_discovery) {
+    if (env_.spawned_local && !FLAGS_test_udp_discovery) {
+      logInfo("UDP discovery: skipped (--test_udp_discovery=false)");
     }
-    kill(pid, SIGTERM);
-    int st = 0;
-    for (int i = 0; i < 200; ++i) {
-      pid_t r = waitpid(pid, &st, WNOHANG);
-      if (r == pid) {
-        pid = -1;
-        return;
-      }
-      if (r < 0) {
-        pid = -1;
-        return;
-      }
-      usleep(50000);
-    }
-    kill(pid, SIGKILL);
-    waitpid(pid, &st, 0);
-    pid = -1;
+    return true;
   }
-};
-
-}  
-
-int main(int argc, char** argv) {
-  logging::LogService logSvc("evrp_device_integration_test");
-  logService = &logSvc;
-
-  gflags::SetUsageMessage(
-      "Host-side check: GetCapabilities, InputListen, Playback against "
-      "evrp-device (--target or --host/--port; optional --device_binary for "
-      "CI)");
-  gflags::ParseCommandLineFlags(&argc, &argv, true);
-  logService->setLevel(logLevelFromString(FLAGS_log_level));
-
-  std::string target;
-  DeviceProcess proc;
-
-  const std::string binary = deviceBinaryPath();
-  if (!binary.empty()) {
-    if (!isExecutableFile(binary)) {
-      logError("Not an executable file: {}", binary);
-      return 2;
-    }
-    const int ephemeral = pickFreeLoopbackPort();
-    if (ephemeral <= 0) {
-      logError("pickFreeLoopbackPort failed (bind loopback ephemeral port)");
-      return 1;
-    }
-    target = "127.0.0.1:" + std::to_string(ephemeral);
-    const std::string listenArg = target;
-    proc.pid = fork();
-    if (proc.pid < 0) {
-      logError("fork failed: {}", std::strerror(errno));
-      return 1;
-    }
-    if (proc.pid == 0) {
-      const std::string logFlag =
-          std::string("--log_level=") + FLAGS_log_level;
-      execl(binary.c_str(), binary.c_str(), "-listen", listenArg.c_str(),
-            logFlag.c_str(), static_cast<char*>(nullptr));
-      _exit(127);
-    }
-  } else {
-    bool remoteOk = true;
-    target = remoteTargetFromFlags(&remoteOk);
-    if (!remoteOk) {
-      logError("--port must be in 1..65535 when using --host");
-      return 2;
-    }
-    if (target.empty()) {
-      logError(
-          "Set --target=host:port or --host and --port for the device-side "
-          "evrp-device, or set --device_binary / EVRP_DEVICE_BINARY for local "
-          "spawn");
-      return 2;
-    }
+  if (!evrp::device::api::useUdpDeviceDiscovery("")) {
+    logError("Internal: useUdpDeviceDiscovery(\"\") expected true");
+    return false;
   }
-
-  std::unique_ptr<evrp::device::api::IClient> client;
+  const int saved_discovery = FLAGS_discovery_port;
+  FLAGS_discovery_port = env_.discovery_udp_port;
+  std::unique_ptr<evrp::device::api::IClient> viaDiscovery;
   {
     const auto connectDeadline =
         std::chrono::steady_clock::now() +
         std::chrono::milliseconds(FLAGS_rpc_wait_ms);
     while (std::chrono::steady_clock::now() < connectDeadline) {
-      client = evrp::device::api::makeClient(target);
-      if (client) {
+      viaDiscovery = evrp::device::api::makeClient("");
+      if (viaDiscovery) {
         break;
       }
       std::this_thread::sleep_for(std::chrono::milliseconds(40));
     }
   }
-  if (!client) {
-    logError("Timed out waiting for SessionService/Connect on {}", target);
-    return 1;
+  FLAGS_discovery_port = saved_discovery;
+  if (!viaDiscovery) {
+    logError(
+        "UDP discovery: timed out makeClient(\"\") with "
+        "--discovery_port={} (expected {})",
+        env_.discovery_udp_port,
+        env_.target);
+    return false;
   }
-
-  if (!waitUntilGetCapabilitiesOk(*client, FLAGS_rpc_wait_ms)) {
-    logError("Timed out waiting for GetCapabilities on {}", target);
-    return 1;
+  if (viaDiscovery->serverAddress() != env_.target) {
+    logError(
+        "UDP discovery: serverAddress {} != direct target {}",
+        viaDiscovery->serverAddress(),
+        env_.target);
+    return false;
   }
-  logInfo("InputDeviceService (GetCapabilities) ok on {}", target);
-
-  std::vector<evrp::device::api::DeviceKind> caps;
-  if (!fetchCapabilities(*client, &caps)) {
-    return 1;
-  }
-
-  if (!testInputListen(*client, caps)) {
-    return 1;
-  }
-  if (!testPlayback(*client, caps)) {
-    return 1;
-  }
-
-  logInfo("evrp-device integration test passed");
-  return 0;
+  logInfo("UDP discovery: makeClient(\"\") ok, serverAddress={}",
+          viaDiscovery->serverAddress());
+  return true;
 }

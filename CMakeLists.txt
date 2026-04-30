@@ -492,7 +492,14 @@ target_link_libraries(
           localcursorposition localinputdevicekindsprovider gRPC::grpc++
           gflags::gflags logger)
 
-add_executable(evrp_device_integration_test evrp-device/integrationtest.cpp)
+add_executable(
+  evrp_device_integration_test
+  evrp-device/integrationtest/main.cpp
+  evrp-device/integrationtest/harness.cpp
+  evrp-device/integrationtest/case_connect.cpp
+  evrp-device/integrationtest/case_inputlisten.cpp
+  evrp-device/integrationtest/case_playback.cpp
+  evrp-device/integrationtest/case_discovery.cpp)
 target_include_directories(evrp_device_integration_test
                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 set_target_properties(
@@ -500,13 +507,14 @@ set_target_properties(
   PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
 target_link_libraries(
   evrp_device_integration_test
-  PRIVATE device_client gflags::gflags logger)
+  PRIVATE device_client gflags::gflags logger GTest::gtest)
 add_dependencies(evrp_device_integration_test evrp-device)
-add_test(
-  NAME evrp_device_integration_test
-  COMMAND
-    evrp_device_integration_test --device_binary=$<TARGET_FILE:evrp-device>
-    --listen_require_valid_event_per_kind=false)
+
+gtest_discover_tests(
+  evrp_device_integration_test
+  DISCOVERY_MODE PRE_TEST
+  EXTRA_ARGS --device_binary=$<TARGET_FILE:evrp-device>
+             --listen_require_valid_event_per_kind=false)
 
 add_executable(evrp_inputlisten_test_server evrp/inputlistentest/server.cpp)
 target_include_directories(evrp_inputlisten_test_server
