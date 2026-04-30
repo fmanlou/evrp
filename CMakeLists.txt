@@ -1,18 +1,13 @@
 cmake_minimum_required(VERSION 3.14)
 project(evrp LANGUAGES C CXX)
 
-# --- library/ 与
-# Lua、GoogleTest、Protobuf、gRPC、gflags、fmt、spdlog、log、Asio（安装：scripts/install-third-party-to-library.sh）---
-set(EVRP_LIBRARY_DIR
-    "${CMAKE_SOURCE_DIR}/library"
-    CACHE PATH "Third-party install prefix for this repo")
+set(EVRP_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
+set(EVRP_LIBRARY_DIR "${EVRP_ROOT}/library" CACHE PATH "Third-party install prefix for this repo")
+
 list(APPEND CMAKE_PREFIX_PATH "${EVRP_LIBRARY_DIR}")
-list(APPEND CMAKE_PREFIX_PATH "${EVRP_LIBRARY_DIR}/protobuf")
-list(APPEND CMAKE_PREFIX_PATH "${EVRP_LIBRARY_DIR}/grpc")
-list(APPEND CMAKE_PREFIX_PATH "${EVRP_LIBRARY_DIR}/gflags")
-list(APPEND CMAKE_PREFIX_PATH "${EVRP_LIBRARY_DIR}/fmt")
-list(APPEND CMAKE_PREFIX_PATH "${EVRP_LIBRARY_DIR}/spdlog")
-list(APPEND CMAKE_PREFIX_PATH "${EVRP_LIBRARY_DIR}/log")
+foreach(_evrp_pkg IN ITEMS protobuf grpc gflags fmt spdlog log)
+  list(APPEND CMAKE_PREFIX_PATH "${EVRP_LIBRARY_DIR}/${_evrp_pkg}")
+endforeach()
 
 find_library(
   EVRP_LUA_LIB
@@ -27,8 +22,7 @@ find_path(
 if(NOT EVRP_LUA_LIB OR NOT EVRP_LUA_INCLUDE_DIR)
   message(
     FATAL_ERROR
-      "Lua not found under '${EVRP_LIBRARY_DIR}/lua'. Run: ./scripts/install-third-party-to-library.sh"
-  )
+      "Lua not found under '${EVRP_LIBRARY_DIR}/lua'. Run: ./scripts/install-third-party-to-library.sh")
 endif()
 add_library(lua STATIC IMPORTED GLOBAL)
 set_target_properties(lua PROPERTIES IMPORTED_LOCATION "${EVRP_LUA_LIB}")
@@ -40,21 +34,16 @@ endif()
 find_package(GTest CONFIG REQUIRED PATHS "${EVRP_LIBRARY_DIR}/googletest"
              NO_DEFAULT_PATH)
 
-# gflags（argparser、evrp-device）
 set(GFLAGS_USE_TARGET_NAMESPACE ON)
 find_package(gflags CONFIG REQUIRED PATHS "${EVRP_LIBRARY_DIR}/gflags"
              NO_DEFAULT_PATH)
-
-# fmanlou/log（fmt + spdlog 依赖；PREFIX_PATH 已含 library/fmt、library/spdlog）
 find_package(log CONFIG REQUIRED PATHS "${EVRP_LIBRARY_DIR}/log"
              NO_DEFAULT_PATH)
 
-# Protobuf 5.x / gRPC 需要 C++17；其余源码与之兼容
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Standalone Asio：library/asio/include + lib/libasio_separate.a（install-asio-to-library.sh 内编译）
 find_package(Threads REQUIRED)
 find_path(
   EVRP_ASIO_INCLUDE_DIR
@@ -69,8 +58,7 @@ find_library(
 if(NOT EVRP_ASIO_INCLUDE_DIR OR NOT EVRP_ASIO_STATIC_LIB)
   message(
     FATAL_ERROR
-      "Asio not found under '${EVRP_LIBRARY_DIR}/asio' (need include/asio.hpp and lib/libasio_separate.a). Run: ./scripts/install-third-party-to-library.sh (or ./scripts/install-asio-to-library.sh)"
-  )
+      "Asio not found under '${EVRP_LIBRARY_DIR}/asio'. Run: ./scripts/install-third-party-to-library.sh")
 endif()
 add_library(asio_separate STATIC IMPORTED GLOBAL)
 set_target_properties(
@@ -87,148 +75,105 @@ target_link_libraries(standalone_asio INTERFACE asio_separate)
 
 enable_testing()
 
-set(EVRP_SDK_DIR "${CMAKE_CURRENT_SOURCE_DIR}/evrp/sdk")
+set(EVRP_SDK_DIR "${EVRP_ROOT}/evrp/sdk")
+set(EVRP_CLIENT_DIR "${EVRP_ROOT}/evrp/client")
 
+# --- client / sdk static libs ---
 add_library(setting STATIC evrp/sdk/setting/memorysetting.cpp)
-target_include_directories(setting PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
-                                         ${EVRP_SDK_DIR})
+target_include_directories(setting PUBLIC "${EVRP_ROOT}" ${EVRP_SDK_DIR})
 
 add_library(evdev STATIC evrp/sdk/evdev.cpp)
-target_include_directories(evdev PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
-                                        ${EVRP_SDK_DIR})
+target_include_directories(evdev PUBLIC "${EVRP_ROOT}" ${EVRP_SDK_DIR})
 
 add_library(filesystem STATIC
-            evrp/sdk/filesystem/impl/enhancedfilesystem.cpp
-            evrp/sdk/filesystem/impl/filesystem.cpp
-            evrp/sdk/filesystem/impl/posixfilesystem.cpp)
-target_include_directories(filesystem PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
-                                             ${EVRP_SDK_DIR})
+  evrp/sdk/filesystem/impl/enhancedfilesystem.cpp
+  evrp/sdk/filesystem/impl/filesystem.cpp
+  evrp/sdk/filesystem/impl/posixfilesystem.cpp)
+target_include_directories(filesystem PUBLIC "${EVRP_ROOT}" ${EVRP_SDK_DIR})
 target_link_libraries(evdev PRIVATE filesystem)
 
 option(EVRP_USE_X11_CURSOR "Enable X11 cursor position backend" ON)
-
 set(cursorpos_sources evrp/sdk/cursor/impl/cursorpos.cpp)
 if(EVRP_USE_X11_CURSOR)
   find_package(X11 REQUIRED)
   list(APPEND cursorpos_sources evrp/sdk/cursor/impl/cursorposx11.cpp)
 endif()
-
 add_library(cursorpos STATIC ${cursorpos_sources})
-target_include_directories(cursorpos PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
-                                            ${EVRP_SDK_DIR})
+target_include_directories(cursorpos PUBLIC "${EVRP_ROOT}" ${EVRP_SDK_DIR})
 if(EVRP_USE_X11_CURSOR)
   target_compile_definitions(cursorpos PUBLIC EVRP_USE_X11_CURSOR)
   target_link_libraries(cursorpos PUBLIC X11::X11)
 endif()
 
-set(EVRP_CLIENT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/evrp/client")
-
 add_library(argparser STATIC evrp/client/argparser.cpp)
-target_include_directories(argparser PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
-                                            ${EVRP_CLIENT_DIR}
+target_include_directories(argparser PUBLIC "${EVRP_ROOT}" ${EVRP_CLIENT_DIR}
                                             ${EVRP_SDK_DIR})
 target_link_libraries(argparser PUBLIC setting PRIVATE logger gflags::gflags)
 
-add_library(playbackeventcollector STATIC
-            evrp/sdk/playbackeventcollector.cpp)
-target_include_directories(playbackeventcollector
-                           PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${EVRP_SDK_DIR})
+add_library(playbackeventcollector STATIC evrp/sdk/playbackeventcollector.cpp)
+target_include_directories(playbackeventcollector PUBLIC "${EVRP_ROOT}"
+                                                         ${EVRP_SDK_DIR})
 target_link_libraries(playbackeventcollector PRIVATE logger)
 
 add_library(
   inputeventwriter STATIC
-  evrp/sdk/inputeventwriter.cpp evrp/sdk/keyboard/keyboardeventwriter.cpp
+  evrp/sdk/inputeventwriter.cpp
+  evrp/sdk/keyboard/keyboardeventwriter.cpp
   evrp/sdk/mouse/mouseeventwriter.cpp)
-target_include_directories(inputeventwriter PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
-                                                   ${EVRP_SDK_DIR})
+target_include_directories(inputeventwriter PUBLIC "${EVRP_ROOT}" ${EVRP_SDK_DIR})
 target_link_libraries(
-  inputeventwriter
-  PRIVATE evdev
-          eventformat
-          filesystem
-          inputdevice
-          logger
-          cursorpos)
+  inputeventwriter PRIVATE evdev eventformat filesystem inputdevice logger
+                           cursorpos)
 
 add_library(eventformat STATIC evrp/sdk/eventformat.cpp)
-target_include_directories(eventformat PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
-                                              ${EVRP_SDK_DIR})
+target_include_directories(eventformat PUBLIC "${EVRP_ROOT}" ${EVRP_SDK_DIR})
 target_link_libraries(eventformat PRIVATE evdev inputdevice)
 
 add_library(
   inputdevice STATIC
-  evrp/sdk/inputdevice.cpp evrp/sdk/keyboard/keyboarddevice.cpp
+  evrp/sdk/inputdevice.cpp
+  evrp/sdk/keyboard/keyboarddevice.cpp
   evrp/sdk/touchdevice.cpp)
-target_include_directories(inputdevice PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
-                                              ${EVRP_SDK_DIR})
+target_include_directories(inputdevice PUBLIC "${EVRP_ROOT}" ${EVRP_SDK_DIR})
 target_link_libraries(inputdevice PUBLIC evdev filesystem)
 
 add_library(record STATIC evrp/client/record.cpp)
-target_include_directories(record PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
-                                         ${EVRP_CLIENT_DIR}
+target_include_directories(record PUBLIC "${EVRP_ROOT}" ${EVRP_CLIENT_DIR}
                                          ${EVRP_SDK_DIR})
 target_link_libraries(record PRIVATE evdev eventformat filesystem logger)
 
 add_library(logger STATIC evrp/sdk/logger.cpp)
-target_include_directories(logger PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
-                                         ${EVRP_SDK_DIR})
+target_include_directories(logger PUBLIC "${EVRP_ROOT}" ${EVRP_SDK_DIR})
 target_link_libraries(logger PUBLIC log::log)
 
 add_library(playback STATIC evrp/client/playback.cpp)
-target_include_directories(playback PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
-                                           ${EVRP_CLIENT_DIR}
+target_include_directories(playback PUBLIC "${EVRP_ROOT}" ${EVRP_CLIENT_DIR}
                                            ${EVRP_SDK_DIR})
 target_link_libraries(
-  playback
-  PRIVATE evdev
-          filesystem
-          logger
-          luaeventcomposer
-          setting)
+  playback PRIVATE evdev filesystem logger luaeventcomposer setting)
 
-add_library(luabindings STATIC
-            evrp/sdk/luaeventcomposer/luabindings.cpp)
-target_include_directories(luabindings PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
-                                              ${EVRP_SDK_DIR})
+add_library(luabindings STATIC evrp/sdk/luaeventcomposer/luabindings.cpp)
+target_include_directories(luabindings PUBLIC "${EVRP_ROOT}" ${EVRP_SDK_DIR})
 target_link_libraries(
-  luabindings
-  PUBLIC lua
-         inputeventwriter
-         playbackeventcollector
-         filesystem
-         logger
-         cursorpos)
+  luabindings PUBLIC lua inputeventwriter playbackeventcollector filesystem
+                     logger cursorpos)
 
 add_library(luaeventcomposer STATIC
             evrp/sdk/luaeventcomposer/luaeventcomposer.cpp)
-target_include_directories(luaeventcomposer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
-                                                   ${EVRP_SDK_DIR})
+target_include_directories(luaeventcomposer PUBLIC "${EVRP_ROOT}" ${EVRP_SDK_DIR})
 target_link_libraries(luaeventcomposer PRIVATE eventformat luabindings
                                                playbackeventcollector)
 
 add_library(runner STATIC evrp/client/runner.cpp)
-target_include_directories(runner PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
-                                         ${EVRP_CLIENT_DIR}
+target_include_directories(runner PUBLIC "${EVRP_ROOT}" ${EVRP_CLIENT_DIR}
                                          ${EVRP_SDK_DIR})
 target_link_libraries(
-  runner
-  PUBLIC argparser
-         playback
-         record
-         filesystem
-         logger
-         device_client
-         setting)
+  runner PUBLIC argparser playback record filesystem logger device_client
+                setting)
 
 add_executable(evrp evrp-client/main.cpp)
-target_link_libraries(
-  evrp
-  PRIVATE runner
-          inputdevice
-          evdev
-          luabindings
-          logger
-          cursorpos)
+target_link_libraries(evrp PRIVATE runner inputdevice evdev luabindings logger
+                                   cursorpos)
 
 add_executable(evrp_tests tests/inputdevice_test.cpp tests/argparser_test.cpp)
 target_link_libraries(evrp_tests PRIVATE inputdevice argparser logger
@@ -236,51 +181,45 @@ target_link_libraries(evrp_tests PRIVATE inputdevice argparser logger
 include(GoogleTest)
 gtest_discover_tests(evrp_tests)
 
-# ---------------------------------------------------------------------------
-# evrp-device：gRPC 服务端（依赖安装到 library/ 或系统 PATH，见 docs/PROJECT_CONVENTIONS.md）
-# ---------------------------------------------------------------------------
-# 勿在此单独先 find_package(Protobuf)：gRPC 的 gRPCConfig.cmake 会
-# find_dependency(Protobuf)， 若重复加载 protobuf-targets.cmake 会报错「Some targets in
-# this export set were already defined」。
+# --- gRPC / device (do not find_package(Protobuf) before gRPC) ---
 find_package(gRPC CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED PATHS "${EVRP_LIBRARY_DIR}/fmt"
              NO_DEFAULT_PATH)
 
-set(PROTO_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/proto")
+add_library(evrp_device_cxx20 INTERFACE)
+target_compile_features(evrp_device_cxx20 INTERFACE cxx_std_20)
+
+set(PROTO_ROOT "${EVRP_ROOT}/proto")
 set(GEN_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
 set(DEVICE_V1_TYPES_PROTOS
-    "${PROTO_ROOT}/evrp/device/v1/types/common.proto"
-    "${PROTO_ROOT}/evrp/device/v1/types/inputlisten.proto"
-    "${PROTO_ROOT}/evrp/device/v1/types/playback.proto"
-    "${PROTO_ROOT}/evrp/device/v1/types/service.proto")
+  "${PROTO_ROOT}/evrp/device/v1/types/common.proto"
+  "${PROTO_ROOT}/evrp/device/v1/types/inputlisten.proto"
+  "${PROTO_ROOT}/evrp/device/v1/types/playback.proto"
+  "${PROTO_ROOT}/evrp/device/v1/types/service.proto")
 set(DEVICE_V1_TYPES_GEN
-    "${GEN_DIR}/evrp/device/v1/types/common.pb.cc"
-    "${GEN_DIR}/evrp/device/v1/types/common.pb.h"
-    "${GEN_DIR}/evrp/device/v1/types/inputlisten.pb.cc"
-    "${GEN_DIR}/evrp/device/v1/types/inputlisten.pb.h"
-    "${GEN_DIR}/evrp/device/v1/types/playback.pb.cc"
-    "${GEN_DIR}/evrp/device/v1/types/playback.pb.h"
-    "${GEN_DIR}/evrp/device/v1/types/service.pb.cc"
-    "${GEN_DIR}/evrp/device/v1/types/service.pb.h")
+  "${GEN_DIR}/evrp/device/v1/types/common.pb.cc"
+  "${GEN_DIR}/evrp/device/v1/types/common.pb.h"
+  "${GEN_DIR}/evrp/device/v1/types/inputlisten.pb.cc"
+  "${GEN_DIR}/evrp/device/v1/types/inputlisten.pb.h"
+  "${GEN_DIR}/evrp/device/v1/types/playback.pb.cc"
+  "${GEN_DIR}/evrp/device/v1/types/playback.pb.h"
+  "${GEN_DIR}/evrp/device/v1/types/service.pb.cc"
+  "${GEN_DIR}/evrp/device/v1/types/service.pb.h")
 set(DEVICE_V1_TYPES_PB_CC
-    "${GEN_DIR}/evrp/device/v1/types/common.pb.cc"
-    "${GEN_DIR}/evrp/device/v1/types/inputlisten.pb.cc"
-    "${GEN_DIR}/evrp/device/v1/types/playback.pb.cc"
-    "${GEN_DIR}/evrp/device/v1/types/service.pb.cc")
+  "${GEN_DIR}/evrp/device/v1/types/common.pb.cc"
+  "${GEN_DIR}/evrp/device/v1/types/inputlisten.pb.cc"
+  "${GEN_DIR}/evrp/device/v1/types/playback.pb.cc"
+  "${GEN_DIR}/evrp/device/v1/types/service.pb.cc")
 set(DEVICE_INPUTLISTEN_PROTO "${PROTO_ROOT}/evrp/device/v1/service/inputlisten.proto")
 set(DEVICE_PLAYBACK_PROTO "${PROTO_ROOT}/evrp/device/v1/service/playback.proto")
 set(DEVICE_SERVICE_PROTO "${PROTO_ROOT}/evrp/device/v1/service/service.proto")
 set(SDK_SESSION_TYPES_PROTO "${PROTO_ROOT}/evrp/sdk/v1/types/session.proto")
 set(SDK_SESSION_SERVICES_PROTO "${PROTO_ROOT}/evrp/sdk/v1/services/session.proto")
 
-find_program(
-  GRPC_CPP_PLUGIN_PROGRAM
-  NAMES grpc_cpp_plugin REQUIRED
-  HINTS "${EVRP_LIBRARY_DIR}/grpc/bin" "${EVRP_LIBRARY_DIR}/bin")
-find_program(
-  PROTOC_PROGRAM
-  NAMES protoc REQUIRED
-  HINTS "${EVRP_LIBRARY_DIR}/protobuf/bin" "${EVRP_LIBRARY_DIR}/bin")
+find_program(GRPC_CPP_PLUGIN_PROGRAM NAMES grpc_cpp_plugin REQUIRED
+             HINTS "${EVRP_LIBRARY_DIR}/grpc/bin" "${EVRP_LIBRARY_DIR}/bin")
+find_program(PROTOC_PROGRAM NAMES protoc REQUIRED
+             HINTS "${EVRP_LIBRARY_DIR}/protobuf/bin" "${EVRP_LIBRARY_DIR}/bin")
 
 set(DEVICE_INPUTLISTEN_PB_CC "${GEN_DIR}/evrp/device/v1/service/inputlisten.pb.cc")
 set(DEVICE_INPUTLISTEN_PB_H "${GEN_DIR}/evrp/device/v1/service/inputlisten.pb.h")
@@ -302,15 +241,15 @@ set(SDK_SESSION_SERVICES_GRPC_CC "${GEN_DIR}/evrp/sdk/v1/services/session.grpc.p
 set(SDK_SESSION_SERVICES_GRPC_H "${GEN_DIR}/evrp/sdk/v1/services/session.grpc.pb.h")
 
 add_custom_command(
-  OUTPUT ${DEVICE_V1_TYPES_GEN} ${DEVICE_INPUTLISTEN_PB_CC}
-         ${DEVICE_INPUTLISTEN_PB_H} ${DEVICE_INPUTLISTEN_GRPC_CC}
-         ${DEVICE_INPUTLISTEN_GRPC_H} ${DEVICE_PLAYBACK_PB_CC}
-         ${DEVICE_PLAYBACK_PB_H} ${DEVICE_PLAYBACK_GRPC_CC} ${DEVICE_PLAYBACK_GRPC_H}
-         ${DEVICE_SERVICE_PB_CC} ${DEVICE_SERVICE_PB_H} ${DEVICE_SERVICE_GRPC_CC}
-         ${DEVICE_SERVICE_GRPC_H} ${SDK_SESSION_TYPES_PB_CC}
-         ${SDK_SESSION_TYPES_PB_H} ${SDK_SESSION_SERVICES_PB_CC}
-         ${SDK_SESSION_SERVICES_PB_H} ${SDK_SESSION_SERVICES_GRPC_CC}
-         ${SDK_SESSION_SERVICES_GRPC_H}
+  OUTPUT ${DEVICE_V1_TYPES_GEN} ${DEVICE_INPUTLISTEN_PB_CC} ${DEVICE_INPUTLISTEN_PB_H}
+         ${DEVICE_INPUTLISTEN_GRPC_CC} ${DEVICE_INPUTLISTEN_GRPC_H}
+         ${DEVICE_PLAYBACK_PB_CC} ${DEVICE_PLAYBACK_PB_H}
+         ${DEVICE_PLAYBACK_GRPC_CC} ${DEVICE_PLAYBACK_GRPC_H}
+         ${DEVICE_SERVICE_PB_CC} ${DEVICE_SERVICE_PB_H}
+         ${DEVICE_SERVICE_GRPC_CC} ${DEVICE_SERVICE_GRPC_H}
+         ${SDK_SESSION_TYPES_PB_CC} ${SDK_SESSION_TYPES_PB_H}
+         ${SDK_SESSION_SERVICES_PB_CC} ${SDK_SESSION_SERVICES_PB_H}
+         ${SDK_SESSION_SERVICES_GRPC_CC} ${SDK_SESSION_SERVICES_GRPC_H}
   COMMAND ${CMAKE_COMMAND} -E make_directory "${GEN_DIR}/evrp/device/v1/service"
   COMMAND ${CMAKE_COMMAND} -E make_directory "${GEN_DIR}/evrp/device/v1/types"
   COMMAND ${CMAKE_COMMAND} -E make_directory "${GEN_DIR}/evrp/sdk/v1/types"
@@ -321,154 +260,103 @@ add_custom_command(
     ${DEVICE_V1_TYPES_PROTOS} ${DEVICE_INPUTLISTEN_PROTO} ${DEVICE_PLAYBACK_PROTO}
     ${DEVICE_SERVICE_PROTO} ${SDK_SESSION_TYPES_PROTO} ${SDK_SESSION_SERVICES_PROTO}
   DEPENDS ${DEVICE_V1_TYPES_PROTOS} ${DEVICE_INPUTLISTEN_PROTO}
-          ${DEVICE_PLAYBACK_PROTO}
-          ${DEVICE_SERVICE_PROTO}
-          ${SDK_SESSION_TYPES_PROTO} ${SDK_SESSION_SERVICES_PROTO}
-  COMMENT
-    "Generating protobuf/gRPC (device v1 + evrp/sdk/v1 types + services)"
+          ${DEVICE_PLAYBACK_PROTO} ${DEVICE_SERVICE_PROTO} ${SDK_SESSION_TYPES_PROTO}
+          ${SDK_SESSION_SERVICES_PROTO}
+  COMMENT "Generating protobuf/gRPC (device v1 + session)"
   VERBATIM)
 
 add_library(evrp_device_proto STATIC ${DEVICE_V1_TYPES_PB_CC}
-                                     ${DEVICE_INPUTLISTEN_PB_CC}
-                                     ${DEVICE_INPUTLISTEN_GRPC_CC}
-                                     ${DEVICE_PLAYBACK_PB_CC} ${DEVICE_PLAYBACK_GRPC_CC}
-                                     ${DEVICE_SERVICE_PB_CC} ${DEVICE_SERVICE_GRPC_CC}
-                                     ${SDK_SESSION_TYPES_PB_CC} ${SDK_SESSION_SERVICES_PB_CC}
-                                     ${SDK_SESSION_SERVICES_GRPC_CC})
+  ${DEVICE_INPUTLISTEN_PB_CC} ${DEVICE_INPUTLISTEN_GRPC_CC} ${DEVICE_PLAYBACK_PB_CC}
+  ${DEVICE_PLAYBACK_GRPC_CC} ${DEVICE_SERVICE_PB_CC} ${DEVICE_SERVICE_GRPC_CC}
+  ${SDK_SESSION_TYPES_PB_CC} ${SDK_SESSION_SERVICES_PB_CC}
+  ${SDK_SESSION_SERVICES_GRPC_CC})
 target_include_directories(evrp_device_proto PUBLIC ${GEN_DIR})
-target_link_libraries(evrp_device_proto PUBLIC protobuf::libprotobuf
-                                               gRPC::grpc++)
+target_link_libraries(evrp_device_proto PUBLIC protobuf::libprotobuf gRPC::grpc++)
 
 add_library(evrp_device_api INTERFACE)
-target_include_directories(evrp_device_api
-                           INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(evrp_device_api INTERFACE "${EVRP_ROOT}")
 
 add_library(countingsemaphore STATIC evrp/sdk/countingsemaphore.cpp)
-target_include_directories(countingsemaphore
-                           PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-set_target_properties(
-  countingsemaphore
-  PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
+target_include_directories(countingsemaphore PUBLIC "${EVRP_ROOT}")
 
 add_library(sdk_fmt STATIC evrp/sdk/fmt/impl/grpcstatuscode.cpp)
-target_include_directories(sdk_fmt PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(sdk_fmt PUBLIC "${EVRP_ROOT}")
 target_link_libraries(sdk_fmt PUBLIC gRPC::grpc++ fmt::fmt)
-set_target_properties(
-  sdk_fmt
-  PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
 
 add_library(sdk_session_client STATIC evrp/sdk/sessionclient.cpp)
-target_include_directories(sdk_session_client
-                           PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(sdk_session_client PUBLIC "${EVRP_ROOT}")
 target_link_libraries(
-  sdk_session_client
-  PUBLIC evrp_device_proto gRPC::grpc++)
-set_target_properties(
-  sdk_session_client
-  PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
+  sdk_session_client PUBLIC evrp_device_proto gRPC::grpc++
+  PRIVATE evrp_device_cxx20)
 
-add_library(
-  sdk_session STATIC
-  evrp/sdk/sessionregistry.cpp
-  evrp/sdk/sessioncheck.cpp)
-target_include_directories(sdk_session
-                           PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+add_library(sdk_session STATIC evrp/sdk/sessionregistry.cpp
+                               evrp/sdk/sessioncheck.cpp)
+target_include_directories(sdk_session PUBLIC "${EVRP_ROOT}")
 target_link_libraries(
-  sdk_session
-  PUBLIC gRPC::grpc++ gflags::gflags
-  PRIVATE logger)
-set_target_properties(
-  sdk_session
-  PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
+  sdk_session PUBLIC gRPC::grpc++ gflags::gflags PRIVATE logger evrp_device_cxx20)
 
 add_library(tofromproto STATIC evrp/device/internal/tofromproto.cpp)
-target_include_directories(tofromproto
-                           PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(tofromproto PUBLIC evrp_device_api evrp_device_proto)
-set_target_properties(
-  tofromproto
-  PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
+target_include_directories(tofromproto PUBLIC "${EVRP_ROOT}")
+target_link_libraries(tofromproto PUBLIC evrp_device_api evrp_device_proto
+                                         PRIVATE evrp_device_cxx20)
 
 add_library(
-  localinputlistener STATIC evrp/device/impl/server/localinputlistener.cpp
-                           evrp/sdk/iocontextpostedbase.cpp
-                           evrp/device/impl/server/posted/postedinputlistener.cpp
-                           evrp/device/impl/server/posted/postedcursorposition.cpp
-                           evrp/device/impl/server/posted/postedinputdevicekindsprovider.cpp
-                           evrp/device/impl/server/posted/postedplayback.cpp
-                           evrp/sdk/syncdispatchqueue.cpp
-                           evrp/device/impl/server/deviceruntime.cpp)
-target_include_directories(localinputlistener
-                           PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
-                                  ${EVRP_SDK_DIR})
+  localinputlistener STATIC
+  evrp/device/impl/server/localinputlistener.cpp
+  evrp/sdk/iocontextpostedbase.cpp
+  evrp/device/impl/server/posted/postedinputlistener.cpp
+  evrp/device/impl/server/posted/postedcursorposition.cpp
+  evrp/device/impl/server/posted/postedinputdevicekindsprovider.cpp
+  evrp/device/impl/server/posted/postedplayback.cpp
+  evrp/sdk/syncdispatchqueue.cpp
+  evrp/device/impl/server/deviceruntime.cpp)
+target_include_directories(localinputlistener PUBLIC "${EVRP_ROOT}" ${EVRP_SDK_DIR})
 target_link_libraries(
-  localinputlistener
-  PUBLIC evrp_device_api asio::asio
-  PRIVATE eventformat inputdevice logger)
-set_target_properties(
-  localinputlistener
-  PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
+  localinputlistener PUBLIC evrp_device_api asio::asio
+  PRIVATE eventformat inputdevice logger evrp_device_cxx20)
 
 add_library(localplayback STATIC evrp/device/impl/server/localplayback.cpp)
-target_include_directories(localplayback PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(localplayback PUBLIC evrp_device_api inputeventwriter
-                                           countingsemaphore)
-set_target_properties(
-  localplayback
-  PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
+target_include_directories(localplayback PUBLIC "${EVRP_ROOT}")
+target_link_libraries(
+  localplayback PUBLIC evrp_device_api inputeventwriter countingsemaphore
+  PRIVATE evrp_device_cxx20)
 
 add_library(localcursorposition STATIC
             evrp/device/impl/server/localcursorposition.cpp)
-target_include_directories(localcursorposition
-                           PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(localcursorposition PUBLIC "${EVRP_ROOT}")
 target_link_libraries(localcursorposition PUBLIC evrp_device_api cursorpos)
 
 add_library(localinputdevicekindsprovider STATIC
             evrp/device/impl/server/localinputdevicekindsprovider.cpp)
-target_include_directories(localinputdevicekindsprovider
-                           PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(localinputdevicekindsprovider
-                      PUBLIC evrp_device_api PRIVATE inputdevice logger)
+target_include_directories(localinputdevicekindsprovider PUBLIC "${EVRP_ROOT}")
+target_link_libraries(localinputdevicekindsprovider PUBLIC evrp_device_api
+                      PRIVATE inputdevice logger)
 
 add_library(device_remote_inputlistener STATIC
             evrp/device/impl/client/remoteinputlistener.cpp)
-target_include_directories(device_remote_inputlistener
-                           PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(device_remote_inputlistener
-                      PUBLIC evrp_device_proto tofromproto sdk_fmt
-                      PRIVATE logger)
-set_target_properties(
-  device_remote_inputlistener
-  PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
+target_include_directories(device_remote_inputlistener PUBLIC "${EVRP_ROOT}")
+target_link_libraries(
+  device_remote_inputlistener PUBLIC evrp_device_proto tofromproto sdk_fmt
+  PRIVATE logger evrp_device_cxx20)
 
-add_library(device_remote_playback STATIC evrp/device/impl/client/remoteplayback.cpp)
-target_include_directories(device_remote_playback
-                           PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(device_remote_playback PUBLIC evrp_device_proto tofromproto
-                                                     countingsemaphore)
-set_target_properties(
-  device_remote_playback
-  PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
+add_library(device_remote_playback STATIC
+            evrp/device/impl/client/remoteplayback.cpp)
+target_include_directories(device_remote_playback PUBLIC "${EVRP_ROOT}")
+target_link_libraries(
+  device_remote_playback PUBLIC evrp_device_proto tofromproto countingsemaphore
+  PRIVATE evrp_device_cxx20)
 
 add_library(
   device_client STATIC
   evrp/device/impl/client/client.cpp
   evrp/device/impl/client/devicediscovery.cpp
   evrp/device/impl/client/remoteinputdeviceclient.cpp)
-target_include_directories(device_client PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(device_client PUBLIC "${EVRP_ROOT}")
 target_link_libraries(
-  device_client
-  PUBLIC evrp_device_api
-         device_remote_inputlistener
-         device_remote_playback
-         evrp_device_proto
-         sdk_session_client
-         tofromproto
-         gRPC::grpc++
-  PRIVATE gflags::gflags)
-set_target_properties(
-  device_client
-  PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
+  device_client PUBLIC evrp_device_api device_remote_inputlistener
+                       device_remote_playback evrp_device_proto sdk_session_client
+                       tofromproto gRPC::grpc++
+  PRIVATE gflags::gflags evrp_device_cxx20)
 
 add_library(
   evrp_device_grpc STATIC
@@ -478,19 +366,18 @@ add_library(
   evrp/device/impl/server/grpc/grpcinputlisten.cpp
   evrp/device/impl/server/grpc/grpcinputdeviceservice.cpp
   evrp/device/impl/server/grpc/grpcplaybackservice.cpp)
-target_include_directories(evrp_device_grpc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(evrp_device_grpc
-                      PUBLIC evrp_device_proto tofromproto
-                             countingsemaphore asio::asio
-                             gflags::gflags sdk_session
-                      PRIVATE logger)
+target_include_directories(evrp_device_grpc PRIVATE "${EVRP_ROOT}")
+target_link_libraries(
+  evrp_device_grpc PUBLIC evrp_device_proto tofromproto countingsemaphore
+                           asio::asio gflags::gflags sdk_session
+  PRIVATE logger)
 
 add_executable(evrp-device evrp-device/main.cpp)
 target_link_libraries(
-  evrp-device
-  PRIVATE evrp_device_api evrp_device_grpc localinputlistener localplayback
-          localcursorposition localinputdevicekindsprovider gRPC::grpc++
-          gflags::gflags logger)
+  evrp-device PRIVATE evrp_device_api evrp_device_grpc localinputlistener
+                      localplayback localcursorposition
+                      localinputdevicekindsprovider gRPC::grpc++ gflags::gflags
+                      logger)
 
 add_executable(
   evrp_device_integration_test
@@ -500,14 +387,10 @@ add_executable(
   evrp-device/integrationtest/case_inputlisten.cpp
   evrp-device/integrationtest/case_playback.cpp
   evrp-device/integrationtest/case_discovery.cpp)
-target_include_directories(evrp_device_integration_test
-                           PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-set_target_properties(
-  evrp_device_integration_test
-  PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
+target_include_directories(evrp_device_integration_test PRIVATE "${EVRP_ROOT}")
 target_link_libraries(
-  evrp_device_integration_test
-  PRIVATE device_client gflags::gflags logger GTest::gtest)
+  evrp_device_integration_test PRIVATE device_client gflags::gflags logger
+                                       GTest::gtest evrp_device_cxx20)
 add_dependencies(evrp_device_integration_test evrp-device)
 
 gtest_discover_tests(
