@@ -11,29 +11,37 @@
 
 #include <memory>
 
-int Runner::run(int argc, char *argv[]) {
-  RunOptions options = parseOptions(argc, argv);
-  logService->setLevel(options.logLevel);
+Runner::Runner(const std::map<std::string, std::any>& parsed)
+    : parsed_(parsed),
+      prog_(parsed_options::stringOr(parsed, "program", "evrp")),
+      recording_(parsed_options::boolOr(parsed, "recording")),
+      playback_(parsed_options::boolOr(parsed, "playback")),
+      device_(parsed_options::stringOr(parsed, "device")),
+      playbackPath_(parsed_options::stringOr(parsed, "playbackPath")),
+      logLevel_(parsed_options::logLevelOr(parsed, "logLevel")) {}
 
-  int modeCount = (options.recording ? 1 : 0) + (options.playback ? 1 : 0);
+int Runner::run() {
+  logService->setLevel(logLevel_);
+
+  int modeCount = (recording_ ? 1 : 0) + (playback_ ? 1 : 0);
   if (modeCount > 1) {
     logError("Cannot use --record and --playback at the same time.");
-    printUsage(argv[0]);
+    printUsage(prog_.c_str());
     return 1;
   }
 
   if (modeCount == 0) {
-    printUsage(argv[0]);
+    printUsage(prog_.c_str());
     return 1;
   }
 
   std::unique_ptr<evrp::device::api::IClient> deviceClient =
-      evrp::device::api::makeClient(options.device);
+      evrp::device::api::makeClient(device_);
   if (!deviceClient) {
     logError(
         "Could not connect to evrp-device at {} (session handshake failed). "
         "Start `evrp-device` or pass --device=HOST:PORT.",
-        options.device);
+        device_);
     return 1;
   }
 
@@ -45,14 +53,14 @@ int Runner::run(int argc, char *argv[]) {
       createEnhancedFileSystem(createFileSystem()));
   ioc.emplace(enhancedFs.get());
 
-  if (options.playback) {
-    if (options.playbackPath.empty()) {
+  if (playback_) {
+    if (playbackPath_.empty()) {
       logError("Playback (--playback) requires a file path.");
-      printUsage(argv[0]);
+      printUsage(prog_.c_str());
       return 1;
     }
-    return Playback(options.parsed, ioc).run();
+    return Playback(parsed_, ioc).run();
   }
 
-  return Record(options.parsed, ioc).run();
+  return Record(parsed_, ioc).run();
 }

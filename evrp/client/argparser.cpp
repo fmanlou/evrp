@@ -138,8 +138,11 @@ bool parseKind(const std::string &s, evrp::device::api::DeviceKind *outKind) {
   return false;
 }
 
-RunOptions parseOptions(int argc, char *argv[]) {
+std::map<std::string, std::any> parseOptions(int argc, char *argv[]) {
   resetArgFlags();
+
+  const std::string program =
+      (argc > 0 && argv[0] && argv[0][0]) ? std::string(argv[0]) : std::string("evrp");
 
   std::vector<std::string> owned;
   owned.reserve(static_cast<size_t>(argc));
@@ -154,47 +157,48 @@ RunOptions parseOptions(int argc, char *argv[]) {
   }
   argv_ptrs.push_back(nullptr);
 
-  
   int argcMut = static_cast<int>(owned.size());
   char **argvMut = argv_ptrs.data();
   google::ParseCommandLineFlags(&argcMut, &argvMut, true);
 
-  RunOptions options;
-  options.recording = FLAGS_record;
-  options.playback = !FLAGS_playback.empty();
-  options.playbackPath = FLAGS_playback;
-  options.outputPath = FLAGS_output;
-  options.device = FLAGS_device;
-  options.logLevel = logLevelFromString(FLAGS_log_level);
-  options.executeWaitBeforeFirst = FLAGS_wait_leading;
-  options.executeWaitAfterLast = FLAGS_wait_trailing;
+  bool recording = FLAGS_record;
+  bool playback = !FLAGS_playback.empty();
+  std::string playbackPath = FLAGS_playback;
+  std::string outputPath = FLAGS_output;
+  std::string device = FLAGS_device;
+  logging::LogLevel logLevel = logLevelFromString(FLAGS_log_level);
+  bool executeWaitBeforeFirst = FLAGS_wait_leading;
+  bool executeWaitAfterLast = FLAGS_wait_trailing;
 
+  std::vector<evrp::device::api::DeviceKind> kinds;
   for (int i = 1; i < argcMut; ++i) {
     if (!argvMut[i]) {
       continue;
     }
     evrp::device::api::DeviceKind k;
     if (parseKind(argvMut[i], &k)) {
-      options.kinds.push_back(k);
+      kinds.push_back(k);
     }
   }
 
-  if (options.recording && options.kinds.empty()) {
-    options.kinds = {evrp::device::api::DeviceKind::kTouchpad,
-                       evrp::device::api::DeviceKind::kTouchscreen,
-                       evrp::device::api::DeviceKind::kMouse,
-                       evrp::device::api::DeviceKind::kKeyboard};
+  if (recording && kinds.empty()) {
+    kinds = {evrp::device::api::DeviceKind::kTouchpad,
+             evrp::device::api::DeviceKind::kTouchscreen,
+             evrp::device::api::DeviceKind::kMouse,
+             evrp::device::api::DeviceKind::kKeyboard};
   }
 
-  options.parsed["recording"] = options.recording;
-  options.parsed["playback"] = options.playback;
-  options.parsed["logLevel"] = options.logLevel;
-  options.parsed["playbackPath"] = options.playbackPath;
-  options.parsed["outputPath"] = options.outputPath;
-  options.parsed["device"] = options.device;
-  options.parsed["kinds"] = options.kinds;
-  options.parsed["executeWaitBeforeFirst"] = options.executeWaitBeforeFirst;
-  options.parsed["executeWaitAfterLast"] = options.executeWaitAfterLast;
+  std::map<std::string, std::any> parsed;
+  parsed["program"] = program;
+  parsed["recording"] = recording;
+  parsed["playback"] = playback;
+  parsed["logLevel"] = logLevel;
+  parsed["playbackPath"] = std::move(playbackPath);
+  parsed["outputPath"] = std::move(outputPath);
+  parsed["device"] = std::move(device);
+  parsed["kinds"] = std::move(kinds);
+  parsed["executeWaitBeforeFirst"] = executeWaitBeforeFirst;
+  parsed["executeWaitAfterLast"] = executeWaitAfterLast;
 
-  return options;
+  return parsed;
 }

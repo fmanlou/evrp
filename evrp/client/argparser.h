@@ -8,23 +8,6 @@
 #include "evrp/device/api/types.h"
 #include "evrp/sdk/logger.h"
 
-struct RunOptions {
-  bool recording;
-  bool playback;
-  logging::LogLevel logLevel;
-  std::string playbackPath;
-  std::string outputPath;
-  /// gRPC target for evrp-device (host:port).
-  std::string device;
-  std::vector<evrp::device::api::DeviceKind> kinds;
-
-  bool executeWaitBeforeFirst;
-  bool executeWaitAfterLast;
-
-  /// String-keyed snapshot of fields above after `parseOptions` (types match each field).
-  std::map<std::string, std::any> parsed;
-};
-
 namespace parsed_options {
 
 std::string stringOr(const std::map<std::string, std::any>& m,
@@ -43,6 +26,10 @@ std::vector<evrp::device::api::DeviceKind> kindsOr(
 
 }  // namespace parsed_options
 
-void printUsage(const char *prog);
-bool parseKind(const std::string &s, evrp::device::api::DeviceKind *outKind);
-RunOptions parseOptions(int argc, char *argv[]);
+void printUsage(const char* prog);
+bool parseKind(const std::string& s, evrp::device::api::DeviceKind* outKind);
+
+/// Keys and stored types: program (string), recording (bool), playback (bool),
+/// logLevel (logging::LogLevel), playbackPath, outputPath, device (string),
+/// kinds (vector<DeviceKind>), executeWaitBeforeFirst, executeWaitAfterLast (bool).
+std::map<std::string, std::any> parseOptions(int argc, char* argv[]);
