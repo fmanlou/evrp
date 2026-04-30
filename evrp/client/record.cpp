@@ -2,6 +2,8 @@
 
 #include <sys/time.h>
 
+#include <fcntl.h>
+
 #include <cerrno>
 #include <cstring>
 #include <string>
@@ -41,7 +43,8 @@ int Record::run() {
     }
   } stopGuard{listener};
 
-  int outFd = fs_.openOutput(options_.outputPath);
+  int outFd = fs_.openFd(options_.outputPath,
+                         O_WRONLY | O_CREAT | O_TRUNC, 0644);
   if (outFd < 0) {
     int err = errno;
     logError("Failed to open output file {}: {}", options_.outputPath,
@@ -50,7 +53,7 @@ int Record::run() {
   }
   const bool ownOutputFd = !options_.outputPath.empty();
   struct OutputFdGuard {
-    FileSystem *fs;
+    EnhancedFileSystem *fs;
     int fd;
     bool own;
     ~OutputFdGuard() {

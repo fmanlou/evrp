@@ -14,5 +14,5 @@ class Record {
  private:
   RunOptions options_;
   const evrp::Ioc &ioc_;
-  FileSystem fs_;
+  EnhancedFileSystem fs_;
 };

@@ -1,5 +1,7 @@
 #include "playback.h"
 
+#include <fcntl.h>
+
 #include <cerrno>
 #include <cstring>
 #include <string>
@@ -54,14 +56,14 @@ int Playback::run() {
 
   logService->setLevel(options_.logLevel);
 
-  int inFd = fs_.openInput(path);
+  int inFd = fs_.openFd(path, O_RDONLY);
   if (inFd < 0) {
     int err = errno;
     logError("Failed to open input file {}: {}", path, strerror(err));
     return 1;
   }
   struct InputFdGuard {
-    FileSystem *fs;
+    EnhancedFileSystem *fs;
     int fd;
     ~InputFdGuard() {
       if (fd >= 0) {

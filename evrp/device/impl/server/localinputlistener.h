@@ -42,7 +42,7 @@ class LocalInputListener final : public api::IInputListener {
   void closeDevices();
   std::string listenDevicesSummary() const;
 
-  FileSystem fs_;
+  EnhancedFileSystem fs_;
   std::mutex mu_;
   std::atomic<bool> listeningActive_{false};
   std::atomic<bool> disposed_{false};

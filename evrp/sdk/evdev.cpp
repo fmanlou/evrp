@@ -1,11 +1,13 @@
 #include "evrp/sdk/evdev.h"
 
+#include <fcntl.h>
 #include <linux/input.h>
 #include <signal.h>
 #include <sys/ioctl.h>
 
 #include <cerrno>
 #include <cstring>
+#include <string>
 
 #include "evrp/sdk/filesystem.h"
 
@@ -16,8 +18,8 @@
 #define TEST_BIT(bit, array) ((array[(bit) / BITS_PER_LONG] & BIT(bit)) != 0)
 
 bool openAndGetCapabilities(const char *path, Capabilities *caps) {
-  FileSystem fs;
-  int fd = fs.openReadOnly(path, true);
+  EnhancedFileSystem fs;
+  int fd = fs.openFd(std::string(path), O_RDONLY | O_NONBLOCK);
   if (fd < 0) return false;
   bool ok = getCapabilities(fd, caps);
   fs.closeFd(fd);
@@ -65,7 +67,7 @@ bool getCapabilities(int fd, Capabilities *caps) {
 
 int readEvents(int fd, Event *events, int max_count) {
   if (fd < 0 || !events || max_count <= 0) return -1;
-  FileSystem fs;
+  EnhancedFileSystem fs;
 
   struct input_event raw[64];
   long n = fs.readFd(fd, raw, sizeof(raw));

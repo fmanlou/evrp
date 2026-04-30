@@ -7,11 +7,11 @@
 #include "evrp/sdk/keyboard/keyboardeventwriter.h"
 #include "evrp/sdk/mouse/mouseeventwriter.h"
 
-class FileSystem;
+class EnhancedFileSystem;
 
 class InputEventWriter : public IRawEventWriter {
  public:
-  explicit InputEventWriter(FileSystem *fs);
+  explicit InputEventWriter(EnhancedFileSystem *fs);
   ~InputEventWriter();
 
   bool write(evrp::device::api::DeviceKind device, unsigned short type,
@@ -29,7 +29,7 @@ class InputEventWriter : public IRawEventWriter {
   bool writeEventWithSync(int fd, unsigned short type, unsigned short code,
                           int value);
 
-  FileSystem *fs_;
+  EnhancedFileSystem *fs_;
   std::map<evrp::device::api::DeviceKind, int> kindToFd_;
   KeyboardEventWriter keyboardWriter_;
   MouseEventWriter mouseWriter_;

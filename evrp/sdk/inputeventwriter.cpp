@@ -4,6 +4,8 @@
 #include <linux/input.h>
 #include <sys/time.h>
 
+#include <fcntl.h>
+
 #include <cstdio>
 
 #include "evrp/sdk/cursor/cursorpos.h"
@@ -17,7 +19,7 @@
 
 namespace api = evrp::device::api;
 
-InputEventWriter::InputEventWriter(FileSystem *fs)
+InputEventWriter::InputEventWriter(EnhancedFileSystem *fs)
     : fs_(fs), keyboardWriter_(this), mouseWriter_(this, gCursor) {}
 
 InputEventWriter::~InputEventWriter() {
@@ -39,7 +41,7 @@ int InputEventWriter::getFd(api::DeviceKind device) {
     return -1;
   }
   for (const std::string& devPath : paths) {
-    int fd = fs_->openReadWrite(devPath.c_str());
+    int fd = fs_->openFd(devPath, O_RDWR);
     if (fd >= 0) {
       kindToFd_[device] = fd;
       logInfo("Playing back {} to {}", api::deviceKindLabel(device), devPath);

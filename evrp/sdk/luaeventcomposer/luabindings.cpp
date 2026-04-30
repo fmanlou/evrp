@@ -417,7 +417,7 @@ int runScriptWithWriter(const char* path, InputEventWriter* writer) {
 }
 
 int runScript(const char* path) {
-  FileSystem fs;
+  EnhancedFileSystem fs;
   InputEventWriter writer(&fs);
   return runScriptWithWriter(path, &writer);
 }

@@ -2,6 +2,8 @@
 
 #include <linux/input-event-codes.h>
 
+#include <fcntl.h>
+
 #include <cerrno>
 #include <cstring>
 #include <unordered_set>
@@ -108,7 +110,7 @@ bool LocalInputListener::startListening(
             path);
         continue;
       }
-      int fd = fs_.openReadOnly(path.c_str(), true);
+      int fd = fs_.openFd(path, O_RDONLY | O_NONBLOCK);
       if (fd < 0) {
         logWarn(
             "LocalInputListener: kind {} path {} open(O_RDONLY) failed: {}",
