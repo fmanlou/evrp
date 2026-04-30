@@ -16,14 +16,14 @@
 #include "evrp/sdk/filesystem/enhancedfilesystem.h"
 #include "evrp/sdk/logger.h"
 
-Record::Record(MapStringKeyStore parsed, evrp::device::api::IInputListener *listener,
+Record::Record(MapStringKeyStoreCore parsed, evrp::device::api::IInputListener *listener,
                IEnhancedFileSystem *fs)
     : parsed_(std::move(parsed)),
       parsedView_(parsed_),
       listener_(listener),
       fs_(fs) {}
 
-Record::Record(MapStringKeyStore parsed, const evrp::Ioc &ioc)
+Record::Record(MapStringKeyStoreCore parsed, const evrp::Ioc &ioc)
     : Record(std::move(parsed), ioc.get<evrp::device::api::IInputListener>(),
              ioc.get<IEnhancedFileSystem>()) {}
 

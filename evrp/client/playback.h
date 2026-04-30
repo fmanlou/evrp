@@ -11,15 +11,15 @@ class IPlayback;
 
 class Playback {
  public:
-  Playback(MapStringKeyStore parsed, evrp::device::api::IPlayback *playback,
+  Playback(MapStringKeyStoreCore parsed, evrp::device::api::IPlayback *playback,
            IEnhancedFileSystem *fs);
 
-  Playback(MapStringKeyStore parsed, const evrp::Ioc &ioc);
+  Playback(MapStringKeyStoreCore parsed, const evrp::Ioc &ioc);
 
   int run();
 
  private:
-  MapStringKeyStore parsed_;
+  MapStringKeyStoreCore parsed_;
   StringKeyStore parsedView_;
   evrp::device::api::IPlayback *remote_{nullptr};
   IEnhancedFileSystem *fs_{nullptr};

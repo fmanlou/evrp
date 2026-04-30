@@ -14,14 +14,14 @@
 #include "evrp/sdk/evdev.h"
 #include "evrp/sdk/logger.h"
 
-Playback::Playback(MapStringKeyStore parsed, evrp::device::api::IPlayback *playback,
+Playback::Playback(MapStringKeyStoreCore parsed, evrp::device::api::IPlayback *playback,
                    IEnhancedFileSystem *fs)
     : parsed_(std::move(parsed)),
       parsedView_(parsed_),
       remote_(playback),
       fs_(fs) {}
 
-Playback::Playback(MapStringKeyStore parsed, const evrp::Ioc &ioc)
+Playback::Playback(MapStringKeyStoreCore parsed, const evrp::Ioc &ioc)
     : Playback(std::move(parsed), ioc.get<evrp::device::api::IPlayback>(),
                ioc.get<IEnhancedFileSystem>()) {}
 

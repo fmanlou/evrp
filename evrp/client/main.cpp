@@ -5,7 +5,7 @@
 int main(int argc, char *argv[]) {
   logging::LogService logSvc("evrp");
   logService = &logSvc;
-  MapStringKeyStore storage;
+  MapStringKeyStoreCore storage;
   StringKeyStore options(storage);
   parseArgvInto(options, argc, argv);
   Runner runner(std::move(storage));

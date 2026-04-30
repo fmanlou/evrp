@@ -54,9 +54,9 @@ class StringKeyStore {
   StringKeyStoreCore& core_;
 };
 
-class MapStringKeyStore final : public StringKeyStoreCore {
+class MapStringKeyStoreCore final : public StringKeyStoreCore {
  public:
-  MapStringKeyStore() = default;
+  MapStringKeyStoreCore() = default;
 
   bool contains(const std::string& key) const override {
     return values_.find(key) != values_.end();

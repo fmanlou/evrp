@@ -7,12 +7,12 @@
 
 class Runner {
  public:
-  explicit Runner(MapStringKeyStore options);
+  explicit Runner(MapStringKeyStoreCore options);
 
   int run();
 
  private:
-  MapStringKeyStore options_;
+  MapStringKeyStoreCore options_;
   StringKeyStore optionsView_;
   std::string prog_;
   bool recording_{false};

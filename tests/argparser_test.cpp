@@ -40,7 +40,7 @@ TEST(ArgParser, ParseOptionsWithNoArgsDisablesRecording) {
   std::vector<std::string> storage = {"evrp"};
   std::vector<char *> argv = buildArgv(&storage);
 
-  MapStringKeyStore map;
+  MapStringKeyStoreCore map;
   StringKeyStore parsed(map);
   parseArgvInto(parsed, static_cast<int>(argv.size()), argv.data());
   EXPECT_FALSE(parsed.get<bool>("recording", false));
@@ -53,7 +53,7 @@ TEST(ArgParser, ParseOptionsEnableRecordingAndKinds) {
   std::vector<std::string> storage = {"evrp", "-r", "mouse", "keyboard"};
   std::vector<char *> argv = buildArgv(&storage);
 
-  MapStringKeyStore map;
+  MapStringKeyStoreCore map;
   StringKeyStore parsed(map);
   parseArgvInto(parsed, static_cast<int>(argv.size()), argv.data());
   EXPECT_TRUE(parsed.get<bool>("recording", false));
@@ -68,7 +68,7 @@ TEST(ArgParser, ParseOptionsReadsOutputPath) {
                                       "touchpad"};
   std::vector<char *> argv = buildArgv(&storage);
 
-  MapStringKeyStore map;
+  MapStringKeyStoreCore map;
   StringKeyStore parsed(map);
   parseArgvInto(parsed, static_cast<int>(argv.size()), argv.data());
   EXPECT_TRUE(parsed.get<bool>("recording", false));
@@ -83,7 +83,7 @@ TEST(ArgParser, ParseOptionsEnablePlaybackAndPath) {
   std::vector<std::string> storage = {"evrp", "-p", "events.log"};
   std::vector<char *> argv = buildArgv(&storage);
 
-  MapStringKeyStore map;
+  MapStringKeyStoreCore map;
   StringKeyStore parsed(map);
   parseArgvInto(parsed, static_cast<int>(argv.size()), argv.data());
   EXPECT_FALSE(parsed.get<bool>("recording", false));
@@ -97,7 +97,7 @@ TEST(ArgParser, ParseOptionsRecordDefaultsKindsWhenNoTypes) {
   std::vector<std::string> storage = {"evrp", "-r"};
   std::vector<char *> argv = buildArgv(&storage);
 
-  MapStringKeyStore map;
+  MapStringKeyStoreCore map;
   StringKeyStore parsed(map);
   parseArgvInto(parsed, static_cast<int>(argv.size()), argv.data());
   EXPECT_TRUE(parsed.get<bool>("recording", false));
@@ -120,7 +120,7 @@ TEST(ArgParser, LogLevelFromString) {
 TEST(ArgParser, ParseOptionsLogLevel) {
   std::vector<std::string> storage0 = {"evrp", "--log-level=debug"};
   std::vector<char *> argv0 = buildArgv(&storage0);
-  MapStringKeyStore map0;
+  MapStringKeyStoreCore map0;
   StringKeyStore opt0(map0);
   parseArgvInto(opt0, static_cast<int>(argv0.size()), argv0.data());
   EXPECT_EQ(opt0.get("logLevel", logging::LogLevel::Info),
@@ -129,7 +129,7 @@ TEST(ArgParser, ParseOptionsLogLevel) {
   std::vector<std::string> storage1 = {"evrp", "-r", "--log-level=debug",
                                        "keyboard"};
   std::vector<char *> argv1 = buildArgv(&storage1);
-  MapStringKeyStore map1;
+  MapStringKeyStoreCore map1;
   StringKeyStore opt1(map1);
   parseArgvInto(opt1, static_cast<int>(argv1.size()), argv1.data());
   EXPECT_TRUE(opt1.get<bool>("recording", false));
@@ -145,7 +145,7 @@ TEST(ArgParser, ParseOptionsPlaybackWithLogLevel) {
                                       "--log-level=error"};
   std::vector<char *> argv = buildArgv(&storage);
 
-  MapStringKeyStore map;
+  MapStringKeyStoreCore map;
   StringKeyStore parsed(map);
   parseArgvInto(parsed, static_cast<int>(argv.size()), argv.data());
   EXPECT_TRUE(parsed.get<bool>("playback", false));
@@ -159,7 +159,7 @@ TEST(ArgParser, ParseOptionsDeviceOverride) {
                                       "mouse"};
   std::vector<char *> argv = buildArgv(&storage);
 
-  MapStringKeyStore map;
+  MapStringKeyStoreCore map;
   StringKeyStore parsed(map);
   parseArgvInto(parsed, static_cast<int>(argv.size()), argv.data());
   EXPECT_TRUE(parsed.get<bool>("recording", false));

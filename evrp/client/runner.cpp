@@ -11,7 +11,7 @@
 
 #include <memory>
 
-Runner::Runner(MapStringKeyStore options)
+Runner::Runner(MapStringKeyStoreCore options)
     : options_(std::move(options)),
       optionsView_(options_),
       prog_(optionsView_.get<std::string>("program", "evrp")),

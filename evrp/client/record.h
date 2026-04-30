@@ -11,15 +11,15 @@ class IInputListener;
 
 class Record {
  public:
-  Record(MapStringKeyStore parsed, evrp::device::api::IInputListener *listener,
+  Record(MapStringKeyStoreCore parsed, evrp::device::api::IInputListener *listener,
          IEnhancedFileSystem *fs);
 
-  Record(MapStringKeyStore parsed, const evrp::Ioc &ioc);
+  Record(MapStringKeyStoreCore parsed, const evrp::Ioc &ioc);
 
   int run();
 
  private:
-  MapStringKeyStore parsed_;
+  MapStringKeyStoreCore parsed_;
   StringKeyStore parsedView_;
   evrp::device::api::IInputListener *listener_{nullptr};
   IEnhancedFileSystem *fs_{nullptr};
