@@ -110,7 +110,7 @@ bool FileSystem::writeOutput(int fd, std::string_view data) {
       data.size());
 }
 
-bool FileSystem::flushOutput(int fd) {
+bool FileSystem::flushFd(int fd) {
   if (fd < 0) {
     return false;
   }

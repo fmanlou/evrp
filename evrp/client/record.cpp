@@ -137,7 +137,7 @@ int Record::run() {
   if (!writeOk) {
     return 1;
   }
-  if (!fs_.flushOutput(outFd)) {
+  if (!fs_.flushFd(outFd)) {
     logError("Flush recording output failed.");
     return 1;
   }

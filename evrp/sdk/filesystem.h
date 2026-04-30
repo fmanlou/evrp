@@ -23,7 +23,7 @@ class FileSystem {
   int openOutput(const std::string &path);
   bool writeOutput(int fd, const void *data, size_t size);
   bool writeOutput(int fd, std::string_view data);
-  bool flushOutput(int fd);
+  bool flushFd(int fd);
 
   const std::string &errorMessage() const;
 
