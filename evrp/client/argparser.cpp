@@ -67,9 +67,6 @@ void normalizeLegacyArgs(std::vector<std::string> *args) {
 
 } 
 
-ParsedOptions::ParsedOptions(std::map<std::string, std::any> values)
-    : values_(std::move(values)) {}
-
 void printUsage(const char *prog) {
   std::cout
       << "Usage: " << prog
@@ -101,7 +98,7 @@ bool parseKind(const std::string &s, evrp::device::api::DeviceKind *outKind) {
   return false;
 }
 
-ParsedOptions parseOptions(int argc, char *argv[]) {
+void parseArgvInto(ParsedOptions& options, int argc, char *argv[]) {
   resetArgFlags();
 
   const std::string program =
@@ -151,17 +148,14 @@ ParsedOptions parseOptions(int argc, char *argv[]) {
              evrp::device::api::DeviceKind::kKeyboard};
   }
 
-  std::map<std::string, std::any> parsed;
-  parsed["program"] = program;
-  parsed["recording"] = recording;
-  parsed["playback"] = playback;
-  parsed["logLevel"] = logLevel;
-  parsed["playbackPath"] = std::move(playbackPath);
-  parsed["outputPath"] = std::move(outputPath);
-  parsed["device"] = std::move(device);
-  parsed["kinds"] = std::move(kinds);
-  parsed["executeWaitBeforeFirst"] = executeWaitBeforeFirst;
-  parsed["executeWaitAfterLast"] = executeWaitAfterLast;
-
-  return ParsedOptions(std::move(parsed));
+  options.insert("program", program);
+  options.insert("recording", recording);
+  options.insert("playback", playback);
+  options.insert("logLevel", logLevel);
+  options.insert("playbackPath", std::move(playbackPath));
+  options.insert("outputPath", std::move(outputPath));
+  options.insert("device", std::move(device));
+  options.insert("kinds", std::move(kinds));
+  options.insert("executeWaitBeforeFirst", executeWaitBeforeFirst);
+  options.insert("executeWaitAfterLast", executeWaitAfterLast);
 }

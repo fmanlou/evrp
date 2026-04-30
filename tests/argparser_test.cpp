@@ -40,22 +40,22 @@ TEST(ArgParser, ParseOptionsWithNoArgsDisablesRecording) {
   std::vector<std::string> storage = {"evrp"};
   std::vector<char *> argv = buildArgv(&storage);
 
-  ParsedOptions parsed =
-      parseOptions(static_cast<int>(argv.size()), argv.data());
-  EXPECT_FALSE(parsed.getOr<bool>("recording", false));
-  EXPECT_FALSE(parsed.getOr<bool>("playback", false));
+  ParsedOptions parsed;
+  parseArgvInto(parsed, static_cast<int>(argv.size()), argv.data());
+  EXPECT_FALSE(parsed.get<bool>("recording", false));
+  EXPECT_FALSE(parsed.get<bool>("playback", false));
   EXPECT_TRUE(
-      parsed.getOr("kinds", std::vector<api::DeviceKind>{}).empty());
+      parsed.get("kinds", std::vector<api::DeviceKind>{}).empty());
 }
 
 TEST(ArgParser, ParseOptionsEnableRecordingAndKinds) {
   std::vector<std::string> storage = {"evrp", "-r", "mouse", "keyboard"};
   std::vector<char *> argv = buildArgv(&storage);
 
-  ParsedOptions parsed =
-      parseOptions(static_cast<int>(argv.size()), argv.data());
-  EXPECT_TRUE(parsed.getOr<bool>("recording", false));
-  auto kinds = parsed.getOr("kinds", std::vector<api::DeviceKind>{});
+  ParsedOptions parsed;
+  parseArgvInto(parsed, static_cast<int>(argv.size()), argv.data());
+  EXPECT_TRUE(parsed.get<bool>("recording", false));
+  auto kinds = parsed.get("kinds", std::vector<api::DeviceKind>{});
   ASSERT_EQ(kinds.size(), 2u);
   EXPECT_EQ(kinds[0], api::DeviceKind::kMouse);
   EXPECT_EQ(kinds[1], api::DeviceKind::kKeyboard);
@@ -66,12 +66,12 @@ TEST(ArgParser, ParseOptionsReadsOutputPath) {
                                       "touchpad"};
   std::vector<char *> argv = buildArgv(&storage);
 
-  ParsedOptions parsed =
-      parseOptions(static_cast<int>(argv.size()), argv.data());
-  EXPECT_TRUE(parsed.getOr<bool>("recording", false));
-  EXPECT_FALSE(parsed.getOr<bool>("playback", false));
-  EXPECT_EQ(parsed.getOr<std::string>("outputPath", {}), "events.log");
-  auto kinds = parsed.getOr("kinds", std::vector<api::DeviceKind>{});
+  ParsedOptions parsed;
+  parseArgvInto(parsed, static_cast<int>(argv.size()), argv.data());
+  EXPECT_TRUE(parsed.get<bool>("recording", false));
+  EXPECT_FALSE(parsed.get<bool>("playback", false));
+  EXPECT_EQ(parsed.get<std::string>("outputPath", {}), "events.log");
+  auto kinds = parsed.get("kinds", std::vector<api::DeviceKind>{});
   ASSERT_EQ(kinds.size(), 1u);
   EXPECT_EQ(kinds[0], api::DeviceKind::kTouchpad);
 }
@@ -80,23 +80,23 @@ TEST(ArgParser, ParseOptionsEnablePlaybackAndPath) {
   std::vector<std::string> storage = {"evrp", "-p", "events.log"};
   std::vector<char *> argv = buildArgv(&storage);
 
-  ParsedOptions parsed =
-      parseOptions(static_cast<int>(argv.size()), argv.data());
-  EXPECT_FALSE(parsed.getOr<bool>("recording", false));
-  EXPECT_TRUE(parsed.getOr<bool>("playback", false));
-  EXPECT_EQ(parsed.getOr<std::string>("playbackPath", {}), "events.log");
+  ParsedOptions parsed;
+  parseArgvInto(parsed, static_cast<int>(argv.size()), argv.data());
+  EXPECT_FALSE(parsed.get<bool>("recording", false));
+  EXPECT_TRUE(parsed.get<bool>("playback", false));
+  EXPECT_EQ(parsed.get<std::string>("playbackPath", {}), "events.log");
   EXPECT_TRUE(
-      parsed.getOr("kinds", std::vector<api::DeviceKind>{}).empty());
+      parsed.get("kinds", std::vector<api::DeviceKind>{}).empty());
 }
 
 TEST(ArgParser, ParseOptionsRecordDefaultsKindsWhenNoTypes) {
   std::vector<std::string> storage = {"evrp", "-r"};
   std::vector<char *> argv = buildArgv(&storage);
 
-  ParsedOptions parsed =
-      parseOptions(static_cast<int>(argv.size()), argv.data());
-  EXPECT_TRUE(parsed.getOr<bool>("recording", false));
-  auto kinds = parsed.getOr("kinds", std::vector<api::DeviceKind>{});
+  ParsedOptions parsed;
+  parseArgvInto(parsed, static_cast<int>(argv.size()), argv.data());
+  EXPECT_TRUE(parsed.get<bool>("recording", false));
+  auto kinds = parsed.get("kinds", std::vector<api::DeviceKind>{});
   ASSERT_EQ(kinds.size(), 4u);
   EXPECT_EQ(kinds[0], api::DeviceKind::kTouchpad);
   EXPECT_EQ(kinds[1], api::DeviceKind::kTouchscreen);
@@ -115,20 +115,20 @@ TEST(ArgParser, LogLevelFromString) {
 TEST(ArgParser, ParseOptionsLogLevel) {
   std::vector<std::string> storage0 = {"evrp", "--log-level=debug"};
   std::vector<char *> argv0 = buildArgv(&storage0);
-  ParsedOptions opt0 =
-      parseOptions(static_cast<int>(argv0.size()), argv0.data());
-  EXPECT_EQ(opt0.getOr("logLevel", logging::LogLevel::Info),
+  ParsedOptions opt0;
+  parseArgvInto(opt0, static_cast<int>(argv0.size()), argv0.data());
+  EXPECT_EQ(opt0.get("logLevel", logging::LogLevel::Info),
             logging::LogLevel::Debug);
 
   std::vector<std::string> storage1 = {"evrp", "-r", "--log-level=debug",
                                        "keyboard"};
   std::vector<char *> argv1 = buildArgv(&storage1);
-  ParsedOptions opt1 =
-      parseOptions(static_cast<int>(argv1.size()), argv1.data());
-  EXPECT_TRUE(opt1.getOr<bool>("recording", false));
-  EXPECT_EQ(opt1.getOr("logLevel", logging::LogLevel::Info),
+  ParsedOptions opt1;
+  parseArgvInto(opt1, static_cast<int>(argv1.size()), argv1.data());
+  EXPECT_TRUE(opt1.get<bool>("recording", false));
+  EXPECT_EQ(opt1.get("logLevel", logging::LogLevel::Info),
             logging::LogLevel::Debug);
-  auto kinds = opt1.getOr("kinds", std::vector<api::DeviceKind>{});
+  auto kinds = opt1.get("kinds", std::vector<api::DeviceKind>{});
   ASSERT_EQ(kinds.size(), 1u);
   EXPECT_EQ(kinds[0], api::DeviceKind::kKeyboard);
 }
@@ -138,12 +138,12 @@ TEST(ArgParser, ParseOptionsPlaybackWithLogLevel) {
                                       "--log-level=error"};
   std::vector<char *> argv = buildArgv(&storage);
 
-  ParsedOptions parsed =
-      parseOptions(static_cast<int>(argv.size()), argv.data());
-  EXPECT_TRUE(parsed.getOr<bool>("playback", false));
-  EXPECT_EQ(parsed.getOr("logLevel", logging::LogLevel::Info),
+  ParsedOptions parsed;
+  parseArgvInto(parsed, static_cast<int>(argv.size()), argv.data());
+  EXPECT_TRUE(parsed.get<bool>("playback", false));
+  EXPECT_EQ(parsed.get("logLevel", logging::LogLevel::Info),
             logging::LogLevel::Error);
-  EXPECT_EQ(parsed.getOr<std::string>("playbackPath", {}), "events.log");
+  EXPECT_EQ(parsed.get<std::string>("playbackPath", {}), "events.log");
 }
 
 TEST(ArgParser, ParseOptionsDeviceOverride) {
@@ -151,11 +151,11 @@ TEST(ArgParser, ParseOptionsDeviceOverride) {
                                       "mouse"};
   std::vector<char *> argv = buildArgv(&storage);
 
-  ParsedOptions parsed =
-      parseOptions(static_cast<int>(argv.size()), argv.data());
-  EXPECT_TRUE(parsed.getOr<bool>("recording", false));
-  EXPECT_EQ(parsed.getOr<std::string>("device", {}), "10.0.0.5:9999");
-  auto kinds = parsed.getOr("kinds", std::vector<api::DeviceKind>{});
+  ParsedOptions parsed;
+  parseArgvInto(parsed, static_cast<int>(argv.size()), argv.data());
+  EXPECT_TRUE(parsed.get<bool>("recording", false));
+  EXPECT_EQ(parsed.get<std::string>("device", {}), "10.0.0.5:9999");
+  auto kinds = parsed.get("kinds", std::vector<api::DeviceKind>{});
   ASSERT_EQ(kinds.size(), 1u);
   EXPECT_EQ(kinds[0], api::DeviceKind::kMouse);
 }

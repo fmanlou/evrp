@@ -5,6 +5,8 @@
 int main(int argc, char *argv[]) {
   logging::LogService logSvc("evrp");
   logService = &logSvc;
-  Runner runner(parseOptions(argc, argv));
+  ParsedOptions options;
+  parseArgvInto(options, argc, argv);
+  Runner runner(std::move(options));
   return runner.run();
 }
