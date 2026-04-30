@@ -19,18 +19,14 @@ class FileSystem {
   int pollFds(int *fds, int nfds, int timeoutMs, bool *ready) const;
 
   /// Empty \a path: returns `STDOUT_FILENO` (do not `closeFd`). Non-empty: opened
-  /// fd on success; caller must `closeFd` when done. Returns -1 on failure.
+  /// fd on success; caller must `closeFd` when done. Returns -1 on failure
+  /// (`errno` from `open(2)`).
   int openOutput(const std::string &path);
   bool writeOutput(int fd, const void *data, size_t size);
   bool writeOutput(int fd, std::string_view data);
   bool flushFd(int fd);
 
-  const std::string &errorMessage() const;
-
-  /// Returns read fd or -1. Caller must `closeFd` when done.
+  /// Returns read fd or -1 (`errno` from `open(2)`). Caller must `closeFd` when done.
   int openInput(const std::string &path);
   bool readInputAll(int fd, std::string *out);
-
- private:
-  std::string errorMessage_;
 };

@@ -2,7 +2,8 @@
 
 #include <sys/time.h>
 
-#include <cstdio>
+#include <cerrno>
+#include <cstring>
 #include <string>
 #include <vector>
 
@@ -42,7 +43,9 @@ int Record::run() {
 
   int outFd = fs_.openOutput(options_.outputPath);
   if (outFd < 0) {
-    logError("{}", fs_.errorMessage());
+    int err = errno;
+    logError("Failed to open output file {}: {}", options_.outputPath,
+             strerror(err));
     return 1;
   }
   const bool ownOutputFd = !options_.outputPath.empty();

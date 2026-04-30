@@ -1,5 +1,7 @@
 #include "playback.h"
 
+#include <cerrno>
+#include <cstring>
 #include <string>
 #include <vector>
 
@@ -54,7 +56,8 @@ int Playback::run() {
 
   int inFd = fs_.openInput(path);
   if (inFd < 0) {
-    logError("{}", fs_.errorMessage());
+    int err = errno;
+    logError("Failed to open input file {}: {}", path, strerror(err));
     return 1;
   }
   struct InputFdGuard {

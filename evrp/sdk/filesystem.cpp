@@ -63,13 +63,11 @@ int FileSystem::pollFds(int *fds, int nfds, int timeoutMs,
 }
 
 int FileSystem::openOutput(const std::string &path) {
-  errorMessage_.clear();
   if (path.empty()) {
     return STDOUT_FILENO;
   }
   int fd = ::open(path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
   if (fd < 0) {
-    errorMessage_ = "Failed to open output file: " + path;
     return -1;
   }
   return fd;
@@ -120,13 +118,9 @@ bool FileSystem::flushFd(int fd) {
   return ::fsync(fd) == 0;
 }
 
-const std::string &FileSystem::errorMessage() const { return errorMessage_; }
-
 int FileSystem::openInput(const std::string &path) {
-  errorMessage_.clear();
   int fd = ::open(path.c_str(), O_RDONLY);
   if (fd < 0) {
-    errorMessage_ = "Failed to open input file: " + path;
     return -1;
   }
   return fd;
