@@ -220,7 +220,7 @@ target_link_libraries(
          device_client
          setting)
 
-add_executable(evrp evrp/client/main.cpp)
+add_executable(evrp evrp-client/main.cpp)
 target_link_libraries(
   evrp
   PRIVATE runner
