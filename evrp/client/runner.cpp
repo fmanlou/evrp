@@ -40,11 +40,13 @@ int Runner::run() {
       evrp::device::api::makeClient(device_);
   if (!deviceClient) {
     logError(
-        "Could not connect to evrp-device at {} (session handshake failed). "
-        "Start `evrp-device` or pass --device=HOST:PORT.",
-        device_);
+        "Could not connect to evrp-device{} (session handshake failed). "
+        "Start `evrp-device`, set --device=HOST:PORT, or rely on UDP discovery "
+        "(default when --device is unset; see --discovery_port).",
+        device_.empty() ? std::string("") : (" at " + device_));
     return 1;
   }
+  optionsView_.insert("device", deviceClient->serverAddress());
 
   evrp::Ioc ioc;
   ioc.emplace(deviceClient->playback());

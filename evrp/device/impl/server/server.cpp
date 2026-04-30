@@ -11,6 +11,7 @@
 #include <grpcpp/health_check_service_interface.h>
 
 #include "evrp/sdk/sessionregistry.h"
+#include "evrp/device/impl/server/discoveryresponder.h"
 #include "evrp/device/impl/server/grpc/grpcsessionservice.h"
 #include "evrp/device/impl/server/grpc/grpcinputdeviceservice.h"
 #include "evrp/device/impl/server/grpc/grpcinputlisten.h"
@@ -29,6 +30,13 @@ class ServerImpl final : public IServer {
       : listen_address_(std::move(listen_address)), ioc_(ioc) {}
 
   int run() override {
+    std::uint16_t grpc_port = 0;
+    if (evrp::device::server::parseListenPort(listen_address_, &grpc_port)) {
+      evrp::device::server::startDiscoveryResponder(grpc_port);
+    } else {
+      logError("evrp-device: could not parse gRPC listen port from {}", listen_address_);
+    }
+
     evrp::session::SessionRegistry sessionRegistry(FLAGS_session_lease_ms);
     server::GrpcSessionService session_service(sessionRegistry);
     server::GrpcInputListenService listen_service(ioc_, sessionRegistry);

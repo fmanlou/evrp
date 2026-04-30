@@ -447,6 +447,7 @@ set_target_properties(
 add_library(
   device_client STATIC
   evrp/device/impl/client/client.cpp
+  evrp/device/impl/client/devicediscovery.cpp
   evrp/device/impl/client/remoteinputdeviceclient.cpp)
 target_include_directories(device_client PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(
@@ -457,7 +458,8 @@ target_link_libraries(
          evrp_device_proto
          sdk_session_client
          tofromproto
-         gRPC::grpc++)
+         gRPC::grpc++
+  PRIVATE gflags::gflags)
 set_target_properties(
   device_client
   PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
@@ -465,6 +467,7 @@ set_target_properties(
 add_library(
   evrp_device_grpc STATIC
   evrp/device/impl/server/server.cpp
+  evrp/device/impl/server/discoveryresponder.cpp
   evrp/device/impl/server/grpc/grpcsessionservice.cpp
   evrp/device/impl/server/grpc/grpcinputlisten.cpp
   evrp/device/impl/server/grpc/grpcinputdeviceservice.cpp

@@ -2,6 +2,8 @@
 
 #include <google/protobuf/empty.pb.h>
 
+#include <chrono>
+
 #include <grpc/grpc.h>
 #include <grpcpp/grpcpp.h>
 
@@ -38,6 +40,28 @@ bool sessionConnect(const std::shared_ptr<grpc::Channel>& channel,
   out->leaseTimeoutMs = 0;
   evrp::sdk::v1::SessionService::Stub stub(channel);
   grpc::ClientContext ctx;
+  google::protobuf::Empty req;
+  evrp::sdk::v1::ConnectResponse resp;
+  grpc::Status s = stub.Connect(&ctx, req, &resp);
+  if (!s.ok()) {
+    return false;
+  }
+  out->sessionId = resp.session_id();
+  out->leaseTimeoutMs = resp.lease_timeout_ms();
+  return !out->sessionId.empty();
+}
+
+bool sessionConnectWithDeadline(const std::shared_ptr<grpc::Channel>& channel,
+                                SessionInfo* out,
+                                std::chrono::milliseconds rpc_timeout) {
+  if (!out) {
+    return false;
+  }
+  out->sessionId.clear();
+  out->leaseTimeoutMs = 0;
+  evrp::sdk::v1::SessionService::Stub stub(channel);
+  grpc::ClientContext ctx;
+  ctx.set_deadline(std::chrono::system_clock::now() + rpc_timeout);
   google::protobuf::Empty req;
   evrp::sdk::v1::ConnectResponse resp;
   grpc::Status s = stub.Connect(&ctx, req, &resp);

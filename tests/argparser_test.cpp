@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "evrp/device/api/types.h"
+#include "evrp/device/impl/client/devicediscovery.h"
 #include "evrp/sdk/logger.h"
 
 namespace api = evrp::device::api;
@@ -16,6 +17,12 @@ static std::vector<char *> buildArgv(std::vector<std::string> *storage) {
     argv.push_back(const_cast<char *>((*storage)[i].c_str()));
   }
   return argv;
+}
+
+TEST(ArgParser, UseUdpDeviceDiscoveryWhenDeviceUnset) {
+  EXPECT_TRUE(evrp::device::api::useUdpDeviceDiscovery(""));
+  EXPECT_FALSE(evrp::device::api::useUdpDeviceDiscovery("auto"));
+  EXPECT_FALSE(evrp::device::api::useUdpDeviceDiscovery("127.0.0.1:50051"));
 }
 
 TEST(ArgParser, ParseKindAcceptsKnownKinds) {

@@ -1,28 +1,32 @@
 #include "argparser.h"
 
-#include "evrp/sdk/logger.h"
-
 #include <gflags/gflags.h>
 
 #include <iostream>
 #include <string>
 #include <vector>
 
-DEFINE_bool(record, false,
-            "Start recording. Remaining args: device kinds (touchpad, touchscreen, "
-            "mouse, keyboard). If none, record all four.");
+#include "evrp/sdk/logger.h"
+
+DEFINE_bool(
+    record, false,
+    "Start recording. Remaining args: device kinds (touchpad, touchscreen, "
+    "mouse, keyboard). If none, record all four.");
 DEFINE_string(playback, "",
               "Playback: read events or run Lua script (.lua) from this file.");
 DEFINE_string(output, "",
               "Recording: write events to this file (default: stdout).");
-DEFINE_string(log_level, "info",
-              "Log level: error|warn|info|debug|trace.");
-DEFINE_bool(wait_leading, true,
-            "Playback: execute [leading] wait (see --nowait_leading to disable).");
-DEFINE_bool(wait_trailing, true,
-            "Playback: execute [trailing] wait (see --nowait_trailing to disable).");
-DEFINE_string(device, "127.0.0.1:50051",
-              "evrp-device gRPC address (host:port; same default listen as evrp-device).");
+DEFINE_string(log_level, "info", "Log level: error|warn|info|debug|trace.");
+DEFINE_bool(
+    wait_leading, true,
+    "Playback: execute [leading] wait (see --nowait_leading to disable).");
+DEFINE_bool(
+    wait_trailing, true,
+    "Playback: execute [trailing] wait (see --nowait_trailing to disable).");
+DEFINE_string(
+    device, "",
+    "evrp-device gRPC host:port. If empty, use UDP broadcast discovery on "
+    "--discovery_port (default 53508). Same-machine targets are tried first.");
 
 namespace {
 
@@ -33,11 +37,11 @@ void resetArgFlags() {
   FLAGS_log_level = "info";
   FLAGS_wait_leading = true;
   FLAGS_wait_trailing = true;
-  FLAGS_device = "127.0.0.1:50051";
+  FLAGS_device = "";
 }
 
-void normalizeLegacyArgs(std::vector<std::string> *args) {
-  auto &a = *args;
+void normalizeLegacyArgs(std::vector<std::string>* args) {
+  auto& a = *args;
   for (size_t i = 1; i < a.size();) {
     if (a[i] == "-r") {
       a[i] = "--record";
@@ -67,31 +71,38 @@ void normalizeLegacyArgs(std::vector<std::string> *args) {
   }
 }
 
-} 
+}  // namespace
 
-void printUsage(const char *prog) {
+void printUsage(const char* prog) {
   std::cout
       << "Usage: " << prog
-      << " --record|-r [-o FILE|--output=FILE] [--log_level=LEVEL|--log-level=LEVEL] "
+      << " --record|-r [-o FILE|--output=FILE] "
+         "[--log_level=LEVEL|--log-level=LEVEL] "
          "[touchpad] [touchscreen] [mouse] [keyboard] ...\n"
       << "       " << prog
       << " --playback=FILE|-p FILE [--log_level=LEVEL|--log-level=LEVEL]\n"
-      << "  --record / -r: start recording. With no device kinds, record touchpad, "
+      << "  --record / -r: start recording. With no device kinds, record "
+         "touchpad, "
          "touchscreen, mouse, keyboard.\n"
-      << "  --playback=FILE / -p FILE: playback events or run Lua script (.lua). "
+      << "  --playback=FILE / -p FILE: playback events or run Lua script "
+         "(.lua). "
          "Non-event lines in event files are executed as Lua.\n"
-      << "  --output=FILE / -o FILE: write recording to FILE (default: stdout).\n"
+      << "  --output=FILE / -o FILE: write recording to FILE (default: "
+         "stdout).\n"
       << "  --log_level=LEVEL / --log-level=LEVEL: error|warn|info|debug|trace "
          "(default: info).\n"
-      << "  --wait_leading / --nowait_leading (or --wait-leading=yes|no): during "
+      << "  --wait_leading / --nowait_leading (or --wait-leading=yes|no): "
+         "during "
          "playback, execute [leading] wait (default: wait).\n"
-      << "  --wait_trailing / --nowait_trailing (or --wait-trailing=yes|no): during "
+      << "  --wait_trailing / --nowait_trailing (or --wait-trailing=yes|no): "
+         "during "
          "playback, execute [trailing] wait (default: wait).\n"
-      << "  --device=HOST:PORT: evrp-device server (default: 127.0.0.1:50051).\n"
+      << "  --device=HOST:PORT: evrp-device gRPC; omit for UDP LAN discovery "
+         "(--discovery_port).\n"
       << "  --help: show gflags help.\n";
 }
 
-bool parseKind(const std::string &s, evrp::device::api::DeviceKind *outKind) {
+bool parseKind(const std::string& s, evrp::device::api::DeviceKind* outKind) {
   evrp::device::api::DeviceKind k = evrp::device::api::deviceKindFromLabel(s);
   if (k != evrp::device::api::DeviceKind::kUnspecified) {
     *outKind = k;
@@ -100,11 +111,12 @@ bool parseKind(const std::string &s, evrp::device::api::DeviceKind *outKind) {
   return false;
 }
 
-void parseArgvInto(StringKeyStore& options, int argc, char *argv[]) {
+void parseArgvInto(StringKeyStore& options, int argc, char* argv[]) {
   resetArgFlags();
 
-  const std::string program =
-      (argc > 0 && argv[0] && argv[0][0]) ? std::string(argv[0]) : std::string("evrp");
+  const std::string program = (argc > 0 && argv[0] && argv[0][0])
+                                  ? std::string(argv[0])
+                                  : std::string("evrp");
 
   std::vector<std::string> owned;
   owned.reserve(static_cast<size_t>(argc));
@@ -112,15 +124,15 @@ void parseArgvInto(StringKeyStore& options, int argc, char *argv[]) {
     owned.emplace_back(argv[i] ? argv[i] : "");
   }
   normalizeLegacyArgs(&owned);
-  std::vector<char *> argv_ptrs;
+  std::vector<char*> argv_ptrs;
   argv_ptrs.reserve(static_cast<size_t>(argc) + 1);
-  for (auto &s : owned) {
+  for (auto& s : owned) {
     argv_ptrs.push_back(s.data());
   }
   argv_ptrs.push_back(nullptr);
 
   int argcMut = static_cast<int>(owned.size());
-  char **argvMut = argv_ptrs.data();
+  char** argvMut = argv_ptrs.data();
   google::ParseCommandLineFlags(&argcMut, &argvMut, true);
 
   bool recording = FLAGS_record;

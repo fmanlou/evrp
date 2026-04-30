@@ -3,6 +3,8 @@
 #include <memory>
 #include <string>
 
+#include <chrono>
+
 namespace grpc {
 class Channel;
 }
@@ -19,6 +21,9 @@ std::shared_ptr<grpc::Channel> makeGrpcClientChannel(
 
 bool sessionConnect(const std::shared_ptr<grpc::Channel>& channel,
                     SessionInfo* out);
+bool sessionConnectWithDeadline(const std::shared_ptr<grpc::Channel>& channel,
+                                SessionInfo* out,
+                                std::chrono::milliseconds rpc_timeout);
 bool sessionHeartbeat(const std::shared_ptr<grpc::Channel>& channel,
                       const std::string& sessionId);
 bool sessionDisconnect(const std::shared_ptr<grpc::Channel>& channel,
