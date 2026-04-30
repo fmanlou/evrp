@@ -8,7 +8,7 @@
 #include <cstdio>
 
 EnhancedFileSystem::EnhancedFileSystem()
-    : owned_(std::make_unique<PosixFileSystem>()), io_(owned_.get()) {}
+    : owned_(createFileSystem()), io_(owned_.get()) {}
 
 EnhancedFileSystem::EnhancedFileSystem(IFileSystem *io) : io_(io) {}
 

@@ -4,8 +4,7 @@
 #include <string>
 #include <string_view>
 
-#include "evrp/sdk/filesystem/ifilesystem.h"
-#include "evrp/sdk/filesystem/posixfilesystem.h"
+#include "evrp/sdk/filesystem/filesystem.h"
 
 class EnhancedFileSystem {
  public:
@@ -31,6 +30,6 @@ class EnhancedFileSystem {
   bool readInputAll(int fd, std::string *out);
 
  private:
-  std::unique_ptr<PosixFileSystem> owned_;
+  std::unique_ptr<IFileSystem> owned_;
   IFileSystem *io_{nullptr};
 };

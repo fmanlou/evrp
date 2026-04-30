@@ -1,6 +1,6 @@
 #pragma once
 
-#include "evrp/sdk/filesystem/ifilesystem.h"
+#include "evrp/sdk/filesystem/filesystem.h"
 
 class PosixFileSystem final : public IFileSystem {
  public:
