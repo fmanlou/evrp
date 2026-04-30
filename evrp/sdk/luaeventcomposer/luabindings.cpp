@@ -116,7 +116,8 @@ int luaMouseMoveToScreen(lua_State* L) {
 
 int luaMouseGetPosition(lua_State* L) {
   int x = 0, y = 0;
-  bool ok = gCursor && gCursor->getPosition(&x, &y);
+  ICursorPos* c = gMouse ? gMouse->cursorPos() : nullptr;
+  bool ok = c && c->getPosition(&x, &y);
   if (!ok) {
     lua_pushnil(L);
     return 1;
@@ -127,7 +128,8 @@ int luaMouseGetPosition(lua_State* L) {
 }
 
 int luaMouseIsCursorAvailable(lua_State* L) {
-  lua_pushboolean(L, gCursor && gCursor->isAvailable());
+  ICursorPos* c = gMouse ? gMouse->cursorPos() : nullptr;
+  lua_pushboolean(L, c && c->isAvailable());
   return 1;
 }
 
@@ -420,7 +422,7 @@ int runScriptWithWriter(const char* path, InputEventWriter* writer) {
 int runScript(const char* path) {
   std::unique_ptr<IEnhancedFileSystem> fs(
       createEnhancedFileSystem(createFileSystem()));
-  InputEventWriter writer(fs.get());
+  InputEventWriter writer(fs.get(), createCursorPos());
   return runScriptWithWriter(path, &writer);
 }
 
@@ -439,7 +441,7 @@ int playbackLuaFileIntoCollector(const char* path,
   }
   collector->clear();
   KeyboardEventWriter keyboard(collector);
-  MouseEventWriter mouse(collector, gCursor);
+  MouseEventWriter mouse(collector, createCursorPos());
   return runLuaWithBindings(&keyboard, &mouse, true, path, nullptr);
 }
 
@@ -450,7 +452,7 @@ int playbackLuaChunkIntoCollector(const char* chunk,
   }
   collector->clear();
   KeyboardEventWriter keyboard(collector);
-  MouseEventWriter mouse(collector, gCursor);
+  MouseEventWriter mouse(collector, createCursorPos());
   return runLuaWithBindings(&keyboard, &mouse, false, nullptr, chunk);
 }
 

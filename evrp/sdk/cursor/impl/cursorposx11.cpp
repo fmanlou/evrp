@@ -1,10 +1,10 @@
-#include "evrp/sdk/cursor/cursorposx11.h"
+#include "evrp/sdk/cursor/impl/cursorposx11.h"
 
 #include <X11/Xlib.h>
 
 namespace {
 
-class CursorPosBackendX11 : public CursorPosBackend {
+class CursorPosBackendX11 : public ICursorPos {
  public:
   bool getPosition(int *x, int *y) override {
     if (!x || !y) return false;
@@ -37,7 +37,7 @@ class CursorPosBackendX11 : public CursorPosBackend {
 
 }
 
-CursorPosBackend *createCursorPosBackendX11() {
+ICursorPos *createCursorPosBackendX11() {
   static CursorPosBackendX11 instance;
   return &instance;
 }

@@ -8,10 +8,11 @@
 #include "evrp/sdk/mouse/mouseeventwriter.h"
 
 class IEnhancedFileSystem;
+class ICursorPos;
 
 class InputEventWriter : public IRawEventWriter {
  public:
-  explicit InputEventWriter(IEnhancedFileSystem *fs);
+  InputEventWriter(IEnhancedFileSystem *fs, ICursorPos *cursor = nullptr);
   ~InputEventWriter();
 
   bool write(evrp::device::api::DeviceKind device, unsigned short type,

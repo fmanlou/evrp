@@ -103,10 +103,10 @@ target_link_libraries(evdev PRIVATE filesystem)
 
 option(EVRP_USE_X11_CURSOR "Enable X11 cursor position backend" ON)
 
-set(cursorpos_sources evrp/sdk/cursor/cursorpos.cpp)
+set(cursorpos_sources evrp/sdk/cursor/impl/cursorpos.cpp)
 if(EVRP_USE_X11_CURSOR)
   find_package(X11 REQUIRED)
-  list(APPEND cursorpos_sources evrp/sdk/cursor/cursorposx11.cpp)
+  list(APPEND cursorpos_sources evrp/sdk/cursor/impl/cursorposx11.cpp)
 endif()
 
 add_library(cursorpos STATIC ${cursorpos_sources})
@@ -335,7 +335,7 @@ set_target_properties(
   countingsemaphore
   PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
 
-add_library(sdk_fmt STATIC evrp/sdk/fmt/grpcstatuscode.cpp)
+add_library(sdk_fmt STATIC evrp/sdk/fmt/impl/grpcstatuscode.cpp)
 target_include_directories(sdk_fmt PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(sdk_fmt PUBLIC gRPC::grpc++ fmt::fmt)
 set_target_properties(

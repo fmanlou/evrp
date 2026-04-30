@@ -2,7 +2,6 @@
 #include "evrp/client/playback.h"
 #include "evrp/client/record.h"
 #include "evrp/device/api/client.h"
-#include "evrp/sdk/cursor/cursorpos.h"
 #include "evrp/sdk/ioc.h"
 #include "evrp/sdk/logger.h"
 
@@ -11,9 +10,6 @@
 int main(int argc, char *argv[]) {
   logging::LogService logSvc("evrp");
   logService = &logSvc;
-
-  CursorPos cursor;
-  gCursor = &cursor;
 
   RunOptions options = parseOptions(argc, argv);
   logService->setLevel(options.logLevel);

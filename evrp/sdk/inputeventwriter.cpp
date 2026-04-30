@@ -8,8 +8,6 @@
 
 #include <cstdio>
 
-#include "evrp/sdk/cursor/cursorpos.h"
-#include "evrp/sdk/evdev.h"
 #include "evrp/sdk/eventformat.h"
 #include "evrp/sdk/filesystem/enhancedfilesystem.h"
 #include "evrp/sdk/inputdevice.h"
@@ -19,8 +17,8 @@
 
 namespace api = evrp::device::api;
 
-InputEventWriter::InputEventWriter(IEnhancedFileSystem *fs)
-    : fs_(fs), keyboardWriter_(this), mouseWriter_(this, gCursor) {}
+InputEventWriter::InputEventWriter(IEnhancedFileSystem *fs, ICursorPos *cursor)
+    : fs_(fs), keyboardWriter_(this), mouseWriter_(this, cursor) {}
 
 InputEventWriter::~InputEventWriter() {
   for (const auto &p : kindToFd_) {

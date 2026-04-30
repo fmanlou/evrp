@@ -7,14 +7,18 @@ namespace evrp::device::server {
 
 class LocalCursorPosition final : public api::ICursorPosition {
  public:
-  LocalCursorPosition() = default;
+  LocalCursorPosition();
+  ~LocalCursorPosition() override = default;
+
+  LocalCursorPosition(const LocalCursorPosition &) = delete;
+  LocalCursorPosition &operator=(const LocalCursorPosition &) = delete;
 
   bool getCursorPositionAvailability() override;
 
-  bool readCursorPosition(int* outX, int* outY) override;
+  bool readCursorPosition(int *outX, int *outY) override;
 
  private:
-  CursorPos cursor_;
+  ICursorPos *cursor_{nullptr};
 };
 
 }

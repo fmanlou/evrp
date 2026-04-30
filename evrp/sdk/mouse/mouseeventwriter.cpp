@@ -7,7 +7,8 @@
 #include "evrp/device/api/types.h"
 #include "evrp/sdk/iraweventwriter.h"
 
-MouseEventWriter::MouseEventWriter(IRawEventWriter *writer, CursorPos *cursor)
+MouseEventWriter::MouseEventWriter(IRawEventWriter *writer,
+                                   ICursorPos *cursor)
     : writer_(writer), cursor_(cursor) {}
 
 bool MouseEventWriter::move(int dx, int dy) {

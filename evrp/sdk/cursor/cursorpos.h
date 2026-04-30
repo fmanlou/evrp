@@ -1,25 +1,11 @@
 #pragma once
 
-class CursorPosBackend;
-
-class CursorPos {
+class ICursorPos {
  public:
-  CursorPos() = default;
+  virtual ~ICursorPos() = default;
 
-  bool getPosition(int *x, int *y);
-
-  bool isAvailable() const;
-
- private:
-  void ensureInitialized() const;
-
-  mutable bool initialized_ = false;
-  mutable bool available_ = false;
-  mutable CursorPosBackend *backend_ = nullptr;
+  virtual bool getPosition(int *x, int *y) = 0;
+  virtual bool isAvailable() = 0;
 };
 
-extern CursorPos *gCursor;
-
-inline bool getCursorPosition(int *x, int *y) {
-  return gCursor && gCursor->getPosition(x, y);
-}
+ICursorPos *createCursorPos();
