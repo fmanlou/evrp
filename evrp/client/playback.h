@@ -1,7 +1,5 @@
 #pragma once
 
-#include <string>
-
 #include "argparser.h"
 #include "evrp/sdk/ioc.h"
 
@@ -13,15 +11,15 @@ class IPlayback;
 
 class Playback {
  public:
-  Playback(const RunOptions &options, evrp::device::api::IPlayback *playback,
-           IEnhancedFileSystem *fs);
+  Playback(const std::map<std::string, std::any>& parsed,
+           evrp::device::api::IPlayback *playback, IEnhancedFileSystem *fs);
 
-  Playback(const RunOptions &options, const evrp::Ioc &ioc);
+  Playback(const std::map<std::string, std::any>& parsed, const evrp::Ioc &ioc);
 
   int run();
 
  private:
-  RunOptions options_;
+  std::map<std::string, std::any> parsed_;
   evrp::device::api::IPlayback *remote_{nullptr};
   IEnhancedFileSystem *fs_{nullptr};
 };

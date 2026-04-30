@@ -201,19 +201,28 @@ target_include_directories(luaeventcomposer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
 target_link_libraries(luaeventcomposer PRIVATE eventformat luabindings
                                                playbackeventcollector)
 
+add_library(runner STATIC evrp/client/runner.cpp)
+target_include_directories(runner PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+                                         ${EVRP_CLIENT_DIR}
+                                         ${EVRP_SDK_DIR})
+target_link_libraries(
+  runner
+  PUBLIC argparser
+         playback
+         record
+         filesystem
+         logger
+         device_client)
+
 add_executable(evrp evrp/client/main.cpp)
 target_link_libraries(
   evrp
-  PRIVATE inputdevice
+  PRIVATE runner
+          inputdevice
           evdev
-          filesystem
-          argparser
-          playback
-          record
           luabindings
           logger
-          cursorpos
-          device_client)
+          cursorpos)
 
 add_executable(evrp_tests tests/inputdevice_test.cpp tests/argparser_test.cpp)
 target_link_libraries(evrp_tests PRIVATE inputdevice argparser logger

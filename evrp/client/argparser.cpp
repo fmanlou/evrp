@@ -67,6 +67,46 @@ void normalizeLegacyArgs(std::vector<std::string> *args) {
 
 } 
 
+namespace parsed_options {
+
+std::string stringOr(const std::map<std::string, std::any>& m,
+                     const std::string& key, std::string defaultValue) {
+  auto it = m.find(key);
+  if (it == m.end()) return defaultValue;
+  if (auto* p = std::any_cast<std::string>(&it->second)) return *p;
+  return defaultValue;
+}
+
+bool boolOr(const std::map<std::string, std::any>& m, const std::string& key,
+            bool defaultValue) {
+  auto it = m.find(key);
+  if (it == m.end()) return defaultValue;
+  if (auto* p = std::any_cast<bool>(&it->second)) return *p;
+  return defaultValue;
+}
+
+logging::LogLevel logLevelOr(const std::map<std::string, std::any>& m,
+                             const std::string& key, logging::LogLevel defaultValue) {
+  auto it = m.find(key);
+  if (it == m.end()) return defaultValue;
+  if (auto* p = std::any_cast<logging::LogLevel>(&it->second)) return *p;
+  return defaultValue;
+}
+
+std::vector<evrp::device::api::DeviceKind> kindsOr(
+    const std::map<std::string, std::any>& m, const std::string& key,
+    std::vector<evrp::device::api::DeviceKind> defaultValue) {
+  auto it = m.find(key);
+  if (it == m.end()) return defaultValue;
+  if (auto* p =
+          std::any_cast<std::vector<evrp::device::api::DeviceKind>>(&it->second)) {
+    return *p;
+  }
+  return defaultValue;
+}
+
+}  // namespace parsed_options
+
 void printUsage(const char *prog) {
   std::cout
       << "Usage: " << prog
@@ -145,5 +185,16 @@ RunOptions parseOptions(int argc, char *argv[]) {
                        evrp::device::api::DeviceKind::kMouse,
                        evrp::device::api::DeviceKind::kKeyboard};
   }
+
+  options.parsed["recording"] = options.recording;
+  options.parsed["playback"] = options.playback;
+  options.parsed["logLevel"] = options.logLevel;
+  options.parsed["playbackPath"] = options.playbackPath;
+  options.parsed["outputPath"] = options.outputPath;
+  options.parsed["device"] = options.device;
+  options.parsed["kinds"] = options.kinds;
+  options.parsed["executeWaitBeforeFirst"] = options.executeWaitBeforeFirst;
+  options.parsed["executeWaitAfterLast"] = options.executeWaitAfterLast;
+
   return options;
 }

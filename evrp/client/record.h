@@ -1,7 +1,5 @@
 #pragma once
 
-#include <string>
-
 #include "argparser.h"
 #include "evrp/sdk/ioc.h"
 
@@ -13,15 +11,15 @@ class IInputListener;
 
 class Record {
  public:
-  Record(const RunOptions &options, evrp::device::api::IInputListener *listener,
-         IEnhancedFileSystem *fs);
+  Record(const std::map<std::string, std::any>& parsed,
+         evrp::device::api::IInputListener *listener, IEnhancedFileSystem *fs);
 
-  Record(const RunOptions &options, const evrp::Ioc &ioc);
+  Record(const std::map<std::string, std::any>& parsed, const evrp::Ioc &ioc);
 
   int run();
 
  private:
-  RunOptions options_;
+  std::map<std::string, std::any> parsed_;
   evrp::device::api::IInputListener *listener_{nullptr};
   IEnhancedFileSystem *fs_{nullptr};
 };

@@ -16,17 +16,17 @@
 #include "evrp/sdk/filesystem/enhancedfilesystem.h"
 #include "evrp/sdk/logger.h"
 
-Record::Record(const RunOptions &options,
+Record::Record(const std::map<std::string, std::any>& parsed,
                evrp::device::api::IInputListener *listener,
                IEnhancedFileSystem *fs)
-    : options_(options), listener_(listener), fs_(fs) {}
+    : parsed_(parsed), listener_(listener), fs_(fs) {}
 
-Record::Record(const RunOptions &options, const evrp::Ioc &ioc)
-    : Record(options, ioc.get<evrp::device::api::IInputListener>(),
+Record::Record(const std::map<std::string, std::any>& parsed, const evrp::Ioc &ioc)
+    : Record(parsed, ioc.get<evrp::device::api::IInputListener>(),
              ioc.get<IEnhancedFileSystem>()) {}
 
 int Record::run() {
-  logService->setLevel(options_.logLevel);
+  logService->setLevel(parsed_options::logLevelOr(parsed_, "logLevel"));
   if (!listener_) {
     logError("Record has no IInputListener.");
     return 1;
@@ -35,11 +35,13 @@ int Record::run() {
     logError("Record has no IEnhancedFileSystem.");
     return 1;
   }
-  if (!listener_->startListening(options_.kinds)) {
+  const std::vector<evrp::device::api::DeviceKind> kinds =
+      parsed_options::kindsOr(parsed_, "kinds");
+  if (!listener_->startListening(kinds)) {
     logError(
         "startListening failed. Is evrp-device running on {} with input "
         "devices available?",
-        options_.device);
+        parsed_options::stringOr(parsed_, "device"));
     return 1;
   }
   struct StopListenGuard {
@@ -51,15 +53,14 @@ int Record::run() {
     }
   } stopGuard{listener_};
 
-  int outFd = fs_->openFd(options_.outputPath,
-                         O_WRONLY | O_CREAT | O_TRUNC, 0644);
+  const std::string outputPath = parsed_options::stringOr(parsed_, "outputPath");
+  int outFd = fs_->openFd(outputPath, O_WRONLY | O_CREAT | O_TRUNC, 0644);
   if (outFd < 0) {
     int err = errno;
-    logError("Failed to open output file {}: {}", options_.outputPath,
-             strerror(err));
+    logError("Failed to open output file {}: {}", outputPath, strerror(err));
     return 1;
   }
-  const bool ownOutputFd = !options_.outputPath.empty();
+  const bool ownOutputFd = !outputPath.empty();
   struct OutputFdGuard {
     IEnhancedFileSystem *fs;
     int fd;
@@ -122,7 +123,7 @@ int Record::run() {
   };
   constexpr int kWaitMs = 500;
   logInfo("Recording from evrp-device at {} (Ctrl+C to stop)",
-          options_.device);
+          parsed_options::stringOr(parsed_, "device"));
 
   while (!sigint.stopRequested() && writeOk) {
     if (!listener_->waitForInputEvent(kWaitMs)) {

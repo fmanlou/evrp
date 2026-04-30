@@ -14,13 +14,14 @@
 #include "evrp/sdk/evdev.h"
 #include "evrp/sdk/logger.h"
 
-Playback::Playback(const RunOptions &options,
+Playback::Playback(const std::map<std::string, std::any>& parsed,
                    evrp::device::api::IPlayback *playback,
                    IEnhancedFileSystem *fs)
-    : options_(options), remote_(playback), fs_(fs) {}
+    : parsed_(parsed), remote_(playback), fs_(fs) {}
 
-Playback::Playback(const RunOptions &options, const evrp::Ioc &ioc)
-    : Playback(options, ioc.get<evrp::device::api::IPlayback>(),
+Playback::Playback(const std::map<std::string, std::any>& parsed,
+                   const evrp::Ioc &ioc)
+    : Playback(parsed, ioc.get<evrp::device::api::IPlayback>(),
                ioc.get<IEnhancedFileSystem>()) {}
 
 namespace {
@@ -47,12 +48,14 @@ bool deviceUploadAndPlay(evrp::device::api::IPlayback *remote,
 }  // namespace
 
 int Playback::run() {
-  if (options_.playbackPath.empty()) {
+  const std::string playbackPath =
+      parsed_options::stringOr(parsed_, "playbackPath");
+  if (playbackPath.empty()) {
     logError("Playback mode requires a file path after -p.");
     return 1;
   }
 
-  const std::string &path = options_.playbackPath;
+  const std::string &path = playbackPath;
 
   if (!remote_) {
     logError("Playback has no IPlayback.");
@@ -63,7 +66,7 @@ int Playback::run() {
     return 1;
   }
 
-  logService->setLevel(options_.logLevel);
+  logService->setLevel(parsed_options::logLevelOr(parsed_, "logLevel"));
 
   int inFd = fs_->openFd(path, O_RDONLY, 0);
   if (inFd < 0) {
@@ -101,7 +104,7 @@ int Playback::run() {
   }
 
   logInfo("Replay text → events, playing via evrp-device at {} (Ctrl+C tries to stop)...",
-          options_.device);
+          parsed_options::stringOr(parsed_, "device"));
 
   SigintGuard sigint;
   if (sigint.stopRequested()) {
