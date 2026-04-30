@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <string>
 
 #include "argparser.h"
@@ -14,5 +15,5 @@ class Playback {
  private:
   RunOptions options_;
   const evrp::Ioc &ioc_;
-  EnhancedFileSystem fs_;
+  std::unique_ptr<IEnhancedFileSystem> fs_;
 };

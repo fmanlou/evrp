@@ -94,9 +94,9 @@ target_include_directories(evdev PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
                                         ${EVRP_SDK_DIR})
 
 add_library(filesystem STATIC
-            evrp/sdk/filesystem/enhancedfilesystem.cpp
-            evrp/sdk/filesystem/filesystem.cpp
-            evrp/sdk/filesystem/posixfilesystem.cpp)
+            evrp/sdk/filesystem/impl/enhancedfilesystem.cpp
+            evrp/sdk/filesystem/impl/filesystem.cpp
+            evrp/sdk/filesystem/impl/posixfilesystem.cpp)
 target_include_directories(filesystem PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
                                              ${EVRP_SDK_DIR})
 target_link_libraries(evdev PRIVATE filesystem)

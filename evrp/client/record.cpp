@@ -17,7 +17,7 @@
 #include "evrp/sdk/logger.h"
 
 Record::Record(const RunOptions &options, const evrp::Ioc &ioc)
-    : options_(options), ioc_(ioc) {}
+    : options_(options), ioc_(ioc), fs_(createEnhancedFileSystem()) {}
 
 int Record::run() {
   logService->setLevel(options_.logLevel);
@@ -43,7 +43,7 @@ int Record::run() {
     }
   } stopGuard{listener};
 
-  int outFd = fs_.openFd(options_.outputPath,
+  int outFd = fs_->openFd(options_.outputPath,
                          O_WRONLY | O_CREAT | O_TRUNC, 0644);
   if (outFd < 0) {
     int err = errno;
@@ -53,7 +53,7 @@ int Record::run() {
   }
   const bool ownOutputFd = !options_.outputPath.empty();
   struct OutputFdGuard {
-    EnhancedFileSystem *fs;
+    IEnhancedFileSystem *fs;
     int fd;
     bool own;
     ~OutputFdGuard() {
@@ -61,7 +61,7 @@ int Record::run() {
         fs->closeFd(fd);
       }
     }
-  } outputFdGuard{&fs_, outFd, ownOutputFd};
+  } outputFdGuard{fs_.get(), outFd, ownOutputFd};
 
   struct timeval sessionStart = {};
   gettimeofday(&sessionStart, nullptr);
@@ -74,7 +74,7 @@ int Record::run() {
     if (!writeOk) {
       return;
     }
-    if (!fs_.writeOutput(outFd, line) || !fs_.writeOutput(outFd, "\n")) {
+    if (!fs_->writeOutput(outFd, line) || !fs_->writeOutput(outFd, "\n")) {
       logError("Write to recording output failed.");
       writeOk = false;
       return;
@@ -143,7 +143,7 @@ int Record::run() {
   if (!writeOk) {
     return 1;
   }
-  if (!fs_.flushFd(outFd)) {
+  if (!fs_->flushFd(outFd)) {
     logError("Flush recording output failed.");
     return 1;
   }

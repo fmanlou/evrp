@@ -417,8 +417,8 @@ int runScriptWithWriter(const char* path, InputEventWriter* writer) {
 }
 
 int runScript(const char* path) {
-  EnhancedFileSystem fs;
-  InputEventWriter writer(&fs);
+  auto fs = createEnhancedFileSystem();
+  InputEventWriter writer(fs.get());
   return runScriptWithWriter(path, &writer);
 }
 

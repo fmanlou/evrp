@@ -1,4 +1,4 @@
-#include "evrp/sdk/filesystem/enhancedfilesystem.h"
+#include "evrp/sdk/filesystem/impl/enhancedfilesystem.h"
 
 #include <fcntl.h>
 #include <poll.h>
@@ -150,4 +150,12 @@ bool EnhancedFileSystem::readInputAll(int fd, std::string *out) {
     out->append(buf, static_cast<size_t>(n));
   }
   return true;
+}
+
+std::unique_ptr<IEnhancedFileSystem> createEnhancedFileSystem() {
+  return std::make_unique<EnhancedFileSystem>();
+}
+
+std::unique_ptr<IEnhancedFileSystem> createEnhancedFileSystem(IFileSystem *io) {
+  return std::make_unique<EnhancedFileSystem>(io);
 }

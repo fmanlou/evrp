@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+#include <memory>
+
 #include "evrp/device/api/inputlistener.h"
 #include "evrp/sdk/filesystem/enhancedfilesystem.h"
 
@@ -42,7 +44,7 @@ class LocalInputListener final : public api::IInputListener {
   void closeDevices();
   std::string listenDevicesSummary() const;
 
-  EnhancedFileSystem fs_;
+  std::unique_ptr<IEnhancedFileSystem> fs_{createEnhancedFileSystem()};
   std::mutex mu_;
   std::atomic<bool> listeningActive_{false};
   std::atomic<bool> disposed_{false};

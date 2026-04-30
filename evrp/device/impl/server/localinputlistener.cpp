@@ -61,7 +61,7 @@ void LocalInputListener::closeDevices() {
   }
   for (auto& d : devices_) {
     if (d.fd >= 0) {
-      fs_.closeFd(d.fd);
+      fs_->closeFd(d.fd);
     }
     d.fd = -1;
   }
@@ -110,7 +110,7 @@ bool LocalInputListener::startListening(
             path);
         continue;
       }
-      int fd = fs_.openFd(path, O_RDONLY | O_NONBLOCK);
+      int fd = fs_->openFd(path, O_RDONLY | O_NONBLOCK, 0);
       if (fd < 0) {
         logWarn(
             "LocalInputListener: kind {} path {} open(O_RDONLY) failed: {}",
@@ -211,7 +211,7 @@ bool LocalInputListener::waitForInputEvent(int timeoutMs) {
     fds[i] = devices_[i].fd;
   }
   bool ready[32]{};
-  int ret = fs_.pollFds(fds, n_poll, timeoutMs, ready);
+  int ret = fs_->pollFds(fds, n_poll, timeoutMs, ready);
   if (!listeningActive_ || disposed_) {
     return false;
   }

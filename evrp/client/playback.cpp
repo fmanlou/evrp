@@ -14,7 +14,7 @@
 #include "evrp/sdk/logger.h"
 
 Playback::Playback(const RunOptions &options, const evrp::Ioc &ioc)
-    : options_(options), ioc_(ioc) {}
+    : options_(options), ioc_(ioc), fs_(createEnhancedFileSystem()) {}
 
 namespace {
 
@@ -56,24 +56,24 @@ int Playback::run() {
 
   logService->setLevel(options_.logLevel);
 
-  int inFd = fs_.openFd(path, O_RDONLY);
+  int inFd = fs_->openFd(path, O_RDONLY, 0);
   if (inFd < 0) {
     int err = errno;
     logError("Failed to open input file {}: {}", path, strerror(err));
     return 1;
   }
   struct InputFdGuard {
-    EnhancedFileSystem *fs;
+    IEnhancedFileSystem *fs;
     int fd;
     ~InputFdGuard() {
       if (fd >= 0) {
         fs->closeFd(fd);
       }
     }
-  } inputFdGuard{&fs_, inFd};
+  } inputFdGuard{fs_.get(), inFd};
 
   std::string content;
-  if (!fs_.readInputAll(inFd, &content)) {
+  if (!fs_->readInputAll(inFd, &content)) {
     logError("Failed to read replay file.");
     return 1;
   }

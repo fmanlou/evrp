@@ -6,30 +6,28 @@
 
 #include "evrp/sdk/filesystem/filesystem.h"
 
-class EnhancedFileSystem {
+class IEnhancedFileSystem {
  public:
-  EnhancedFileSystem();
-  explicit EnhancedFileSystem(IFileSystem *io);
+  virtual ~IEnhancedFileSystem() = default;
 
-  ~EnhancedFileSystem() = default;
+  IEnhancedFileSystem() = default;
+  IEnhancedFileSystem(const IEnhancedFileSystem &) = delete;
+  IEnhancedFileSystem &operator=(const IEnhancedFileSystem &) = delete;
 
-  EnhancedFileSystem(const EnhancedFileSystem &) = delete;
-  EnhancedFileSystem &operator=(const EnhancedFileSystem &) = delete;
-
-  int openFd(const std::string &path, int flags, mode_t mode = 0644) const;
-
-  void closeFd(int fd) const;
-  long readFd(int fd, void *buffer, unsigned long size) const;
-  long writeFd(int fd, const void *buffer, unsigned long size) const;
-  int pollFds(int *fds, int nfds, int timeoutMs, bool *ready) const;
-
-  bool writeOutput(int fd, const void *data, size_t size);
-  bool writeOutput(int fd, std::string_view data);
-  bool flushFd(int fd);
-
-  bool readInputAll(int fd, std::string *out);
-
- private:
-  std::unique_ptr<IFileSystem> owned_;
-  IFileSystem *io_{nullptr};
+  virtual int openFd(const std::string &path, int flags,
+                     mode_t mode) const = 0;
+  virtual void closeFd(int fd) const = 0;
+  virtual long readFd(int fd, void *buffer, unsigned long size) const = 0;
+  virtual long writeFd(int fd, const void *buffer,
+                       unsigned long size) const = 0;
+  virtual int pollFds(int *fds, int nfds, int timeoutMs,
+                      bool *ready) const = 0;
+  virtual bool writeOutput(int fd, const void *data, size_t size) = 0;
+  virtual bool writeOutput(int fd, std::string_view data) = 0;
+  virtual bool flushFd(int fd) = 0;
+  virtual bool readInputAll(int fd, std::string *out) = 0;
 };
+
+std::unique_ptr<IEnhancedFileSystem> createEnhancedFileSystem();
+
+std::unique_ptr<IEnhancedFileSystem> createEnhancedFileSystem(IFileSystem *io);

@@ -18,11 +18,11 @@
 #define TEST_BIT(bit, array) ((array[(bit) / BITS_PER_LONG] & BIT(bit)) != 0)
 
 bool openAndGetCapabilities(const char *path, Capabilities *caps) {
-  EnhancedFileSystem fs;
-  int fd = fs.openFd(std::string(path), O_RDONLY | O_NONBLOCK);
+  auto fs = createEnhancedFileSystem();
+  int fd = fs->openFd(std::string(path), O_RDONLY | O_NONBLOCK, 0);
   if (fd < 0) return false;
   bool ok = getCapabilities(fd, caps);
-  fs.closeFd(fd);
+  fs->closeFd(fd);
   return ok;
 }
 
@@ -67,10 +67,10 @@ bool getCapabilities(int fd, Capabilities *caps) {
 
 int readEvents(int fd, Event *events, int max_count) {
   if (fd < 0 || !events || max_count <= 0) return -1;
-  EnhancedFileSystem fs;
+  auto fs = createEnhancedFileSystem();
 
   struct input_event raw[64];
-  long n = fs.readFd(fd, raw, sizeof(raw));
+  long n = fs->readFd(fd, raw, sizeof(raw));
   if (n <= 0) return static_cast<int>(n);
   if (n % sizeof(struct input_event) != 0) return -1;
 

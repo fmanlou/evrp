@@ -41,8 +41,8 @@ bool LocalPlayback::playback(
   stopRequested_ = false;
   currentEventIndex_ = -1;
 
-  EnhancedFileSystem fs;
-  InputEventWriter writer(&fs);
+  auto fs = createEnhancedFileSystem();
+  InputEventWriter writer(fs.get());
 
   bool first = true;
   int64_t prev_us = 0;

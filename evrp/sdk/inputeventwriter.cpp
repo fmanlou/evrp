@@ -19,7 +19,7 @@
 
 namespace api = evrp::device::api;
 
-InputEventWriter::InputEventWriter(EnhancedFileSystem *fs)
+InputEventWriter::InputEventWriter(IEnhancedFileSystem *fs)
     : fs_(fs), keyboardWriter_(this), mouseWriter_(this, gCursor) {}
 
 InputEventWriter::~InputEventWriter() {
@@ -41,7 +41,7 @@ int InputEventWriter::getFd(api::DeviceKind device) {
     return -1;
   }
   for (const std::string& devPath : paths) {
-    int fd = fs_->openFd(devPath, O_RDWR);
+    int fd = fs_->openFd(devPath, O_RDWR, 0);
     if (fd >= 0) {
       kindToFd_[device] = fd;
       logInfo("Playing back {} to {}", api::deviceKindLabel(device), devPath);

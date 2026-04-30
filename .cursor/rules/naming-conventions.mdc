@@ -20,7 +20,7 @@ alwaysApply: true
 ```cpp
 // Good
 int readEvents();
-int openFd(const std::string& path, int flags, mode_t mode = 0644);
+int openFd(const std::string& path, int flags, mode_t mode);
 void registerWith(Ioc& ioc);
 ```
 
