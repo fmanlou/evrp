@@ -14,9 +14,7 @@
 #include "evrp/sdk/devicediscoveryprotocol.h"
 #include "evrp/sdk/logger.h"
 
-DEFINE_int32(
-    discovery_port, evrp::sdk::kDeviceDiscoveryUdpPort,
-    "UDP port for LAN discovery (client uses empty --device; match --discovery_port).");
+DECLARE_int32(discovery_port);
 
 namespace evrp::device::server {
 

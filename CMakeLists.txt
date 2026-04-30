@@ -73,121 +73,50 @@ add_library(standalone_asio INTERFACE)
 add_library(asio::asio ALIAS standalone_asio)
 target_link_libraries(standalone_asio INTERFACE asio_separate)
 
+# gRPC before evrp_device / evrp_sdk (sdk_fmt); do not find_package(Protobuf) first.
+find_package(gRPC CONFIG REQUIRED)
+find_package(fmt CONFIG REQUIRED PATHS "${EVRP_LIBRARY_DIR}/fmt"
+             NO_DEFAULT_PATH)
+
 enable_testing()
 
 set(EVRP_SDK_DIR "${EVRP_ROOT}/evrp/sdk")
 set(EVRP_CLIENT_DIR "${EVRP_ROOT}/evrp/client")
 
-# --- client / sdk static libs ---
-add_library(setting STATIC evrp/sdk/setting/memorysetting.cpp)
-target_include_directories(setting PUBLIC "${EVRP_ROOT}" ${EVRP_SDK_DIR})
-
-add_library(evdev STATIC evrp/sdk/evdev.cpp)
-target_include_directories(evdev PUBLIC "${EVRP_ROOT}" ${EVRP_SDK_DIR})
-
-add_library(filesystem STATIC
-  evrp/sdk/filesystem/impl/enhancedfilesystem.cpp
-  evrp/sdk/filesystem/impl/filesystem.cpp
-  evrp/sdk/filesystem/impl/posixfilesystem.cpp)
-target_include_directories(filesystem PUBLIC "${EVRP_ROOT}" ${EVRP_SDK_DIR})
-target_link_libraries(evdev PRIVATE filesystem)
-
 option(EVRP_USE_X11_CURSOR "Enable X11 cursor position backend" ON)
-set(cursorpos_sources evrp/sdk/cursor/impl/cursorpos.cpp)
+set(EVRP_SDK_CURSOR_SRCS evrp/sdk/cursor/impl/cursorpos.cpp)
 if(EVRP_USE_X11_CURSOR)
   find_package(X11 REQUIRED)
-  list(APPEND cursorpos_sources evrp/sdk/cursor/impl/cursorposx11.cpp)
+  list(APPEND EVRP_SDK_CURSOR_SRCS evrp/sdk/cursor/impl/cursorposx11.cpp)
 endif()
-add_library(cursorpos STATIC ${cursorpos_sources})
-target_include_directories(cursorpos PUBLIC "${EVRP_ROOT}" ${EVRP_SDK_DIR})
-if(EVRP_USE_X11_CURSOR)
-  target_compile_definitions(cursorpos PUBLIC EVRP_USE_X11_CURSOR)
-  target_link_libraries(cursorpos PUBLIC X11::X11)
-endif()
-
-add_library(argparser STATIC evrp/client/argparser.cpp)
-target_include_directories(argparser PUBLIC "${EVRP_ROOT}" ${EVRP_CLIENT_DIR}
-                                            ${EVRP_SDK_DIR})
-target_link_libraries(argparser PUBLIC setting PRIVATE logger gflags::gflags)
-
-add_library(playbackeventcollector STATIC evrp/sdk/playbackeventcollector.cpp)
-target_include_directories(playbackeventcollector PUBLIC "${EVRP_ROOT}"
-                                                         ${EVRP_SDK_DIR})
-target_link_libraries(playbackeventcollector PRIVATE logger)
 
 add_library(
-  inputeventwriter STATIC
+  evrp_sdk STATIC
+  evrp/sdk/setting/memorysetting.cpp
+  evrp/sdk/evdev.cpp
+  evrp/sdk/filesystem/impl/enhancedfilesystem.cpp
+  evrp/sdk/filesystem/impl/filesystem.cpp
+  evrp/sdk/filesystem/impl/posixfilesystem.cpp
+  ${EVRP_SDK_CURSOR_SRCS}
+  evrp/sdk/playbackeventcollector.cpp
   evrp/sdk/inputeventwriter.cpp
   evrp/sdk/keyboard/keyboardeventwriter.cpp
-  evrp/sdk/mouse/mouseeventwriter.cpp)
-target_include_directories(inputeventwriter PUBLIC "${EVRP_ROOT}" ${EVRP_SDK_DIR})
-target_link_libraries(
-  inputeventwriter PRIVATE evdev eventformat filesystem inputdevice logger
-                           cursorpos)
-
-add_library(eventformat STATIC evrp/sdk/eventformat.cpp)
-target_include_directories(eventformat PUBLIC "${EVRP_ROOT}" ${EVRP_SDK_DIR})
-target_link_libraries(eventformat PRIVATE evdev inputdevice)
-
-add_library(
-  inputdevice STATIC
+  evrp/sdk/mouse/mouseeventwriter.cpp
+  evrp/sdk/eventformat.cpp
   evrp/sdk/inputdevice.cpp
   evrp/sdk/keyboard/keyboarddevice.cpp
-  evrp/sdk/touchdevice.cpp)
-target_include_directories(inputdevice PUBLIC "${EVRP_ROOT}" ${EVRP_SDK_DIR})
-target_link_libraries(inputdevice PUBLIC evdev filesystem)
-
-add_library(record STATIC evrp/client/record.cpp)
-target_include_directories(record PUBLIC "${EVRP_ROOT}" ${EVRP_CLIENT_DIR}
-                                         ${EVRP_SDK_DIR})
-target_link_libraries(record PRIVATE evdev eventformat filesystem logger)
-
-add_library(logger STATIC evrp/sdk/logger.cpp)
-target_include_directories(logger PUBLIC "${EVRP_ROOT}" ${EVRP_SDK_DIR})
-target_link_libraries(logger PUBLIC log::log)
-
-add_library(playback STATIC evrp/client/playback.cpp)
-target_include_directories(playback PUBLIC "${EVRP_ROOT}" ${EVRP_CLIENT_DIR}
-                                           ${EVRP_SDK_DIR})
-target_link_libraries(
-  playback PRIVATE evdev filesystem logger luaeventcomposer setting)
-
-add_library(luabindings STATIC evrp/sdk/luaeventcomposer/luabindings.cpp)
-target_include_directories(luabindings PUBLIC "${EVRP_ROOT}" ${EVRP_SDK_DIR})
-target_link_libraries(
-  luabindings PUBLIC lua inputeventwriter playbackeventcollector filesystem
-                     logger cursorpos)
-
-add_library(luaeventcomposer STATIC
-            evrp/sdk/luaeventcomposer/luaeventcomposer.cpp)
-target_include_directories(luaeventcomposer PUBLIC "${EVRP_ROOT}" ${EVRP_SDK_DIR})
-target_link_libraries(luaeventcomposer PRIVATE eventformat luabindings
-                                               playbackeventcollector)
-
-add_library(runner STATIC evrp/client/runner.cpp)
-target_include_directories(runner PUBLIC "${EVRP_ROOT}" ${EVRP_CLIENT_DIR}
-                                         ${EVRP_SDK_DIR})
-target_link_libraries(
-  runner PUBLIC argparser playback record filesystem logger device_client
-                setting)
-
-add_executable(evrp evrp-client/main.cpp)
-target_link_libraries(evrp PRIVATE runner inputdevice evdev luabindings logger
-                                   cursorpos)
-
-add_executable(evrp_tests tests/inputdevice_test.cpp tests/argparser_test.cpp)
-target_link_libraries(evrp_tests PRIVATE inputdevice argparser logger
-                                         GTest::gtest_main)
-include(GoogleTest)
-gtest_discover_tests(evrp_tests)
-
-# --- gRPC / device (do not find_package(Protobuf) before gRPC) ---
-find_package(gRPC CONFIG REQUIRED)
-find_package(fmt CONFIG REQUIRED PATHS "${EVRP_LIBRARY_DIR}/fmt"
-             NO_DEFAULT_PATH)
-
-add_library(evrp_device_cxx20 INTERFACE)
-target_compile_features(evrp_device_cxx20 INTERFACE cxx_std_20)
+  evrp/sdk/touchdevice.cpp
+  evrp/sdk/logger.cpp
+  evrp/sdk/luaeventcomposer/luabindings.cpp
+  evrp/sdk/luaeventcomposer/luaeventcomposer.cpp
+  evrp/sdk/countingsemaphore.cpp
+  evrp/sdk/fmt/impl/grpcstatuscode.cpp)
+target_include_directories(evrp_sdk PUBLIC "${EVRP_ROOT}" ${EVRP_SDK_DIR})
+if(EVRP_USE_X11_CURSOR)
+  target_compile_definitions(evrp_sdk PUBLIC EVRP_USE_X11_CURSOR)
+  target_link_libraries(evrp_sdk PUBLIC X11::X11)
+endif()
+target_link_libraries(evrp_sdk PUBLIC log::log lua gRPC::grpc++ fmt::fmt)
 
 set(PROTO_ROOT "${EVRP_ROOT}/proto")
 set(GEN_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
@@ -240,6 +169,12 @@ set(SDK_SESSION_SERVICES_PB_H "${GEN_DIR}/evrp/sdk/v1/services/session.pb.h")
 set(SDK_SESSION_SERVICES_GRPC_CC "${GEN_DIR}/evrp/sdk/v1/services/session.grpc.pb.cc")
 set(SDK_SESSION_SERVICES_GRPC_H "${GEN_DIR}/evrp/sdk/v1/services/session.grpc.pb.h")
 
+set(EVRP_DEVICE_PROTO_SOURCES
+  ${DEVICE_V1_TYPES_PB_CC} ${DEVICE_INPUTLISTEN_PB_CC} ${DEVICE_INPUTLISTEN_GRPC_CC}
+  ${DEVICE_PLAYBACK_PB_CC} ${DEVICE_PLAYBACK_GRPC_CC} ${DEVICE_SERVICE_PB_CC}
+  ${DEVICE_SERVICE_GRPC_CC} ${SDK_SESSION_TYPES_PB_CC}
+  ${SDK_SESSION_SERVICES_PB_CC} ${SDK_SESSION_SERVICES_GRPC_CC})
+
 add_custom_command(
   OUTPUT ${DEVICE_V1_TYPES_GEN} ${DEVICE_INPUTLISTEN_PB_CC} ${DEVICE_INPUTLISTEN_PB_H}
          ${DEVICE_INPUTLISTEN_GRPC_CC} ${DEVICE_INPUTLISTEN_GRPC_H}
@@ -265,119 +200,62 @@ add_custom_command(
   COMMENT "Generating protobuf/gRPC (device v1 + session)"
   VERBATIM)
 
-add_library(evrp_device_proto STATIC ${DEVICE_V1_TYPES_PB_CC}
-  ${DEVICE_INPUTLISTEN_PB_CC} ${DEVICE_INPUTLISTEN_GRPC_CC} ${DEVICE_PLAYBACK_PB_CC}
-  ${DEVICE_PLAYBACK_GRPC_CC} ${DEVICE_SERVICE_PB_CC} ${DEVICE_SERVICE_GRPC_CC}
-  ${SDK_SESSION_TYPES_PB_CC} ${SDK_SESSION_SERVICES_PB_CC}
-  ${SDK_SESSION_SERVICES_GRPC_CC})
-target_include_directories(evrp_device_proto PUBLIC ${GEN_DIR})
-target_link_libraries(evrp_device_proto PUBLIC protobuf::libprotobuf gRPC::grpc++)
-
-add_library(evrp_device_api INTERFACE)
-target_include_directories(evrp_device_api INTERFACE "${EVRP_ROOT}")
-
-add_library(countingsemaphore STATIC evrp/sdk/countingsemaphore.cpp)
-target_include_directories(countingsemaphore PUBLIC "${EVRP_ROOT}")
-
-add_library(sdk_fmt STATIC evrp/sdk/fmt/impl/grpcstatuscode.cpp)
-target_include_directories(sdk_fmt PUBLIC "${EVRP_ROOT}")
-target_link_libraries(sdk_fmt PUBLIC gRPC::grpc++ fmt::fmt)
-
-add_library(sdk_session_client STATIC evrp/sdk/sessionclient.cpp)
-target_include_directories(sdk_session_client PUBLIC "${EVRP_ROOT}")
-target_link_libraries(
-  sdk_session_client PUBLIC evrp_device_proto gRPC::grpc++
-  PRIVATE evrp_device_cxx20)
-
-add_library(sdk_session STATIC evrp/sdk/sessionregistry.cpp
-                               evrp/sdk/sessioncheck.cpp)
-target_include_directories(sdk_session PUBLIC "${EVRP_ROOT}")
-target_link_libraries(
-  sdk_session PUBLIC gRPC::grpc++ gflags::gflags PRIVATE logger evrp_device_cxx20)
-
-add_library(tofromproto STATIC evrp/device/internal/tofromproto.cpp)
-target_include_directories(tofromproto PUBLIC "${EVRP_ROOT}")
-target_link_libraries(tofromproto PUBLIC evrp_device_api evrp_device_proto
-                                         PRIVATE evrp_device_cxx20)
-
 add_library(
-  localinputlistener STATIC
-  evrp/device/impl/server/localinputlistener.cpp
+  evrp_device STATIC
+  ${EVRP_DEVICE_PROTO_SOURCES}
+  evrp/sdk/sessionclient.cpp
+  evrp/sdk/sessionregistry.cpp
+  evrp/sdk/sessioncheck.cpp
   evrp/sdk/iocontextpostedbase.cpp
+  evrp/sdk/syncdispatchqueue.cpp
+  evrp/device/internal/tofromproto.cpp
+  evrp/device/impl/server/localinputlistener.cpp
   evrp/device/impl/server/posted/postedinputlistener.cpp
   evrp/device/impl/server/posted/postedcursorposition.cpp
   evrp/device/impl/server/posted/postedinputdevicekindsprovider.cpp
   evrp/device/impl/server/posted/postedplayback.cpp
-  evrp/sdk/syncdispatchqueue.cpp
-  evrp/device/impl/server/deviceruntime.cpp)
-target_include_directories(localinputlistener PUBLIC "${EVRP_ROOT}" ${EVRP_SDK_DIR})
-target_link_libraries(
-  localinputlistener PUBLIC evrp_device_api asio::asio
-  PRIVATE eventformat inputdevice logger evrp_device_cxx20)
-
-add_library(localplayback STATIC evrp/device/impl/server/localplayback.cpp)
-target_include_directories(localplayback PUBLIC "${EVRP_ROOT}")
-target_link_libraries(
-  localplayback PUBLIC evrp_device_api inputeventwriter countingsemaphore
-  PRIVATE evrp_device_cxx20)
-
-add_library(localcursorposition STATIC
-            evrp/device/impl/server/localcursorposition.cpp)
-target_include_directories(localcursorposition PUBLIC "${EVRP_ROOT}")
-target_link_libraries(localcursorposition PUBLIC evrp_device_api cursorpos)
-
-add_library(localinputdevicekindsprovider STATIC
-            evrp/device/impl/server/localinputdevicekindsprovider.cpp)
-target_include_directories(localinputdevicekindsprovider PUBLIC "${EVRP_ROOT}")
-target_link_libraries(localinputdevicekindsprovider PUBLIC evrp_device_api
-                      PRIVATE inputdevice logger)
-
-add_library(device_remote_inputlistener STATIC
-            evrp/device/impl/client/remoteinputlistener.cpp)
-target_include_directories(device_remote_inputlistener PUBLIC "${EVRP_ROOT}")
-target_link_libraries(
-  device_remote_inputlistener PUBLIC evrp_device_proto tofromproto sdk_fmt
-  PRIVATE logger evrp_device_cxx20)
-
-add_library(device_remote_playback STATIC
-            evrp/device/impl/client/remoteplayback.cpp)
-target_include_directories(device_remote_playback PUBLIC "${EVRP_ROOT}")
-target_link_libraries(
-  device_remote_playback PUBLIC evrp_device_proto tofromproto countingsemaphore
-  PRIVATE evrp_device_cxx20)
-
-add_library(
-  device_client STATIC
-  evrp/device/impl/client/client.cpp
-  evrp/device/impl/client/devicediscovery.cpp
-  evrp/device/impl/client/remoteinputdeviceclient.cpp)
-target_include_directories(device_client PUBLIC "${EVRP_ROOT}")
-target_link_libraries(
-  device_client PUBLIC evrp_device_api device_remote_inputlistener
-                       device_remote_playback evrp_device_proto sdk_session_client
-                       tofromproto gRPC::grpc++
-  PRIVATE gflags::gflags evrp_device_cxx20)
-
-add_library(
-  evrp_device_grpc STATIC
+  evrp/device/impl/server/deviceruntime.cpp
+  evrp/device/impl/server/localplayback.cpp
+  evrp/device/impl/server/localcursorposition.cpp
+  evrp/device/impl/server/localinputdevicekindsprovider.cpp
   evrp/device/impl/server/server.cpp
   evrp/device/impl/server/discoveryresponder.cpp
   evrp/device/impl/server/grpc/grpcsessionservice.cpp
   evrp/device/impl/server/grpc/grpcinputlisten.cpp
   evrp/device/impl/server/grpc/grpcinputdeviceservice.cpp
-  evrp/device/impl/server/grpc/grpcplaybackservice.cpp)
-target_include_directories(evrp_device_grpc PRIVATE "${EVRP_ROOT}")
+  evrp/device/impl/server/grpc/grpcplaybackservice.cpp
+  evrp/device/impl/client/remoteinputlistener.cpp
+  evrp/device/impl/client/remoteplayback.cpp
+  evrp/device/impl/client/client.cpp
+  evrp/device/impl/client/devicediscovery.cpp
+  evrp/device/impl/client/remoteinputdeviceclient.cpp)
+target_include_directories(
+  evrp_device PUBLIC "${EVRP_ROOT}" ${EVRP_SDK_DIR} "${GEN_DIR}")
+target_compile_features(evrp_device PUBLIC cxx_std_20)
 target_link_libraries(
-  evrp_device_grpc PUBLIC evrp_device_proto tofromproto countingsemaphore
-                           asio::asio gflags::gflags sdk_session
-  PRIVATE logger)
+  evrp_device PUBLIC evrp_sdk protobuf::libprotobuf gRPC::grpc++ asio::asio
+  PRIVATE gflags::gflags)
+
+add_library(
+  evrp_client STATIC
+  evrp/client/argparser.cpp
+  evrp/client/record.cpp
+  evrp/client/playback.cpp
+  evrp/client/runner.cpp)
+target_include_directories(evrp_client PUBLIC "${EVRP_ROOT}" ${EVRP_CLIENT_DIR}
+                                              ${EVRP_SDK_DIR})
+target_link_libraries(evrp_client PUBLIC evrp_device evrp_sdk gflags::gflags)
+
+add_executable(evrp evrp-client/main.cpp)
+target_link_libraries(evrp PRIVATE evrp_client)
+
+add_executable(evrp_tests tests/inputdevice_test.cpp tests/argparser_test.cpp)
+target_link_libraries(evrp_tests PRIVATE evrp_client evrp_sdk GTest::gtest_main)
+include(GoogleTest)
+gtest_discover_tests(evrp_tests)
 
 add_executable(evrp-device evrp-device/main.cpp)
-target_link_libraries(
-  evrp-device PRIVATE evrp_device_api evrp_device_grpc localinputlistener
-                      localplayback localcursorposition
-                      localinputdevicekindsprovider gRPC::grpc++ gflags::gflags
-                      logger)
+target_link_libraries(evrp-device PRIVATE evrp_device gRPC::grpc++ gflags::gflags)
 
 add_executable(
   evrp_device_integration_test
@@ -389,8 +267,7 @@ add_executable(
   evrp-device/integrationtest/case_discovery.cpp)
 target_include_directories(evrp_device_integration_test PRIVATE "${EVRP_ROOT}")
 target_link_libraries(
-  evrp_device_integration_test PRIVATE device_client gflags::gflags logger
-                                       GTest::gtest evrp_device_cxx20)
+  evrp_device_integration_test PRIVATE evrp_device gflags::gflags GTest::gtest)
 add_dependencies(evrp_device_integration_test evrp-device)
 
 gtest_discover_tests(

@@ -20,8 +20,8 @@
 #include "evrp/sdk/devicediscoveryprotocol.h"
 
 DEFINE_int32(
-    discovery_port, 53508,
-    "UDP port for broadcast discovery when --device is omitted (empty).");
+    discovery_port, evrp::sdk::kDeviceDiscoveryUdpPort,
+    "UDP port for LAN discovery (empty --device on client; evrp-device must use the same).");
 
 namespace evrp::device::api {
 
