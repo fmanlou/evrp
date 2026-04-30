@@ -16,18 +16,26 @@
 #include "evrp/sdk/filesystem/enhancedfilesystem.h"
 #include "evrp/sdk/logger.h"
 
+Record::Record(const RunOptions &options,
+               evrp::device::api::IInputListener *listener,
+               IEnhancedFileSystem *fs)
+    : options_(options), listener_(listener), fs_(fs) {}
+
 Record::Record(const RunOptions &options, const evrp::Ioc &ioc)
-    : options_(options), ioc_(ioc), fs_(createEnhancedFileSystem(createFileSystem())) {}
+    : Record(options, ioc.get<evrp::device::api::IInputListener>(),
+             ioc.get<IEnhancedFileSystem>()) {}
 
 int Record::run() {
   logService->setLevel(options_.logLevel);
-  evrp::device::api::IInputListener *listener =
-      ioc_.get<evrp::device::api::IInputListener>();
-  if (!listener) {
-    logError("Ioc has no IInputListener.");
+  if (!listener_) {
+    logError("Record has no IInputListener.");
     return 1;
   }
-  if (!listener->startListening(options_.kinds)) {
+  if (!fs_) {
+    logError("Record has no IEnhancedFileSystem.");
+    return 1;
+  }
+  if (!listener_->startListening(options_.kinds)) {
     logError(
         "startListening failed. Is evrp-device running on {} with input "
         "devices available?",
@@ -41,7 +49,7 @@ int Record::run() {
         l->cancelListening();
       }
     }
-  } stopGuard{listener};
+  } stopGuard{listener_};
 
   int outFd = fs_->openFd(options_.outputPath,
                          O_WRONLY | O_CREAT | O_TRUNC, 0644);
@@ -61,7 +69,7 @@ int Record::run() {
         fs->closeFd(fd);
       }
     }
-  } outputFdGuard{fs_.get(), outFd, ownOutputFd};
+  } outputFdGuard{fs_, outFd, ownOutputFd};
 
   struct timeval sessionStart = {};
   gettimeofday(&sessionStart, nullptr);
@@ -117,11 +125,11 @@ int Record::run() {
           options_.device);
 
   while (!sigint.stopRequested() && writeOk) {
-    if (!listener->waitForInputEvent(kWaitMs)) {
+    if (!listener_->waitForInputEvent(kWaitMs)) {
       continue;
     }
     std::vector<evrp::device::api::InputEvent> batch =
-        listener->readInputEvents();
+        listener_->readInputEvents();
     for (const auto &ine : batch) {
       writeEventLine(ine.device, ine);
       if (!writeOk) {

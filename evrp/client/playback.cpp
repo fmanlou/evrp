@@ -9,12 +9,19 @@
 
 #include "evrp/device/api/playback.h"
 #include "evrp/device/api/types.h"
+#include "evrp/sdk/filesystem/enhancedfilesystem.h"
 #include "evrp/sdk/luaeventcomposer/luaeventcomposer.h"
 #include "evrp/sdk/evdev.h"
 #include "evrp/sdk/logger.h"
 
+Playback::Playback(const RunOptions &options,
+                   evrp::device::api::IPlayback *playback,
+                   IEnhancedFileSystem *fs)
+    : options_(options), remote_(playback), fs_(fs) {}
+
 Playback::Playback(const RunOptions &options, const evrp::Ioc &ioc)
-    : options_(options), ioc_(ioc), fs_(createEnhancedFileSystem(createFileSystem())) {}
+    : Playback(options, ioc.get<evrp::device::api::IPlayback>(),
+               ioc.get<IEnhancedFileSystem>()) {}
 
 namespace {
 
@@ -47,10 +54,12 @@ int Playback::run() {
 
   const std::string &path = options_.playbackPath;
 
-  evrp::device::api::IPlayback *remote =
-      ioc_.get<evrp::device::api::IPlayback>();
-  if (!remote) {
-    logError("Ioc has no IPlayback.");
+  if (!remote_) {
+    logError("Playback has no IPlayback.");
+    return 1;
+  }
+  if (!fs_) {
+    logError("Playback has no IEnhancedFileSystem.");
     return 1;
   }
 
@@ -70,7 +79,7 @@ int Playback::run() {
         fs->closeFd(fd);
       }
     }
-  } inputFdGuard{fs_.get(), inFd};
+  } inputFdGuard{fs_, inFd};
 
   std::string content;
   if (!fs_->readInputAll(inFd, &content)) {
@@ -99,7 +108,7 @@ int Playback::run() {
     return 1;
   }
 
-  if (!deviceUploadAndPlay(remote, events)) {
+  if (!deviceUploadAndPlay(remote_, events)) {
     return 1;
   }
 

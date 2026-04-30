@@ -2,6 +2,8 @@
 #include "evrp/client/playback.h"
 #include "evrp/client/record.h"
 #include "evrp/device/api/client.h"
+#include "evrp/sdk/filesystem/enhancedfilesystem.h"
+#include "evrp/sdk/filesystem/filesystem.h"
 #include "evrp/sdk/ioc.h"
 #include "evrp/sdk/logger.h"
 
@@ -39,6 +41,10 @@ int main(int argc, char *argv[]) {
   evrp::Ioc ioc;
   ioc.emplace(deviceClient->playback());
   ioc.emplace(deviceClient->inputListener());
+
+  std::unique_ptr<IEnhancedFileSystem> enhancedFs(
+      createEnhancedFileSystem(createFileSystem()));
+  ioc.emplace(enhancedFs.get());
 
   if (options.playback) {
     if (options.playbackPath.empty()) {
