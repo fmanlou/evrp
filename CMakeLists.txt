@@ -89,6 +89,10 @@ enable_testing()
 
 set(EVRP_SDK_DIR "${CMAKE_CURRENT_SOURCE_DIR}/evrp/sdk")
 
+add_library(setting STATIC evrp/sdk/setting/memorysetting.cpp)
+target_include_directories(setting PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+                                         ${EVRP_SDK_DIR})
+
 add_library(evdev STATIC evrp/sdk/evdev.cpp)
 target_include_directories(evdev PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
                                         ${EVRP_SDK_DIR})
@@ -123,7 +127,7 @@ add_library(argparser STATIC evrp/client/argparser.cpp)
 target_include_directories(argparser PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
                                             ${EVRP_CLIENT_DIR}
                                             ${EVRP_SDK_DIR})
-target_link_libraries(argparser PRIVATE logger gflags::gflags)
+target_link_libraries(argparser PUBLIC setting PRIVATE logger gflags::gflags)
 
 add_library(playbackeventcollector STATIC
             evrp/sdk/playbackeventcollector.cpp)
@@ -179,7 +183,8 @@ target_link_libraries(
   PRIVATE evdev
           filesystem
           logger
-          luaeventcomposer)
+          luaeventcomposer
+          setting)
 
 add_library(luabindings STATIC
             evrp/sdk/luaeventcomposer/luabindings.cpp)
@@ -212,7 +217,8 @@ target_link_libraries(
          record
          filesystem
          logger
-         device_client)
+         device_client
+         setting)
 
 add_executable(evrp evrp/client/main.cpp)
 target_link_libraries(

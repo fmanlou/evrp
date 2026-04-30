@@ -1,6 +1,6 @@
 #pragma once
 
-#include "evrp/sdk/stringkeystore.h"
+#include "evrp/sdk/setting/memorysetting.h"
 #include "evrp/sdk/ioc.h"
 
 class IEnhancedFileSystem;
@@ -11,16 +11,15 @@ class IInputListener;
 
 class Record {
  public:
-  Record(MapStringKeyStoreCore parsed, evrp::device::api::IInputListener *listener,
+  Record(MemorySetting parsed, evrp::device::api::IInputListener *listener,
          IEnhancedFileSystem *fs);
 
-  Record(MapStringKeyStoreCore parsed, const evrp::Ioc &ioc);
+  Record(MemorySetting parsed, const evrp::Ioc &ioc);
 
   int run();
 
  private:
-  MapStringKeyStoreCore parsed_;
-  StringKeyStore parsedView_;
+  MemorySetting parsed_;
   evrp::device::api::IInputListener *listener_{nullptr};
   IEnhancedFileSystem *fs_{nullptr};
 };

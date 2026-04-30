@@ -2,18 +2,17 @@
 
 #include <string>
 
-#include "evrp/sdk/stringkeystore.h"
+#include "evrp/sdk/setting/memorysetting.h"
 #include "evrp/sdk/logger.h"
 
 class Runner {
  public:
-  explicit Runner(MapStringKeyStoreCore options);
+  explicit Runner(MemorySetting options);
 
   int run();
 
  private:
-  MapStringKeyStoreCore options_;
-  StringKeyStore optionsView_;
+  MemorySetting options_;
   std::string prog_;
   bool recording_{false};
   bool playback_{false};

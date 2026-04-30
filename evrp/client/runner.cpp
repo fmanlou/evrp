@@ -11,15 +11,14 @@
 
 #include <memory>
 
-Runner::Runner(MapStringKeyStoreCore options)
+Runner::Runner(MemorySetting options)
     : options_(std::move(options)),
-      optionsView_(options_),
-      prog_(optionsView_.get<std::string>("program", "evrp")),
-      recording_(optionsView_.get<bool>("recording", false)),
-      playback_(optionsView_.get<bool>("playback", false)),
-      device_(optionsView_.get<std::string>("device", {})),
-      playbackPath_(optionsView_.get<std::string>("playbackPath", {})),
-      logLevel_(optionsView_.get("logLevel", logging::LogLevel::Info)) {}
+      prog_(options_.get<std::string>("program", "evrp")),
+      recording_(options_.get<bool>("recording", false)),
+      playback_(options_.get<bool>("playback", false)),
+      device_(options_.get<std::string>("device", {})),
+      playbackPath_(options_.get<std::string>("playbackPath", {})),
+      logLevel_(options_.get("logLevel", logging::LogLevel::Info)) {}
 
 int Runner::run() {
   logService->setLevel(logLevel_);
@@ -46,7 +45,7 @@ int Runner::run() {
         device_.empty() ? std::string("") : (" at " + device_));
     return 1;
   }
-  optionsView_.insert("device", deviceClient->serverAddress());
+  options_.insert("device", deviceClient->serverAddress());
 
   evrp::Ioc ioc;
   ioc.emplace(deviceClient->playback());

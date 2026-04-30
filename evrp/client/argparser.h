@@ -3,7 +3,7 @@
 #include <string>
 
 #include "evrp/device/api/types.h"
-#include "evrp/sdk/stringkeystore.h"
+#include "evrp/sdk/setting/isetting.h"
 
 void printUsage(const char* prog);
 bool parseKind(const std::string& s, evrp::device::api::DeviceKind* outKind);
@@ -13,4 +13,4 @@ bool parseKind(const std::string& s, evrp::device::api::DeviceKind* outKind);
 /// logLevel (logging::LogLevel), playbackPath, outputPath,
 /// device (string): empty → UDP discovery; else host:port for direct gRPC;
 /// kinds (vector<DeviceKind>), executeWaitBeforeFirst, executeWaitAfterLast (bool).
-void parseArgvInto(StringKeyStore& options, int argc, char* argv[]);
+void parseArgvInto(ISetting& options, int argc, char* argv[]);

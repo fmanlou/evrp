@@ -111,7 +111,7 @@ bool parseKind(const std::string& s, evrp::device::api::DeviceKind* outKind) {
   return false;
 }
 
-void parseArgvInto(StringKeyStore& options, int argc, char* argv[]) {
+void parseArgvInto(ISetting& options, int argc, char* argv[]) {
   resetArgFlags();
 
   const std::string program = (argc > 0 && argv[0] && argv[0][0])

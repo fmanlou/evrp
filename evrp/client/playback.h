@@ -1,6 +1,6 @@
 #pragma once
 
-#include "evrp/sdk/stringkeystore.h"
+#include "evrp/sdk/setting/memorysetting.h"
 #include "evrp/sdk/ioc.h"
 
 class IEnhancedFileSystem;
@@ -11,16 +11,15 @@ class IPlayback;
 
 class Playback {
  public:
-  Playback(MapStringKeyStoreCore parsed, evrp::device::api::IPlayback *playback,
+  Playback(MemorySetting parsed, evrp::device::api::IPlayback *playback,
            IEnhancedFileSystem *fs);
 
-  Playback(MapStringKeyStoreCore parsed, const evrp::Ioc &ioc);
+  Playback(MemorySetting parsed, const evrp::Ioc &ioc);
 
   int run();
 
  private:
-  MapStringKeyStoreCore parsed_;
-  StringKeyStore parsedView_;
+  MemorySetting parsed_;
   evrp::device::api::IPlayback *remote_{nullptr};
   IEnhancedFileSystem *fs_{nullptr};
 };

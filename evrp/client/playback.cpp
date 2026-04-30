@@ -14,14 +14,11 @@
 #include "evrp/sdk/evdev.h"
 #include "evrp/sdk/logger.h"
 
-Playback::Playback(MapStringKeyStoreCore parsed, evrp::device::api::IPlayback *playback,
+Playback::Playback(MemorySetting parsed, evrp::device::api::IPlayback *playback,
                    IEnhancedFileSystem *fs)
-    : parsed_(std::move(parsed)),
-      parsedView_(parsed_),
-      remote_(playback),
-      fs_(fs) {}
+    : parsed_(std::move(parsed)), remote_(playback), fs_(fs) {}
 
-Playback::Playback(MapStringKeyStoreCore parsed, const evrp::Ioc &ioc)
+Playback::Playback(MemorySetting parsed, const evrp::Ioc &ioc)
     : Playback(std::move(parsed), ioc.get<evrp::device::api::IPlayback>(),
                ioc.get<IEnhancedFileSystem>()) {}
 
@@ -49,7 +46,7 @@ bool deviceUploadAndPlay(evrp::device::api::IPlayback *remote,
 }  // namespace
 
 int Playback::run() {
-  const std::string playbackPath = parsedView_.get<std::string>("playbackPath", {});
+  const std::string playbackPath = parsed_.get<std::string>("playbackPath", {});
   if (playbackPath.empty()) {
     logError("Playback mode requires a file path after -p.");
     return 1;
@@ -66,7 +63,7 @@ int Playback::run() {
     return 1;
   }
 
-  logService->setLevel(parsedView_.get("logLevel", logging::LogLevel::Info));
+  logService->setLevel(parsed_.get("logLevel", logging::LogLevel::Info));
 
   int inFd = fs_->openFd(path, O_RDONLY, 0);
   if (inFd < 0) {
@@ -104,7 +101,7 @@ int Playback::run() {
   }
 
   logInfo("Replay text → events, playing via evrp-device at {} (Ctrl+C tries to stop)...",
-          parsedView_.get<std::string>("device", {}));
+          parsed_.get<std::string>("device", {}));
 
   SigintGuard sigint;
   if (sigint.stopRequested()) {
