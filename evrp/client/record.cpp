@@ -16,17 +16,16 @@
 #include "evrp/sdk/filesystem/enhancedfilesystem.h"
 #include "evrp/sdk/logger.h"
 
-Record::Record(const std::map<std::string, std::any>& parsed,
-               evrp::device::api::IInputListener *listener,
+Record::Record(ParsedOptions parsed, evrp::device::api::IInputListener *listener,
                IEnhancedFileSystem *fs)
-    : parsed_(parsed), listener_(listener), fs_(fs) {}
+    : parsed_(std::move(parsed)), listener_(listener), fs_(fs) {}
 
-Record::Record(const std::map<std::string, std::any>& parsed, const evrp::Ioc &ioc)
-    : Record(parsed, ioc.get<evrp::device::api::IInputListener>(),
+Record::Record(ParsedOptions parsed, const evrp::Ioc &ioc)
+    : Record(std::move(parsed), ioc.get<evrp::device::api::IInputListener>(),
              ioc.get<IEnhancedFileSystem>()) {}
 
 int Record::run() {
-  logService->setLevel(parsed_options::logLevelOr(parsed_, "logLevel"));
+  logService->setLevel(parsed_.logLevelOr("logLevel"));
   if (!listener_) {
     logError("Record has no IInputListener.");
     return 1;
@@ -35,13 +34,12 @@ int Record::run() {
     logError("Record has no IEnhancedFileSystem.");
     return 1;
   }
-  const std::vector<evrp::device::api::DeviceKind> kinds =
-      parsed_options::kindsOr(parsed_, "kinds");
+  const std::vector<evrp::device::api::DeviceKind> kinds = parsed_.kindsOr("kinds");
   if (!listener_->startListening(kinds)) {
     logError(
         "startListening failed. Is evrp-device running on {} with input "
         "devices available?",
-        parsed_options::stringOr(parsed_, "device"));
+        parsed_.stringOr("device"));
     return 1;
   }
   struct StopListenGuard {
@@ -53,7 +51,7 @@ int Record::run() {
     }
   } stopGuard{listener_};
 
-  const std::string outputPath = parsed_options::stringOr(parsed_, "outputPath");
+  const std::string outputPath = parsed_.stringOr("outputPath");
   int outFd = fs_->openFd(outputPath, O_WRONLY | O_CREAT | O_TRUNC, 0644);
   if (outFd < 0) {
     int err = errno;
@@ -123,7 +121,7 @@ int Record::run() {
   };
   constexpr int kWaitMs = 500;
   logInfo("Recording from evrp-device at {} (Ctrl+C to stop)",
-          parsed_options::stringOr(parsed_, "device"));
+          parsed_.stringOr("device"));
 
   while (!sigint.stopRequested() && writeOk) {
     if (!listener_->waitForInputEvent(kWaitMs)) {

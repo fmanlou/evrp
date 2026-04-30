@@ -5,7 +5,6 @@
 int main(int argc, char *argv[]) {
   logging::LogService logSvc("evrp");
   logService = &logSvc;
-  auto parsed = parseOptions(argc, argv);
-  Runner runner(parsed);
+  Runner runner(parseOptions(argc, argv));
   return runner.run();
 }

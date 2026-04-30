@@ -1,19 +1,18 @@
 #pragma once
 
-#include <any>
-#include <map>
 #include <string>
 
+#include "evrp/client/argparser.h"
 #include "evrp/sdk/logger.h"
 
 class Runner {
  public:
-  explicit Runner(const std::map<std::string, std::any>& parsed);
+  explicit Runner(ParsedOptions options);
 
   int run();
 
  private:
-  std::map<std::string, std::any> parsed_;
+  ParsedOptions options_;
   std::string prog_;
   bool recording_{false};
   bool playback_{false};

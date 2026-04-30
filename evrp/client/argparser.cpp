@@ -67,45 +67,43 @@ void normalizeLegacyArgs(std::vector<std::string> *args) {
 
 } 
 
-namespace parsed_options {
+ParsedOptions::ParsedOptions(std::map<std::string, std::any> values)
+    : values_(std::move(values)) {}
 
-std::string stringOr(const std::map<std::string, std::any>& m,
-                     const std::string& key, std::string defaultValue) {
-  auto it = m.find(key);
-  if (it == m.end()) return defaultValue;
+std::string ParsedOptions::stringOr(const std::string& key,
+                                    std::string defaultValue) const {
+  auto it = values_.find(key);
+  if (it == values_.end()) return defaultValue;
   if (auto* p = std::any_cast<std::string>(&it->second)) return *p;
   return defaultValue;
 }
 
-bool boolOr(const std::map<std::string, std::any>& m, const std::string& key,
-            bool defaultValue) {
-  auto it = m.find(key);
-  if (it == m.end()) return defaultValue;
+bool ParsedOptions::boolOr(const std::string& key, bool defaultValue) const {
+  auto it = values_.find(key);
+  if (it == values_.end()) return defaultValue;
   if (auto* p = std::any_cast<bool>(&it->second)) return *p;
   return defaultValue;
 }
 
-logging::LogLevel logLevelOr(const std::map<std::string, std::any>& m,
-                             const std::string& key, logging::LogLevel defaultValue) {
-  auto it = m.find(key);
-  if (it == m.end()) return defaultValue;
+logging::LogLevel ParsedOptions::logLevelOr(const std::string& key,
+                                            logging::LogLevel defaultValue) const {
+  auto it = values_.find(key);
+  if (it == values_.end()) return defaultValue;
   if (auto* p = std::any_cast<logging::LogLevel>(&it->second)) return *p;
   return defaultValue;
 }
 
-std::vector<evrp::device::api::DeviceKind> kindsOr(
-    const std::map<std::string, std::any>& m, const std::string& key,
-    std::vector<evrp::device::api::DeviceKind> defaultValue) {
-  auto it = m.find(key);
-  if (it == m.end()) return defaultValue;
+std::vector<evrp::device::api::DeviceKind> ParsedOptions::kindsOr(
+    const std::string& key,
+    std::vector<evrp::device::api::DeviceKind> defaultValue) const {
+  auto it = values_.find(key);
+  if (it == values_.end()) return defaultValue;
   if (auto* p =
           std::any_cast<std::vector<evrp::device::api::DeviceKind>>(&it->second)) {
     return *p;
   }
   return defaultValue;
 }
-
-}  // namespace parsed_options
 
 void printUsage(const char *prog) {
   std::cout
@@ -138,7 +136,7 @@ bool parseKind(const std::string &s, evrp::device::api::DeviceKind *outKind) {
   return false;
 }
 
-std::map<std::string, std::any> parseOptions(int argc, char *argv[]) {
+ParsedOptions parseOptions(int argc, char *argv[]) {
   resetArgFlags();
 
   const std::string program =
@@ -200,5 +198,5 @@ std::map<std::string, std::any> parseOptions(int argc, char *argv[]) {
   parsed["executeWaitBeforeFirst"] = executeWaitBeforeFirst;
   parsed["executeWaitAfterLast"] = executeWaitAfterLast;
 
-  return parsed;
+  return ParsedOptions(std::move(parsed));
 }

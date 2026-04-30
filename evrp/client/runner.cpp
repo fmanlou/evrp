@@ -1,6 +1,5 @@
 #include "evrp/client/runner.h"
 
-#include "evrp/client/argparser.h"
 #include "evrp/client/playback.h"
 #include "evrp/client/record.h"
 #include "evrp/device/api/client.h"
@@ -11,14 +10,14 @@
 
 #include <memory>
 
-Runner::Runner(const std::map<std::string, std::any>& parsed)
-    : parsed_(parsed),
-      prog_(parsed_options::stringOr(parsed, "program", "evrp")),
-      recording_(parsed_options::boolOr(parsed, "recording")),
-      playback_(parsed_options::boolOr(parsed, "playback")),
-      device_(parsed_options::stringOr(parsed, "device")),
-      playbackPath_(parsed_options::stringOr(parsed, "playbackPath")),
-      logLevel_(parsed_options::logLevelOr(parsed, "logLevel")) {}
+Runner::Runner(ParsedOptions options)
+    : options_(std::move(options)),
+      prog_(options_.stringOr("program", "evrp")),
+      recording_(options_.boolOr("recording")),
+      playback_(options_.boolOr("playback")),
+      device_(options_.stringOr("device")),
+      playbackPath_(options_.stringOr("playbackPath")),
+      logLevel_(options_.logLevelOr("logLevel")) {}
 
 int Runner::run() {
   logService->setLevel(logLevel_);
@@ -59,8 +58,8 @@ int Runner::run() {
       printUsage(prog_.c_str());
       return 1;
     }
-    return Playback(parsed_, ioc).run();
+    return Playback(std::move(options_), ioc).run();
   }
 
-  return Record(parsed_, ioc).run();
+  return Record(std::move(options_), ioc).run();
 }
