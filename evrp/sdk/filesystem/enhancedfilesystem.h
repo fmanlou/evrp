@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 #include <string>
 #include <string_view>
 
@@ -28,6 +27,4 @@ class IEnhancedFileSystem {
   virtual bool readInputAll(int fd, std::string *out) = 0;
 };
 
-std::unique_ptr<IEnhancedFileSystem> createEnhancedFileSystem();
-
-std::unique_ptr<IEnhancedFileSystem> createEnhancedFileSystem(IFileSystem *io);
+IEnhancedFileSystem *createEnhancedFileSystem(IFileSystem *io);

@@ -5,7 +5,6 @@
 #include <sys/types.h>
 
 #include <cstddef>
-#include <memory>
 
 class IFileSystem {
  public:
@@ -25,4 +24,4 @@ class IFileSystem {
   virtual int fflushStdout() const = 0;
 };
 
-std::unique_ptr<IFileSystem> createFileSystem();
+IFileSystem *createFileSystem();

@@ -44,7 +44,8 @@ class LocalInputListener final : public api::IInputListener {
   void closeDevices();
   std::string listenDevicesSummary() const;
 
-  std::unique_ptr<IEnhancedFileSystem> fs_{createEnhancedFileSystem()};
+  std::unique_ptr<IEnhancedFileSystem> fs_{
+      createEnhancedFileSystem(createFileSystem())};
   std::mutex mu_;
   std::atomic<bool> listeningActive_{false};
   std::atomic<bool> disposed_{false};

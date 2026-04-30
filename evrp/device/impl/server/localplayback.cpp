@@ -1,6 +1,7 @@
 #include "evrp/device/impl/server/localplayback.h"
 
 #include <chrono>
+#include <memory>
 #include <thread>
 
 #include "evrp/sdk/filesystem/enhancedfilesystem.h"
@@ -41,7 +42,7 @@ bool LocalPlayback::playback(
   stopRequested_ = false;
   currentEventIndex_ = -1;
 
-  auto fs = createEnhancedFileSystem();
+  std::unique_ptr<IEnhancedFileSystem> fs(createEnhancedFileSystem(createFileSystem()));
   InputEventWriter writer(fs.get());
 
   bool first = true;

@@ -8,7 +8,6 @@
 
 class EnhancedFileSystem final : public IEnhancedFileSystem {
  public:
-  EnhancedFileSystem();
   explicit EnhancedFileSystem(IFileSystem *io);
 
   ~EnhancedFileSystem() override = default;

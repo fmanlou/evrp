@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <memory>
 
 #include "evrp/sdk/cursor/cursorpos.h"
 #include "evrp/sdk/filesystem/enhancedfilesystem.h"
@@ -417,7 +418,8 @@ int runScriptWithWriter(const char* path, InputEventWriter* writer) {
 }
 
 int runScript(const char* path) {
-  auto fs = createEnhancedFileSystem();
+  std::unique_ptr<IEnhancedFileSystem> fs(
+      createEnhancedFileSystem(createFileSystem()));
   InputEventWriter writer(fs.get());
   return runScriptWithWriter(path, &writer);
 }

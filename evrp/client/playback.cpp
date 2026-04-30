@@ -14,7 +14,7 @@
 #include "evrp/sdk/logger.h"
 
 Playback::Playback(const RunOptions &options, const evrp::Ioc &ioc)
-    : options_(options), ioc_(ioc), fs_(createEnhancedFileSystem()) {}
+    : options_(options), ioc_(ioc), fs_(createEnhancedFileSystem(createFileSystem())) {}
 
 namespace {
 

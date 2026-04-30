@@ -7,6 +7,7 @@
 
 #include <cerrno>
 #include <cstring>
+#include <memory>
 #include <string>
 
 #include "evrp/sdk/filesystem/enhancedfilesystem.h"
@@ -18,7 +19,8 @@
 #define TEST_BIT(bit, array) ((array[(bit) / BITS_PER_LONG] & BIT(bit)) != 0)
 
 bool openAndGetCapabilities(const char *path, Capabilities *caps) {
-  auto fs = createEnhancedFileSystem();
+  std::unique_ptr<IEnhancedFileSystem> fs(
+      createEnhancedFileSystem(createFileSystem()));
   int fd = fs->openFd(std::string(path), O_RDONLY | O_NONBLOCK, 0);
   if (fd < 0) return false;
   bool ok = getCapabilities(fd, caps);
@@ -67,7 +69,8 @@ bool getCapabilities(int fd, Capabilities *caps) {
 
 int readEvents(int fd, Event *events, int max_count) {
   if (fd < 0 || !events || max_count <= 0) return -1;
-  auto fs = createEnhancedFileSystem();
+  std::unique_ptr<IEnhancedFileSystem> fs(
+      createEnhancedFileSystem(createFileSystem()));
 
   struct input_event raw[64];
   long n = fs->readFd(fd, raw, sizeof(raw));

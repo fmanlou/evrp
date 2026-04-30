@@ -17,7 +17,7 @@
 #include "evrp/sdk/logger.h"
 
 Record::Record(const RunOptions &options, const evrp::Ioc &ioc)
-    : options_(options), ioc_(ioc), fs_(createEnhancedFileSystem()) {}
+    : options_(options), ioc_(ioc), fs_(createEnhancedFileSystem(createFileSystem())) {}
 
 int Record::run() {
   logService->setLevel(options_.logLevel);

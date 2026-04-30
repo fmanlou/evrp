@@ -7,10 +7,8 @@
 #include <cerrno>
 #include <cstdio>
 
-EnhancedFileSystem::EnhancedFileSystem()
-    : owned_(createFileSystem()), io_(owned_.get()) {}
-
-EnhancedFileSystem::EnhancedFileSystem(IFileSystem *io) : io_(io) {}
+EnhancedFileSystem::EnhancedFileSystem(IFileSystem *io)
+    : owned_(io), io_(owned_.get()) {}
 
 int EnhancedFileSystem::openFd(const std::string &path, int flags,
                                mode_t mode) const {
@@ -152,10 +150,6 @@ bool EnhancedFileSystem::readInputAll(int fd, std::string *out) {
   return true;
 }
 
-std::unique_ptr<IEnhancedFileSystem> createEnhancedFileSystem() {
-  return std::make_unique<EnhancedFileSystem>();
-}
-
-std::unique_ptr<IEnhancedFileSystem> createEnhancedFileSystem(IFileSystem *io) {
-  return std::make_unique<EnhancedFileSystem>(io);
+IEnhancedFileSystem *createEnhancedFileSystem(IFileSystem *io) {
+  return new EnhancedFileSystem(io);
 }
