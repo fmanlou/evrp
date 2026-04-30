@@ -46,7 +46,7 @@ bool deviceUploadAndPlay(evrp::device::api::IPlayback *remote,
 }  // namespace
 
 int Playback::run() {
-  const std::string playbackPath = parsed_.stringOr("playbackPath");
+  const std::string playbackPath = parsed_.getOr<std::string>("playbackPath", {});
   if (playbackPath.empty()) {
     logError("Playback mode requires a file path after -p.");
     return 1;
@@ -63,7 +63,7 @@ int Playback::run() {
     return 1;
   }
 
-  logService->setLevel(parsed_.logLevelOr("logLevel"));
+  logService->setLevel(parsed_.getOr("logLevel", logging::LogLevel::Info));
 
   int inFd = fs_->openFd(path, O_RDONLY, 0);
   if (inFd < 0) {
@@ -101,7 +101,7 @@ int Playback::run() {
   }
 
   logInfo("Replay text → events, playing via evrp-device at {} (Ctrl+C tries to stop)...",
-          parsed_.stringOr("device"));
+          parsed_.getOr<std::string>("device", {}));
 
   SigintGuard sigint;
   if (sigint.stopRequested()) {

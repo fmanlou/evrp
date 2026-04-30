@@ -70,41 +70,6 @@ void normalizeLegacyArgs(std::vector<std::string> *args) {
 ParsedOptions::ParsedOptions(std::map<std::string, std::any> values)
     : values_(std::move(values)) {}
 
-std::string ParsedOptions::stringOr(const std::string& key,
-                                    std::string defaultValue) const {
-  auto it = values_.find(key);
-  if (it == values_.end()) return defaultValue;
-  if (auto* p = std::any_cast<std::string>(&it->second)) return *p;
-  return defaultValue;
-}
-
-bool ParsedOptions::boolOr(const std::string& key, bool defaultValue) const {
-  auto it = values_.find(key);
-  if (it == values_.end()) return defaultValue;
-  if (auto* p = std::any_cast<bool>(&it->second)) return *p;
-  return defaultValue;
-}
-
-logging::LogLevel ParsedOptions::logLevelOr(const std::string& key,
-                                            logging::LogLevel defaultValue) const {
-  auto it = values_.find(key);
-  if (it == values_.end()) return defaultValue;
-  if (auto* p = std::any_cast<logging::LogLevel>(&it->second)) return *p;
-  return defaultValue;
-}
-
-std::vector<evrp::device::api::DeviceKind> ParsedOptions::kindsOr(
-    const std::string& key,
-    std::vector<evrp::device::api::DeviceKind> defaultValue) const {
-  auto it = values_.find(key);
-  if (it == values_.end()) return defaultValue;
-  if (auto* p =
-          std::any_cast<std::vector<evrp::device::api::DeviceKind>>(&it->second)) {
-    return *p;
-  }
-  return defaultValue;
-}
-
 void printUsage(const char *prog) {
   std::cout
       << "Usage: " << prog

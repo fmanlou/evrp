@@ -25,7 +25,7 @@ Record::Record(ParsedOptions parsed, const evrp::Ioc &ioc)
              ioc.get<IEnhancedFileSystem>()) {}
 
 int Record::run() {
-  logService->setLevel(parsed_.logLevelOr("logLevel"));
+  logService->setLevel(parsed_.getOr("logLevel", logging::LogLevel::Info));
   if (!listener_) {
     logError("Record has no IInputListener.");
     return 1;
@@ -34,12 +34,13 @@ int Record::run() {
     logError("Record has no IEnhancedFileSystem.");
     return 1;
   }
-  const std::vector<evrp::device::api::DeviceKind> kinds = parsed_.kindsOr("kinds");
+  const std::vector<evrp::device::api::DeviceKind> kinds =
+      parsed_.getOr("kinds", std::vector<evrp::device::api::DeviceKind>{});
   if (!listener_->startListening(kinds)) {
     logError(
         "startListening failed. Is evrp-device running on {} with input "
         "devices available?",
-        parsed_.stringOr("device"));
+        parsed_.getOr<std::string>("device", {}));
     return 1;
   }
   struct StopListenGuard {
@@ -51,7 +52,7 @@ int Record::run() {
     }
   } stopGuard{listener_};
 
-  const std::string outputPath = parsed_.stringOr("outputPath");
+  const std::string outputPath = parsed_.getOr<std::string>("outputPath", {});
   int outFd = fs_->openFd(outputPath, O_WRONLY | O_CREAT | O_TRUNC, 0644);
   if (outFd < 0) {
     int err = errno;
@@ -121,7 +122,7 @@ int Record::run() {
   };
   constexpr int kWaitMs = 500;
   logInfo("Recording from evrp-device at {} (Ctrl+C to stop)",
-          parsed_.stringOr("device"));
+          parsed_.getOr<std::string>("device", {}));
 
   while (!sigint.stopRequested() && writeOk) {
     if (!listener_->waitForInputEvent(kWaitMs)) {

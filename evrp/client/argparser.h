@@ -3,29 +3,41 @@
 #include <any>
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "evrp/device/api/types.h"
 #include "evrp/sdk/logger.h"
 
-/// Holds string keys and `std::any` values from `parseOptions`, with typed accessors.
+/// Holds string keys and `std::any` values from `parseOptions`, with a typed
+/// template accessor.
 class ParsedOptions {
  public:
   ParsedOptions() = default;
-  explicit ParsedOptions(std::map<std::string, std::any> values);
 
-  std::string stringOr(const std::string& key, std::string defaultValue = {}) const;
-  bool boolOr(const std::string& key, bool defaultValue = false) const;
-  logging::LogLevel logLevelOr(
-      const std::string& key,
-      logging::LogLevel defaultValue = logging::LogLevel::Info) const;
-  std::vector<evrp::device::api::DeviceKind> kindsOr(
-      const std::string& key,
-      std::vector<evrp::device::api::DeviceKind> defaultValue = {}) const;
+  template <typename T>
+  T getOr(const std::string& key, T defaultValue) const {
+    auto it = values_.find(key);
+    if (it == values_.end()) return defaultValue;
+    if (auto* p = std::any_cast<T>(&it->second)) return *p;
+    return defaultValue;
+  }
 
-  const std::map<std::string, std::any>& map() const { return values_; }
+  void insert(std::string key, std::any value) {
+    values_.insert_or_assign(std::move(key), std::move(value));
+  }
+
+  template <typename T>
+  void insert(std::string key, T&& value) {
+    values_.insert_or_assign(std::move(key),
+                             std::any(std::forward<T>(value)));
+  }
 
  private:
+  explicit ParsedOptions(std::map<std::string, std::any> values);
+
+  friend ParsedOptions parseOptions(int argc, char* argv[]);
+
   std::map<std::string, std::any> values_;
 };
 

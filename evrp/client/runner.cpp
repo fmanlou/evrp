@@ -12,12 +12,12 @@
 
 Runner::Runner(ParsedOptions options)
     : options_(std::move(options)),
-      prog_(options_.stringOr("program", "evrp")),
-      recording_(options_.boolOr("recording")),
-      playback_(options_.boolOr("playback")),
-      device_(options_.stringOr("device")),
-      playbackPath_(options_.stringOr("playbackPath")),
-      logLevel_(options_.logLevelOr("logLevel")) {}
+      prog_(options_.getOr<std::string>("program", "evrp")),
+      recording_(options_.getOr<bool>("recording", false)),
+      playback_(options_.getOr<bool>("playback", false)),
+      device_(options_.getOr<std::string>("device", {})),
+      playbackPath_(options_.getOr<std::string>("playbackPath", {})),
+      logLevel_(options_.getOr("logLevel", logging::LogLevel::Info)) {}
 
 int Runner::run() {
   logService->setLevel(logLevel_);
