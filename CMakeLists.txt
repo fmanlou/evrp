@@ -219,7 +219,7 @@ add_library(
   evrp/device/impl/server/localcursorposition.cpp
   evrp/device/impl/server/localinputdevicekindsprovider.cpp
   evrp/device/impl/server/server.cpp
-  evrp/device/impl/server/discoveryresponder.cpp
+  evrp/device/internal/discovery/impl/discoveryresponder.cpp
   evrp/device/impl/server/grpc/grpcsessionservice.cpp
   evrp/device/impl/server/grpc/grpcinputlisten.cpp
   evrp/device/impl/server/grpc/grpcinputdeviceservice.cpp
@@ -227,7 +227,7 @@ add_library(
   evrp/device/impl/client/remoteinputlistener.cpp
   evrp/device/impl/client/remoteplayback.cpp
   evrp/device/impl/client/client.cpp
-  evrp/device/impl/client/devicediscovery.cpp
+  evrp/device/internal/discovery/impl/devicediscovery.cpp
   evrp/device/impl/client/remoteinputdeviceclient.cpp)
 target_include_directories(
   evrp_device PUBLIC "${EVRP_ROOT}" ${EVRP_SDK_DIR} "${GEN_DIR}")

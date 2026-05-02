@@ -8,7 +8,7 @@
 namespace evrp::sdk {
 
 inline constexpr int kDeviceDiscoveryUdpPort = 53508;
-/// ISetting keys for discovery (client UdpDeviceDiscoverer and server DiscoveryResponder).
+/// ISetting keys for discovery (client IUdpDeviceDiscoverer and server IDiscoveryResponder).
 inline constexpr char kDeviceDiscoverySettingPort[] = "discovery_port";
 inline constexpr char kDeviceDiscoverySettingLinkMode[] = "discovery_link_mode";
 /// Administratively scoped IPv4 multicast (RFC 2365 239/8). Used when

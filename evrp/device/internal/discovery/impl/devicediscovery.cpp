@@ -241,21 +241,32 @@ std::vector<std::string> discoverGrpcTargetsImpl(
   return targets;
 }
 
+class UdpDeviceDiscovererImpl final : public IUdpDeviceDiscoverer {
+ public:
+  explicit UdpDeviceDiscovererImpl(const ISetting& settings)
+      : settings_(settings) {}
+
+  std::vector<std::string> discoverGrpcTargets() const override {
+    const int discovery_udp_port = settings_.get<int>(
+        evrp::sdk::kDeviceDiscoverySettingPort, evrp::sdk::kDeviceDiscoveryUdpPort);
+    evrp::sdk::DiscoveryLinkMode link_mode{};
+    const std::string mode_str = settings_.get<std::string>(
+        evrp::sdk::kDeviceDiscoverySettingLinkMode, std::string("multicast"));
+    if (!evrp::sdk::tryParseDiscoveryLinkMode(mode_str, &link_mode)) {
+      return {};
+    }
+    return discoverGrpcTargetsImpl(discovery_udp_port, link_mode);
+  }
+
+ private:
+  const ISetting& settings_;
+};
+
 }  // namespace
 
-UdpDeviceDiscoverer::UdpDeviceDiscoverer(const ISetting& settings)
-    : settings_(settings) {}
-
-std::vector<std::string> UdpDeviceDiscoverer::discoverGrpcTargets() const {
-  const int discovery_udp_port = settings_.get<int>(
-      evrp::sdk::kDeviceDiscoverySettingPort, evrp::sdk::kDeviceDiscoveryUdpPort);
-  evrp::sdk::DiscoveryLinkMode link_mode{};
-  const std::string mode_str = settings_.get<std::string>(
-      evrp::sdk::kDeviceDiscoverySettingLinkMode, std::string("multicast"));
-  if (!evrp::sdk::tryParseDiscoveryLinkMode(mode_str, &link_mode)) {
-    return {};
-  }
-  return discoverGrpcTargetsImpl(discovery_udp_port, link_mode);
+std::unique_ptr<IUdpDeviceDiscoverer> createUdpDeviceDiscoverer(
+    const ISetting& settings) {
+  return std::make_unique<UdpDeviceDiscovererImpl>(settings);
 }
 
 }  // namespace evrp::device::api

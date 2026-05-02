@@ -33,12 +33,13 @@ class ServerImpl final : public IServer {
       : listen_address_(std::move(listen_address)),
         ioc_(ioc),
         device_settings_(device_settings),
-        discovery_responder_(device_settings_) {}
+        discoveryResponder_(
+            evrp::device::server::createDiscoveryResponder(device_settings)) {}
 
   int run() override {
     std::uint16_t grpc_port = 0;
     if (evrp::device::server::parseListenPort(listen_address_, &grpc_port)) {
-      discovery_responder_.start(grpc_port);
+      discoveryResponder_->start(grpc_port);
     } else {
       logError("evrp-device: could not parse gRPC listen port from {}", listen_address_);
     }
@@ -84,7 +85,7 @@ class ServerImpl final : public IServer {
   std::string listen_address_;
   const evrp::Ioc& ioc_;
   const ISetting& device_settings_;
-  evrp::device::server::DiscoveryResponder discovery_responder_;
+  std::unique_ptr<evrp::device::server::IDiscoveryResponder> discoveryResponder_;
 };
 
 }  // namespace

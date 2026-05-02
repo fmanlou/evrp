@@ -102,8 +102,9 @@ class ClientImpl final : public IClient {
 std::unique_ptr<IClient> makeClient(const std::string& targetHostPort,
                                     const ISetting& discovery_settings) {
   if (useUdpDeviceDiscovery(targetHostPort)) {
-    const UdpDeviceDiscoverer discoverer(discovery_settings);
-    for (const std::string& target : discoverer.discoverGrpcTargets()) {
+    const std::unique_ptr<IUdpDeviceDiscoverer> discoverer =
+        createUdpDeviceDiscoverer(discovery_settings);
+    for (const std::string& target : discoverer->discoverGrpcTargets()) {
       std::unique_ptr<ClientImpl> c = ClientImpl::tryCreateWithDeadline(target);
       if (c) {
         return c;

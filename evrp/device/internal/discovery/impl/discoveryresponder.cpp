@@ -46,7 +46,7 @@ bool parseListenPort(const std::string& listen_address, std::uint16_t* out_port)
 
 namespace {
 
-void discoveryResponderLoop(std::uint16_t grpc_listen_port,
+void discoveryResponderLoop(std::uint16_t grpcListenPort,
                             int udp_port,
                             evrp::sdk::DiscoveryLinkMode link_mode) {
   const int fd = socket(AF_INET, SOCK_DGRAM, 0);
@@ -85,12 +85,12 @@ void discoveryResponderLoop(std::uint16_t grpc_listen_port,
     }
     logInfo(
         "evrp-device discovery multicast {}:{} (gRPC port {} in unicast replies)",
-        evrp::sdk::kDeviceDiscoveryMulticastIpv4, udp_port, grpc_listen_port);
+        evrp::sdk::kDeviceDiscoveryMulticastIpv4, udp_port, grpcListenPort);
   } else {
     logInfo(
         "evrp-device discovery broadcast on UDP {} (gRPC port {} in unicast "
         "replies)",
-        udp_port, grpc_listen_port);
+        udp_port, grpcListenPort);
   }
 
   for (;;) {
@@ -113,36 +113,46 @@ void discoveryResponderLoop(std::uint16_t grpc_listen_port,
     resp.magic[3] = 'P';
     resp.version = evrp::sdk::kDeviceDiscoveryVersion;
     resp.reserved = 0;
-    resp.grpc_port_be = htons(grpc_listen_port);
+    resp.grpc_port_be = htons(grpcListenPort);
     (void)sendto(fd, &resp, sizeof(resp), 0, reinterpret_cast<sockaddr*>(&from),
                  from_len);
   }
 }
 
+class UdpDiscoveryResponder final : public IDiscoveryResponder {
+ public:
+  explicit UdpDiscoveryResponder(const ISetting& settings) : settings_(settings) {}
+
+  void start(std::uint16_t grpcListenPort) override {
+    const int udp = settings_.get<int>(
+        evrp::sdk::kDeviceDiscoverySettingPort, evrp::sdk::kDeviceDiscoveryUdpPort);
+    if (udp < 1 || udp > 65535) {
+      logError("discovery_port invalid: {}", udp);
+      return;
+    }
+    evrp::sdk::DiscoveryLinkMode link_mode{};
+    const std::string mode_str = settings_.get<std::string>(
+        evrp::sdk::kDeviceDiscoverySettingLinkMode, std::string("multicast"));
+    if (!evrp::sdk::tryParseDiscoveryLinkMode(mode_str, &link_mode)) {
+      logError(
+          "discovery_link_mode invalid: {} (expected multicast or broadcast)",
+          mode_str);
+      return;
+    }
+    std::thread([grpcListenPort, udp, link_mode]() {
+      discoveryResponderLoop(grpcListenPort, udp, link_mode);
+    }).detach();
+  }
+
+ private:
+  const ISetting& settings_;
+};
+
 }  // namespace
 
-DiscoveryResponder::DiscoveryResponder(const ISetting& settings)
-    : settings_(settings) {}
-
-void DiscoveryResponder::start(std::uint16_t grpc_listen_port) {
-  const int udp = settings_.get<int>(
-      evrp::sdk::kDeviceDiscoverySettingPort, evrp::sdk::kDeviceDiscoveryUdpPort);
-  if (udp < 1 || udp > 65535) {
-    logError("discovery_port invalid: {}", udp);
-    return;
-  }
-  evrp::sdk::DiscoveryLinkMode link_mode{};
-  const std::string mode_str = settings_.get<std::string>(
-      evrp::sdk::kDeviceDiscoverySettingLinkMode, std::string("multicast"));
-  if (!evrp::sdk::tryParseDiscoveryLinkMode(mode_str, &link_mode)) {
-    logError(
-        "discovery_link_mode invalid: {} (expected multicast or broadcast)",
-        mode_str);
-    return;
-  }
-  std::thread([grpc_listen_port, udp, link_mode]() {
-    discoveryResponderLoop(grpc_listen_port, udp, link_mode);
-  }).detach();
+std::unique_ptr<IDiscoveryResponder> createDiscoveryResponder(
+    const ISetting& settings) {
+  return std::make_unique<UdpDiscoveryResponder>(settings);
 }
 
 }  // namespace evrp::device::server

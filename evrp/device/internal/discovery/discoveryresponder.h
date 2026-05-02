@@ -1,9 +1,8 @@
 #pragma once
 
 #include <cstdint>
+#include <memory>
 #include <string>
-
-#include "evrp/device/internal/discovery/devicediscoveryprotocol.h"
 
 class ISetting;
 
@@ -11,18 +10,19 @@ namespace evrp::device::server {
 
 bool parseListenPort(const std::string& listen_address, std::uint16_t* out_port);
 
-/// UDP discovery responder; reads kDeviceDiscoverySettingPort (int) and
-/// kDeviceDiscoverySettingLinkMode (string: multicast|broadcast) from ISetting.
-/// Caller must keep `settings` alive for the server lifetime.
-class DiscoveryResponder {
+/// Contract for serving device discovery (e.g. UDP) alongside gRPC.
+class IDiscoveryResponder {
  public:
-  explicit DiscoveryResponder(const ISetting& settings);
+  virtual ~IDiscoveryResponder() = default;
 
-  /// Spawns a detached thread that serves discovery until process exit.
-  void start(std::uint16_t grpc_listen_port);
-
- private:
-  const ISetting& settings_;
+  /// Begin discovery for the given gRPC listen port (implementation-defined).
+  virtual void start(std::uint16_t grpcListenPort) = 0;
 };
+
+/// Default discovery responder; reads kDeviceDiscoverySettingPort (int) and
+/// kDeviceDiscoverySettingLinkMode (string: multicast|broadcast) from ISetting.
+/// Caller must keep `settings` alive for the responder lifetime.
+std::unique_ptr<IDiscoveryResponder> createDiscoveryResponder(
+    const ISetting& settings);
 
 }  // namespace evrp::device::server
