@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "evrp/device/api/types.h"
-#include "evrp/device/impl/client/devicediscovery.h"
+#include "evrp/device/internal/discovery/devicediscovery.h"
 #include "evrp/sdk/logger.h"
 
 namespace api = evrp::device::api;

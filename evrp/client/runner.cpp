@@ -36,12 +36,13 @@ int Runner::run() {
   }
 
   std::unique_ptr<evrp::device::api::IClient> deviceClient =
-      evrp::device::api::makeClient(device_);
+      evrp::device::api::makeClient(device_, options_);
   if (!deviceClient) {
     logError(
         "Could not connect to evrp-device{} (session handshake failed). "
-        "Start `evrp-device`, set --device=HOST:PORT, or rely on UDP discovery "
-        "(default when --device is unset; see --discovery_port).",
+        "Start `evrp-device`, set --device=HOST:PORT, or rely on UDP multicast "
+        "discovery (default when --device is unset; see --discovery_port and "
+        "--discovery_link_mode).",
         device_.empty() ? std::string("") : (" at " + device_));
     return 1;
   }

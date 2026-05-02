@@ -7,6 +7,8 @@
 #include "evrp/device/api/inputlistener.h"
 #include "evrp/device/api/playback.h"
 
+class ISetting;
+
 namespace evrp::device::api {
 
 class IClient {
@@ -20,6 +22,7 @@ class IClient {
   virtual const std::string& serverAddress() const = 0;
 };
 
-std::unique_ptr<IClient> makeClient(const std::string& targetHostPort);
+std::unique_ptr<IClient> makeClient(const std::string& targetHostPort,
+                                    const ISetting& discovery_settings);
 
 }

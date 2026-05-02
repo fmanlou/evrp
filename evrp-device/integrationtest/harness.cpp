@@ -20,10 +20,13 @@
 #include <sys/wait.h>
 #include <signal.h>
 
-#include "evrp/device/impl/client/devicediscovery.h"
+#include "evrp/device/internal/discovery/devicediscovery.h"
+#include "evrp/device/internal/discovery/devicediscoveryprotocol.h"
 #include "evrp/sdk/logger.h"
+#include "evrp/sdk/setting/memorysetting.h"
 
 DECLARE_int32(discovery_port);
+DECLARE_string(discovery_link_mode);
 
 DEFINE_string(
     target, "",
@@ -71,6 +74,13 @@ DEFINE_string(
     "--device_binary, also passed to the spawned evrp-device");
 
 namespace {
+
+MemorySetting harnessDiscoverySettingsSnapshot() {
+  MemorySetting s;
+  s.insert(evrp::sdk::kDeviceDiscoverySettingPort, FLAGS_discovery_port);
+  s.insert(evrp::sdk::kDeviceDiscoverySettingLinkMode, FLAGS_discovery_link_mode);
+  return s;
+}
 
 int pickFreeLoopbackPort() {
   int fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -278,6 +288,8 @@ bool IntegrationHarness::initialize() {
     const std::string discoveryFlag =
         std::string("--discovery_port=") +
         std::to_string(env_.discovery_udp_port);
+    const std::string linkModeFlag =
+        std::string("--discovery_link_mode=") + FLAGS_discovery_link_mode;
     g_proc = std::make_unique<DeviceProcess>();
     g_proc->pid = fork();
     if (g_proc->pid < 0) {
@@ -289,7 +301,7 @@ bool IntegrationHarness::initialize() {
       const std::string logFlag =
           std::string("--log_level=") + FLAGS_log_level;
       execl(binary.c_str(), binary.c_str(), "-listen", listenArg.c_str(),
-            discoveryFlag.c_str(), logFlag.c_str(),
+            discoveryFlag.c_str(), linkModeFlag.c_str(), logFlag.c_str(),
             static_cast<char*>(nullptr));
       _exit(127);
     }
@@ -334,7 +346,8 @@ IntegrationHarness::connectDirectClient(int timeout_ms) {
       std::chrono::steady_clock::now() +
       std::chrono::milliseconds(timeout_ms);
   while (std::chrono::steady_clock::now() < connectDeadline) {
-    auto client = evrp::device::api::makeClient(env_.target);
+    auto client = evrp::device::api::makeClient(env_.target,
+                                                harnessDiscoverySettingsSnapshot());
     if (client) {
       return client;
     }
@@ -558,7 +571,8 @@ bool IntegrationHarness::runUdpDiscoveryTest() {
         std::chrono::steady_clock::now() +
         std::chrono::milliseconds(FLAGS_rpc_wait_ms);
     while (std::chrono::steady_clock::now() < connectDeadline) {
-      viaDiscovery = evrp::device::api::makeClient("");
+      viaDiscovery = evrp::device::api::makeClient(
+          "", harnessDiscoverySettingsSnapshot());
       if (viaDiscovery) {
         break;
       }
@@ -568,7 +582,10 @@ bool IntegrationHarness::runUdpDiscoveryTest() {
   FLAGS_discovery_port = saved_discovery;
   if (!viaDiscovery) {
     logError(
-        "UDP discovery: timed out makeClient(\"\") with --discovery_port={}",
+        "UDP discovery: timed out makeClient(\"\") with --discovery_port={}. "
+        "Start `evrp-device` on the LAN with the same --discovery_port (default "
+        "53508). Discovery-only from this host cannot reach a container in "
+        "bridge networking; use Docker --network=host or pass --target=HOST:PORT.",
         env_.discovery_udp_port);
     return false;
   }

@@ -7,6 +7,10 @@
 #include <vector>
 
 #include "evrp/sdk/logger.h"
+#include "evrp/device/internal/discovery/devicediscoveryprotocol.h"
+
+DECLARE_int32(discovery_port);
+DECLARE_string(discovery_link_mode);
 
 DEFINE_bool(
     record, false,
@@ -25,8 +29,8 @@ DEFINE_bool(
     "Playback: execute [trailing] wait (see --nowait_trailing to disable).");
 DEFINE_string(
     device, "",
-    "evrp-device gRPC host:port. If empty, use UDP broadcast discovery on "
-    "--discovery_port (default 53508). Same-machine targets are tried first.");
+    "evrp-device gRPC host:port. If empty, use UDP discovery (--discovery_port, "
+    "--discovery_link_mode). Same-machine targets are tried first.");
 
 namespace {
 
@@ -97,8 +101,8 @@ void printUsage(const char* prog) {
       << "  --wait_trailing / --nowait_trailing (or --wait-trailing=yes|no): "
          "during "
          "playback, execute [trailing] wait (default: wait).\n"
-      << "  --device=HOST:PORT: evrp-device gRPC; omit for UDP LAN discovery "
-         "(--discovery_port).\n"
+      << "  --device=HOST:PORT: evrp-device gRPC; omit for UDP discovery "
+         "(--discovery_port / --discovery_link_mode).\n"
       << "  --help: show gflags help.\n";
 }
 
@@ -172,4 +176,7 @@ void parseArgvInto(ISetting& options, int argc, char* argv[]) {
   options.insert("kinds", std::move(kinds));
   options.insert("executeWaitBeforeFirst", executeWaitBeforeFirst);
   options.insert("executeWaitAfterLast", executeWaitAfterLast);
+  options.insert(evrp::sdk::kDeviceDiscoverySettingPort, FLAGS_discovery_port);
+  options.insert(evrp::sdk::kDeviceDiscoverySettingLinkMode,
+                 FLAGS_discovery_link_mode);
 }

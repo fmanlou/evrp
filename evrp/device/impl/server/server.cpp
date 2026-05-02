@@ -11,12 +11,13 @@
 #include <grpcpp/health_check_service_interface.h>
 
 #include "evrp/sdk/sessionregistry.h"
-#include "evrp/device/impl/server/discoveryresponder.h"
+#include "evrp/device/internal/discovery/discoveryresponder.h"
 #include "evrp/device/impl/server/grpc/grpcsessionservice.h"
 #include "evrp/device/impl/server/grpc/grpcinputdeviceservice.h"
 #include "evrp/device/impl/server/grpc/grpcinputlisten.h"
 #include "evrp/device/impl/server/grpc/grpcplaybackservice.h"
 #include "evrp/sdk/logger.h"
+#include "evrp/sdk/setting/isetting.h"
 
 DECLARE_int32(session_lease_ms);
 
@@ -26,13 +27,18 @@ namespace {
 
 class ServerImpl final : public IServer {
  public:
-  ServerImpl(std::string listen_address, const evrp::Ioc& ioc)
-      : listen_address_(std::move(listen_address)), ioc_(ioc) {}
+  ServerImpl(std::string listen_address,
+             const evrp::Ioc& ioc,
+             const ISetting& device_settings)
+      : listen_address_(std::move(listen_address)),
+        ioc_(ioc),
+        device_settings_(device_settings),
+        discovery_responder_(device_settings_) {}
 
   int run() override {
     std::uint16_t grpc_port = 0;
     if (evrp::device::server::parseListenPort(listen_address_, &grpc_port)) {
-      evrp::device::server::startDiscoveryResponder(grpc_port);
+      discovery_responder_.start(grpc_port);
     } else {
       logError("evrp-device: could not parse gRPC listen port from {}", listen_address_);
     }
@@ -77,13 +83,16 @@ class ServerImpl final : public IServer {
  private:
   std::string listen_address_;
   const evrp::Ioc& ioc_;
+  const ISetting& device_settings_;
+  evrp::device::server::DiscoveryResponder discovery_responder_;
 };
 
 }  // namespace
 
 std::unique_ptr<IServer> makeServer(const std::string& listen_address,
-                                    const evrp::Ioc& ioc) {
-  return std::make_unique<ServerImpl>(listen_address, ioc);
+                                    const evrp::Ioc& ioc,
+                                    const ISetting& device_settings) {
+  return std::make_unique<ServerImpl>(listen_address, ioc, device_settings);
 }
 
 }  // namespace evrp::device::api

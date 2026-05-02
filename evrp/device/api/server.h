@@ -7,6 +7,8 @@ namespace evrp {
 class Ioc;
 }
 
+class ISetting;
+
 namespace evrp::device::api {
 
 class IServer {
@@ -16,6 +18,7 @@ class IServer {
 };
 
 std::unique_ptr<IServer> makeServer(const std::string& listen_address,
-                                    const evrp::Ioc& ioc);
+                                    const evrp::Ioc& ioc,
+                                    const ISetting& device_settings);
 
 }

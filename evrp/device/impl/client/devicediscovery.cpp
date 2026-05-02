@@ -1,9 +1,10 @@
-#include "evrp/device/impl/client/devicediscovery.h"
+#include "evrp/device/internal/discovery/devicediscovery.h"
 
 #include <arpa/inet.h>
 #include <ifaddrs.h>
 #include <net/if.h>
 #include <netinet/in.h>
+#include <netinet/ip.h>
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -17,11 +18,17 @@
 #include <set>
 #include <unordered_set>
 
-#include "evrp/sdk/devicediscoveryprotocol.h"
+#include "evrp/device/internal/discovery/devicediscoveryprotocol.h"
+#include "evrp/sdk/setting/isetting.h"
 
 DEFINE_int32(
     discovery_port, evrp::sdk::kDeviceDiscoveryUdpPort,
-    "UDP port for LAN discovery (empty --device on client; evrp-device must use the same).");
+    "UDP port for IPv4 device discovery (empty --device; "
+    "evrp-device --discovery_port must match).");
+DEFINE_string(
+    discovery_link_mode, "multicast",
+    "Discovery probes: \"multicast\" (default) or \"broadcast\"; must match "
+    "evrp-device.");
 
 namespace evrp::device::api {
 
@@ -90,9 +97,71 @@ void sortDiscoveredTargetsPreferSameHost(
       });
 }
 
-}  // namespace
+bool prepareDiscoverySocketForMode(int fd, evrp::sdk::DiscoveryLinkMode mode) {
+  if (mode == evrp::sdk::DiscoveryLinkMode::kMulticast) {
+    const unsigned char mcast_ttl = 1;
+    return setsockopt(fd, IPPROTO_IP, IP_MULTICAST_TTL, &mcast_ttl,
+                      sizeof(mcast_ttl)) == 0;
+  }
+  int broadcast = 1;
+  return setsockopt(fd, SOL_SOCKET, SO_BROADCAST, &broadcast,
+                    sizeof(broadcast)) == 0;
+}
 
-std::vector<std::string> discoverDeviceGrpcTargetsViaUdp(int discovery_udp_port) {
+void transmitDiscoveryProbes(int fd,
+                             std::uint16_t udp_be,
+                             evrp::sdk::DiscoveryLinkMode mode) {
+  sockaddr_in loop{};
+  loop.sin_family = AF_INET;
+  loop.sin_port = udp_be;
+  loop.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+  (void)sendDiscoveryProbe(fd, reinterpret_cast<sockaddr*>(&loop),
+                           sizeof(loop));
+
+  if (mode == evrp::sdk::DiscoveryLinkMode::kMulticast) {
+    sockaddr_in mcast{};
+    mcast.sin_family = AF_INET;
+    mcast.sin_port = udp_be;
+    if (inet_pton(AF_INET, evrp::sdk::kDeviceDiscoveryMulticastIpv4,
+                  &mcast.sin_addr) != 1) {
+      return;
+    }
+    (void)sendDiscoveryProbe(fd, reinterpret_cast<sockaddr*>(&mcast),
+                             sizeof(mcast));
+    return;
+  }
+
+  sockaddr_in global_bcast{};
+  global_bcast.sin_family = AF_INET;
+  global_bcast.sin_port = udp_be;
+  global_bcast.sin_addr.s_addr = htonl(INADDR_BROADCAST);
+  (void)sendDiscoveryProbe(fd, reinterpret_cast<sockaddr*>(&global_bcast),
+                             sizeof(global_bcast));
+
+  ifaddrs* ifaddr = nullptr;
+  if (getifaddrs(&ifaddr) != 0) {
+    return;
+  }
+  for (ifaddrs* ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next) {
+    if (ifa->ifa_flags & IFF_LOOPBACK) {
+      continue;
+    }
+    if (!(ifa->ifa_flags & IFF_UP) || !(ifa->ifa_flags & IFF_BROADCAST)) {
+      continue;
+    }
+    if (ifa->ifa_broadaddr == nullptr ||
+        ifa->ifa_broadaddr->sa_family != AF_INET) {
+      continue;
+    }
+    auto* b = reinterpret_cast<sockaddr_in*>(ifa->ifa_broadaddr);
+    b->sin_port = udp_be;
+    (void)sendDiscoveryProbe(fd, reinterpret_cast<sockaddr*>(b), sizeof(*b));
+  }
+  freeifaddrs(ifaddr);
+}
+
+std::vector<std::string> discoverGrpcTargetsImpl(
+    int discovery_udp_port, evrp::sdk::DiscoveryLinkMode link_mode) {
   std::vector<std::string> targets;
   if (discovery_udp_port < 1 || discovery_udp_port > 65535) {
     return targets;
@@ -104,59 +173,33 @@ std::vector<std::string> discoverDeviceGrpcTargetsViaUdp(int discovery_udp_port)
   if (fd < 0) {
     return targets;
   }
-  int broadcast = 1;
-  (void)setsockopt(fd, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof(broadcast));
+
+  (void)prepareDiscoverySocketForMode(fd, link_mode);
 
   const std::uint16_t udp_be = htons(static_cast<std::uint16_t>(discovery_udp_port));
 
-  sockaddr_in loop{};
-  loop.sin_family = AF_INET;
-  loop.sin_port = udp_be;
-  loop.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
-  (void)sendDiscoveryProbe(
-      fd, reinterpret_cast<sockaddr*>(&loop), sizeof(loop));
-
-  sockaddr_in global_bcast{};
-  global_bcast.sin_family = AF_INET;
-  global_bcast.sin_port = udp_be;
-  global_bcast.sin_addr.s_addr = htonl(INADDR_BROADCAST);
-  (void)sendDiscoveryProbe(
-      fd, reinterpret_cast<sockaddr*>(&global_bcast), sizeof(global_bcast));
-
-  ifaddrs* ifaddr = nullptr;
-  if (getifaddrs(&ifaddr) == 0) {
-    for (ifaddrs* ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next) {
-      if (ifa->ifa_flags & IFF_LOOPBACK) {
-        continue;
-      }
-      if (!(ifa->ifa_flags & IFF_UP) || !(ifa->ifa_flags & IFF_BROADCAST)) {
-        continue;
-      }
-      if (ifa->ifa_broadaddr == nullptr ||
-          ifa->ifa_broadaddr->sa_family != AF_INET) {
-        continue;
-      }
-      auto* b = reinterpret_cast<sockaddr_in*>(ifa->ifa_broadaddr);
-      b->sin_port = udp_be;
-      (void)sendDiscoveryProbe(fd, reinterpret_cast<sockaddr*>(b), sizeof(*b));
-    }
-    freeifaddrs(ifaddr);
-  }
-
   std::set<std::string> seen;
   const auto deadline = std::chrono::steady_clock::now() +
-                        std::chrono::milliseconds(800);
+                        std::chrono::milliseconds(1500);
+  auto next_resend = std::chrono::steady_clock::time_point{};
 
   while (std::chrono::steady_clock::now() < deadline) {
-    const auto remain = std::chrono::duration_cast<std::chrono::milliseconds>(
-                            deadline - std::chrono::steady_clock::now())
-                            .count();
-    if (remain <= 0) {
+    const auto now = std::chrono::steady_clock::now();
+    if (now >= next_resend) {
+      transmitDiscoveryProbes(fd, udp_be, link_mode);
+      next_resend = now + std::chrono::milliseconds(200);
+    }
+
+    const auto remain_ms =
+        std::chrono::duration_cast<std::chrono::milliseconds>(deadline - now)
+            .count();
+    if (remain_ms <= 0) {
       break;
     }
     timeval tv{};
-    tv.tv_sec = static_cast<long>(remain / 1000);
-    tv.tv_usec = static_cast<long>((remain % 1000) * 1000);
+    const int slice_ms = std::min<int64_t>(remain_ms, 250);
+    tv.tv_sec = static_cast<long>(slice_ms / 1000);
+    tv.tv_usec = static_cast<long>((slice_ms % 1000) * 1000);
 
     fd_set rfds;
     FD_ZERO(&rfds);
@@ -196,6 +239,23 @@ std::vector<std::string> discoverDeviceGrpcTargetsViaUdp(int discovery_udp_port)
   (void)close(fd);
   sortDiscoveredTargetsPreferSameHost(&targets, local_ipv4);
   return targets;
+}
+
+}  // namespace
+
+UdpDeviceDiscoverer::UdpDeviceDiscoverer(const ISetting& settings)
+    : settings_(settings) {}
+
+std::vector<std::string> UdpDeviceDiscoverer::discoverGrpcTargets() const {
+  const int discovery_udp_port = settings_.get<int>(
+      evrp::sdk::kDeviceDiscoverySettingPort, evrp::sdk::kDeviceDiscoveryUdpPort);
+  evrp::sdk::DiscoveryLinkMode link_mode{};
+  const std::string mode_str = settings_.get<std::string>(
+      evrp::sdk::kDeviceDiscoverySettingLinkMode, std::string("multicast"));
+  if (!evrp::sdk::tryParseDiscoveryLinkMode(mode_str, &link_mode)) {
+    return {};
+  }
+  return discoverGrpcTargetsImpl(discovery_udp_port, link_mode);
 }
 
 }  // namespace evrp::device::api

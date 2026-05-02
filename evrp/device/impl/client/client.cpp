@@ -3,15 +3,13 @@
 #include <grpcpp/grpcpp.h>
 
 #include <chrono>
-#include <gflags/gflags.h>
 
-#include "evrp/device/impl/client/devicediscovery.h"
+#include "evrp/device/internal/discovery/devicediscovery.h"
 #include "evrp/device/impl/client/remoteinputdeviceclient.h"
 #include "evrp/device/impl/client/remoteinputlistener.h"
 #include "evrp/device/impl/client/remoteplayback.h"
 #include "evrp/sdk/sessionclient.h"
-
-DECLARE_int32(discovery_port);
+#include "evrp/sdk/setting/isetting.h"
 
 namespace evrp::device::api {
 
@@ -101,11 +99,11 @@ class ClientImpl final : public IClient {
 
 }  // namespace
 
-std::unique_ptr<IClient> makeClient(const std::string& targetHostPort) {
+std::unique_ptr<IClient> makeClient(const std::string& targetHostPort,
+                                    const ISetting& discovery_settings) {
   if (useUdpDeviceDiscovery(targetHostPort)) {
-    const std::vector<std::string> candidates =
-        discoverDeviceGrpcTargetsViaUdp(FLAGS_discovery_port);
-    for (const std::string& target : candidates) {
+    const UdpDeviceDiscoverer discoverer(discovery_settings);
+    for (const std::string& target : discoverer.discoverGrpcTargets()) {
       std::unique_ptr<ClientImpl> c = ClientImpl::tryCreateWithDeadline(target);
       if (c) {
         return c;

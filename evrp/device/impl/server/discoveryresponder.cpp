@@ -1,7 +1,8 @@
-#include "evrp/device/impl/server/discoveryresponder.h"
+#include "evrp/device/internal/discovery/discoveryresponder.h"
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <netinet/ip.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
@@ -9,12 +10,9 @@
 #include <cstring>
 #include <thread>
 
-#include <gflags/gflags.h>
-
-#include "evrp/sdk/devicediscoveryprotocol.h"
+#include "evrp/device/internal/discovery/devicediscoveryprotocol.h"
 #include "evrp/sdk/logger.h"
-
-DECLARE_int32(discovery_port);
+#include "evrp/sdk/setting/isetting.h"
 
 namespace evrp::device::server {
 
@@ -48,7 +46,9 @@ bool parseListenPort(const std::string& listen_address, std::uint16_t* out_port)
 
 namespace {
 
-void discoveryResponderLoop(std::uint16_t grpc_listen_port, int udp_port) {
+void discoveryResponderLoop(std::uint16_t grpc_listen_port,
+                            int udp_port,
+                            evrp::sdk::DiscoveryLinkMode link_mode) {
   const int fd = socket(AF_INET, SOCK_DGRAM, 0);
   if (fd < 0) {
     logError("discovery UDP: socket: {}", std::strerror(errno));
@@ -67,8 +67,31 @@ void discoveryResponderLoop(std::uint16_t grpc_listen_port, int udp_port) {
     return;
   }
 
-  logInfo("evrp-device discovery UDP on {} (gRPC port {} in replies)", udp_port,
-          grpc_listen_port);
+  if (link_mode == evrp::sdk::DiscoveryLinkMode::kMulticast) {
+    ip_mreq mreq{};
+    if (inet_pton(AF_INET, evrp::sdk::kDeviceDiscoveryMulticastIpv4,
+                  &mreq.imr_multiaddr) != 1) {
+      logError("discovery UDP: inet_pton {}",
+               evrp::sdk::kDeviceDiscoveryMulticastIpv4);
+      (void)close(fd);
+      return;
+    }
+    mreq.imr_interface.s_addr = htonl(INADDR_ANY);
+    if (setsockopt(fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) < 0) {
+      logWarn(
+          "discovery UDP: IP_ADD_MEMBERSHIP: {} (multicast discovery may be "
+          "unavailable; loopback probe may still work)",
+          std::strerror(errno));
+    }
+    logInfo(
+        "evrp-device discovery multicast {}:{} (gRPC port {} in unicast replies)",
+        evrp::sdk::kDeviceDiscoveryMulticastIpv4, udp_port, grpc_listen_port);
+  } else {
+    logInfo(
+        "evrp-device discovery broadcast on UDP {} (gRPC port {} in unicast "
+        "replies)",
+        udp_port, grpc_listen_port);
+  }
 
   for (;;) {
     sockaddr_in from{};
@@ -98,14 +121,27 @@ void discoveryResponderLoop(std::uint16_t grpc_listen_port, int udp_port) {
 
 }  // namespace
 
-void startDiscoveryResponder(std::uint16_t grpc_listen_port) {
-  const int udp = FLAGS_discovery_port;
+DiscoveryResponder::DiscoveryResponder(const ISetting& settings)
+    : settings_(settings) {}
+
+void DiscoveryResponder::start(std::uint16_t grpc_listen_port) {
+  const int udp = settings_.get<int>(
+      evrp::sdk::kDeviceDiscoverySettingPort, evrp::sdk::kDeviceDiscoveryUdpPort);
   if (udp < 1 || udp > 65535) {
     logError("discovery_port invalid: {}", udp);
     return;
   }
-  std::thread([grpc_listen_port, udp]() {
-    discoveryResponderLoop(grpc_listen_port, udp);
+  evrp::sdk::DiscoveryLinkMode link_mode{};
+  const std::string mode_str = settings_.get<std::string>(
+      evrp::sdk::kDeviceDiscoverySettingLinkMode, std::string("multicast"));
+  if (!evrp::sdk::tryParseDiscoveryLinkMode(mode_str, &link_mode)) {
+    logError(
+        "discovery_link_mode invalid: {} (expected multicast or broadcast)",
+        mode_str);
+    return;
+  }
+  std::thread([grpc_listen_port, udp, link_mode]() {
+    discoveryResponderLoop(grpc_listen_port, udp, link_mode);
   }).detach();
 }
 

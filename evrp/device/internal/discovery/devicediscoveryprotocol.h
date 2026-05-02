@@ -1,12 +1,46 @@
 #pragma once
 
+#include <cctype>
 #include <cstddef>
 #include <cstdint>
+#include <string>
 
 namespace evrp::sdk {
 
 inline constexpr int kDeviceDiscoveryUdpPort = 53508;
+/// ISetting keys for discovery (client UdpDeviceDiscoverer and server DiscoveryResponder).
+inline constexpr char kDeviceDiscoverySettingPort[] = "discovery_port";
+inline constexpr char kDeviceDiscoverySettingLinkMode[] = "discovery_link_mode";
+/// Administratively scoped IPv4 multicast (RFC 2365 239/8). Used when
+/// DiscoveryLinkMode::kMulticast.
+inline constexpr char kDeviceDiscoveryMulticastIpv4[] = "239.76.82.80";
 inline constexpr std::uint8_t kDeviceDiscoveryVersion = 1;
+
+/// L3 delivery for discovery probes: multicast (default) or directed/limited
+/// IPv4 broadcast.
+enum class DiscoveryLinkMode : std::uint8_t { kMulticast = 0, kBroadcast = 1 };
+
+inline bool tryParseDiscoveryLinkMode(const std::string& s,
+                                      DiscoveryLinkMode* out) {
+  if (!out) {
+    return false;
+  }
+  std::string lower;
+  lower.reserve(s.size());
+  for (char c : s) {
+    lower.push_back(static_cast<char>(
+        std::tolower(static_cast<unsigned char>(c))));
+  }
+  if (lower == "multicast") {
+    *out = DiscoveryLinkMode::kMulticast;
+    return true;
+  }
+  if (lower == "broadcast") {
+    *out = DiscoveryLinkMode::kBroadcast;
+    return true;
+  }
+  return false;
+}
 
 #pragma pack(push, 1)
 struct DeviceDiscoveryRequest {

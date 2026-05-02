@@ -11,5 +11,14 @@ TEST_F(DeviceIntegration, UdpDiscovery) {
   if (!FLAGS_test_udp_discovery) {
     GTEST_SKIP() << "--test_udp_discovery=false";
   }
-  ASSERT_TRUE(IntegrationHarness::runUdpDiscoveryTest());
+  const bool manualDiscoveryOnly = !e.spawned_local && e.target.empty();
+  if (!IntegrationHarness::runUdpDiscoveryTest()) {
+    if (manualDiscoveryOnly) {
+      GTEST_SKIP() << "No evrp-device answered UDP discovery (same --discovery_port). "
+                      "Start evrp-device on the LAN, use --device_binary, or "
+                      "--target=HOST:PORT. Bridge-mode Docker cannot be reached "
+                      "via discovery from the host; use --network=host or --target.";
+    }
+    FAIL() << "UDP discovery failed";
+  }
 }
