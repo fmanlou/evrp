@@ -18,7 +18,8 @@
 #include <set>
 #include <unordered_set>
 
-#include "evrp/device/internal/discovery/devicediscoveryprotocol.h"
+#include "evrp/device/internal/discovery/devicediscoverysettings.h"
+#include "evrp/device/internal/discovery/impl/devicediscoveryprotocol.h"
 #include "evrp/sdk/setting/isetting.h"
 
 DEFINE_int32(

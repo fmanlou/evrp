@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "evrp/sdk/logger.h"
-#include "evrp/device/internal/discovery/devicediscoveryprotocol.h"
+#include "evrp/device/internal/discovery/devicediscoverysettings.h"
 
 DECLARE_int32(discovery_port);
 DECLARE_string(discovery_link_mode);

@@ -11,7 +11,7 @@
 #include <grpcpp/health_check_service_interface.h>
 
 #include "evrp/sdk/sessionregistry.h"
-#include "evrp/device/internal/discovery/devicediscoveryprotocol.h"
+#include "evrp/device/internal/discovery/devicediscoverysettings.h"
 #include "evrp/device/internal/discovery/discoveryresponder.h"
 #include "evrp/device/impl/server/grpc/grpcsessionservice.h"
 #include "evrp/device/impl/server/grpc/grpcinputdeviceservice.h"

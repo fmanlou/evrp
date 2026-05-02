@@ -21,7 +21,7 @@
 #include <signal.h>
 
 #include "evrp/device/internal/discovery/devicediscovery.h"
-#include "evrp/device/internal/discovery/devicediscoveryprotocol.h"
+#include "evrp/device/internal/discovery/devicediscoverysettings.h"
 #include "evrp/sdk/logger.h"
 #include "evrp/sdk/setting/memorysetting.h"
 
