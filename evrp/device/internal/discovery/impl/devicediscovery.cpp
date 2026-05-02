@@ -262,11 +262,11 @@ class UdpDeviceDiscovererImpl final : public IUdpDeviceDiscoverer {
   const ISetting& settings_;
 };
 
-}  // namespace
+}
 
 std::unique_ptr<IUdpDeviceDiscoverer> createUdpDeviceDiscoverer(
     const ISetting& settings) {
   return std::make_unique<UdpDeviceDiscovererImpl>(settings);
 }
 
-}  // namespace evrp::device::api
+}

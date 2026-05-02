@@ -148,11 +148,11 @@ class UdpDiscoveryResponder final : public IDiscoveryResponder {
   const ISetting& settings_;
 };
 
-}  // namespace
+}
 
 std::unique_ptr<IDiscoveryResponder> createDiscoveryResponder(
     const ISetting& settings) {
   return std::make_unique<UdpDiscoveryResponder>(settings);
 }
 
-}  // namespace evrp::device::server
+}

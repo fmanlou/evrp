@@ -8,16 +8,11 @@
 namespace evrp::sdk {
 
 inline constexpr int kDeviceDiscoveryUdpPort = 53508;
-/// ISetting keys for discovery (client IUdpDeviceDiscoverer and server IDiscoveryResponder).
 inline constexpr char kDeviceDiscoverySettingPort[] = "discovery_port";
 inline constexpr char kDeviceDiscoverySettingLinkMode[] = "discovery_link_mode";
-/// Administratively scoped IPv4 multicast (RFC 2365 239/8). Used when
-/// DiscoveryLinkMode::kMulticast.
 inline constexpr char kDeviceDiscoveryMulticastIpv4[] = "239.76.82.80";
 inline constexpr std::uint8_t kDeviceDiscoveryVersion = 1;
 
-/// L3 delivery for discovery probes: multicast (default) or directed/limited
-/// IPv4 broadcast.
 enum class DiscoveryLinkMode : std::uint8_t { kMulticast = 0, kBroadcast = 1 };
 
 inline bool tryParseDiscoveryLinkMode(const std::string& s,
@@ -80,4 +75,4 @@ inline bool isValidDeviceDiscoveryResponse(const DeviceDiscoveryResponse& r) {
          r.magic[3] == 'P' && r.version == kDeviceDiscoveryVersion;
 }
 
-}  // namespace evrp::sdk
+}
