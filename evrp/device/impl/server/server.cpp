@@ -11,6 +11,7 @@
 #include <grpcpp/health_check_service_interface.h>
 
 #include "evrp/sdk/sessionregistry.h"
+#include "evrp/device/internal/discovery/devicediscoveryprotocol.h"
 #include "evrp/device/internal/discovery/discoveryresponder.h"
 #include "evrp/device/impl/server/grpc/grpcsessionservice.h"
 #include "evrp/device/impl/server/grpc/grpcinputdeviceservice.h"
@@ -18,6 +19,8 @@
 #include "evrp/device/impl/server/grpc/grpcplaybackservice.h"
 #include "evrp/sdk/logger.h"
 #include "evrp/sdk/setting/isetting.h"
+#include "evrp/sdk/setting/memorysetting.h"
+#include "evrp/sdk/setting/overlaysetting.h"
 
 DECLARE_int32(session_lease_ms);
 
@@ -33,13 +36,17 @@ class ServerImpl final : public IServer {
       : listen_address_(std::move(listen_address)),
         ioc_(ioc),
         device_settings_(device_settings),
+        discoveryTop_(),
+        discoveryOverlay_(&discoveryTop_, {&device_settings_}),
         discoveryResponder_(
-            evrp::device::server::createDiscoveryResponder(device_settings)) {}
+            evrp::device::server::createDiscoveryResponder(discoveryOverlay_)) {}
 
   int run() override {
     std::uint16_t grpc_port = 0;
     if (evrp::device::server::parseListenPort(listen_address_, &grpc_port)) {
-      discoveryResponder_->start(grpc_port);
+      discoveryTop_.insert(evrp::sdk::kDeviceDiscoverySettingGrpcListenPort,
+                          static_cast<int>(grpc_port));
+      discoveryResponder_->start();
     } else {
       logError("evrp-device: could not parse gRPC listen port from {}", listen_address_);
     }
@@ -85,6 +92,8 @@ class ServerImpl final : public IServer {
   std::string listen_address_;
   const evrp::Ioc& ioc_;
   const ISetting& device_settings_;
+  MemorySetting discoveryTop_;
+  OverlaySetting discoveryOverlay_;
   std::unique_ptr<evrp::device::server::IDiscoveryResponder> discoveryResponder_;
 };
 

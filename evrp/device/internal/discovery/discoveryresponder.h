@@ -14,7 +14,7 @@ class IDiscoveryResponder {
  public:
   virtual ~IDiscoveryResponder() = default;
 
-  virtual void start(std::uint16_t grpcListenPort) = 0;
+  virtual void start() = 0;
 };
 
 std::unique_ptr<IDiscoveryResponder> createDiscoveryResponder(

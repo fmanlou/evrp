@@ -123,7 +123,14 @@ class UdpDiscoveryResponder final : public IDiscoveryResponder {
  public:
   explicit UdpDiscoveryResponder(const ISetting& settings) : settings_(settings) {}
 
-  void start(std::uint16_t grpcListenPort) override {
+  void start() override {
+    const int grpc = settings_.get<int>(
+        evrp::sdk::kDeviceDiscoverySettingGrpcListenPort, 0);
+    if (grpc < 1 || grpc > 65535) {
+      logError("discovery_grpc_listen_port invalid: {}", grpc);
+      return;
+    }
+    const auto grpcListenPort = static_cast<std::uint16_t>(grpc);
     const int udp = settings_.get<int>(
         evrp::sdk::kDeviceDiscoverySettingPort, evrp::sdk::kDeviceDiscoveryUdpPort);
     if (udp < 1 || udp > 65535) {
