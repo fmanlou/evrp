@@ -93,6 +93,7 @@ endif()
 add_library(
   evrp_sdk STATIC
   evrp/sdk/setting/memorysetting.cpp
+  evrp/sdk/setting/overlaysetting.cpp
   evrp/sdk/evdev.cpp
   evrp/sdk/filesystem/impl/enhancedfilesystem.cpp
   evrp/sdk/filesystem/impl/filesystem.cpp
@@ -249,7 +250,8 @@ target_link_libraries(evrp_client PUBLIC evrp_device evrp_sdk gflags::gflags)
 add_executable(evrp evrp-client/main.cpp)
 target_link_libraries(evrp PRIVATE evrp_client)
 
-add_executable(evrp_tests tests/inputdevice_test.cpp tests/argparser_test.cpp)
+add_executable(evrp_tests tests/inputdevice_test.cpp tests/argparser_test.cpp
+                                  tests/overlaysetting_test.cpp)
 target_link_libraries(evrp_tests PRIVATE evrp_client evrp_sdk GTest::gtest_main)
 include(GoogleTest)
 gtest_discover_tests(evrp_tests)
