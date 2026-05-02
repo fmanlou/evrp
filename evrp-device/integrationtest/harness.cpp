@@ -301,12 +301,17 @@ bool IntegrationHarness::initialize() {
       return false;
     }
     if (env_.target.empty()) {
-      logError(
-          "Set --target=host:port or --host and --port for the device-side "
-          "evrp-device, or set --device_binary / EVRP_DEVICE_BINARY for local "
-          "spawn");
-      return false;
+      if (FLAGS_discovery_port <= 0) {
+        logError(
+            "Without --target/--host, set --discovery_port > 0 to match "
+            "evrp-device (or use --device_binary / --target for full suite)");
+        return false;
+      }
+      logInfo(
+          "No --target/--host: discovery-only mode; non-discovery tests skip "
+          "unless you add direct endpoint flags");
     }
+    env_.discovery_udp_port = FLAGS_discovery_port;
   }
 
   initialized_ = true;
@@ -320,6 +325,8 @@ void IntegrationHarness::shutdown() {
 }
 
 const IntegrationEnv& IntegrationHarness::env() { return env_; }
+
+bool IntegrationHarness::hasDirectTarget() { return !env_.target.empty(); }
 
 std::unique_ptr<evrp::device::api::IClient>
 IntegrationHarness::connectDirectClient(int timeout_ms) {
@@ -561,20 +568,22 @@ bool IntegrationHarness::runUdpDiscoveryTest() {
   FLAGS_discovery_port = saved_discovery;
   if (!viaDiscovery) {
     logError(
-        "UDP discovery: timed out makeClient(\"\") with "
-        "--discovery_port={} (expected {})",
-        env_.discovery_udp_port,
-        env_.target);
+        "UDP discovery: timed out makeClient(\"\") with --discovery_port={}",
+        env_.discovery_udp_port);
     return false;
   }
-  if (viaDiscovery->serverAddress() != env_.target) {
+  const std::string& addr = viaDiscovery->serverAddress();
+  if (addr.empty()) {
+    logError("UDP discovery: connected client has empty serverAddress");
+    return false;
+  }
+  if (!env_.target.empty() && addr != env_.target) {
     logError(
         "UDP discovery: serverAddress {} != direct target {}",
-        viaDiscovery->serverAddress(),
+        addr,
         env_.target);
     return false;
   }
-  logInfo("UDP discovery: makeClient(\"\") ok, serverAddress={}",
-          viaDiscovery->serverAddress());
+  logInfo("UDP discovery: makeClient(\"\") ok, serverAddress={}", addr);
   return true;
 }

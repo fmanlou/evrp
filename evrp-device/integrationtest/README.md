@@ -15,10 +15,15 @@ cmake --build build --target evrp_device_integration_test
 
 `CMakeLists.txt` 里通过 `gtest_discover_tests` 为每个用例附加：
 
-- `--device_binary=<生成目录>/evrp-device`
+- `--device_binary=<生成目录>/evrp-device`（由 CMake 自动拉起本机 `evrp-device`）
 - `--listen_require_valid_event_per_kind=false`
 
-自行命令行运行时若需与 CI 行为一致，请同样传入这两项。以下示例假定构建目录为 `build`，仓库根为当前目录。
+本地**自行先启动** `evrp-device` 时不必传 `--device_binary`。
+
+- **只跑 `UdpDiscovery`**：不必传 `--target` / `--host`，只要局域网内有一台 `evrp-device` 的 `--discovery_port` 与测试进程一致（默认 `53508`），`makeClient("")` 能发现即可。
+- **跑直连类用例**（`DirectConnect`、`GetCapabilities` 等）：需再加 `--target=host:port` 或 `--host` + `--port`，与 device 的 `-listen` 一致。
+
+自行命令行跑 CI 同款行为时，可继续传入上述两项。以下示例假定构建目录为 `build`，仓库根为当前目录。
 
 ## 运行全部用例（CTest）
 
@@ -46,16 +51,27 @@ ctest --test-dir build -R "DeviceIntegration.UdpDiscovery" --output-on-failure
 
 ### 直接运行可执行文件
 
+**只测 UDP 发现**（不传 `--target`，需网内已有 `evrp-device`，发现端口一致即可）：
+
+```bash
+./build/evrp_device_integration_test \
+  --gtest_filter=DeviceIntegration.UdpDiscovery
+```
+
+**跑全部或含直连的用例**：需指定 gRPC 地址。先手动启动 device（`-listen` 与下面 `--target` 一致；发现端口与 `--discovery_port` 一致时可省略该参数，默认即可）：
+
+```bash
+./build/evrp-device -listen 0.0.0.0:50051 --log_level=info
+```
+
 ```bash
 ./build/evrp_device_integration_test \
   --gtest_filter=DeviceIntegration.<名称> \
-  --device_binary=./build/evrp-device \
+  --target=127.0.0.1:50051 \
   --listen_require_valid_event_per_kind=false
 ```
-./build/evrp_device_integration_test \
-  --gtest_filter=DeviceIntegration.GetCapabilities \
-  --device_binary=./build/evrp-device \
-  --listen_require_valid_event_per_kind=false
+
+等价写法：`--host=127.0.0.1 --port=50051`。若需与 CI 一样由测试进程 fork 子进程启动 `evrp-device`，使用 `--device_binary=./build/evrp-device` 且不要传 `--target`。
 
 `<名称>` 与下表一致。
 
@@ -67,9 +83,9 @@ ctest --test-dir build -R "DeviceIntegration.UdpDiscovery" --output-on-failure
 | `GetCapabilities` | 直连后 `GetCapabilities` |
 | `InputListen` | InputListen 流程（与 gflags 如 `--test_input_listen` 等相关） |
 | `Playback` | Playback 上传/回放（需设备具备键盘能力时才有实质 RPC） |
-| `UdpDiscovery` | `makeClient("")` + UDP 发现；**仅本地 spawn**（传入 `--device_binary`）时执行断言，否则 **GTEST_SKIP** |
+| `UdpDiscovery` | `makeClient("")` + UDP 发现；与对端 **`--discovery_port` 一致即可**（默认即可），**不必**传 `--target`。若同时传 `--target`，则额外校验发现地址与之一致 |
 
-**远程设备**（不传 `--device_binary`，改用 `--target=host:port` 或 `--host` + `--port`）时，除 `UdpDiscovery` 会因跳过而不测发现外，其余用例在能连通对端 `evrp-device` 的前提下可同样用 `--gtest_filter` 运行；需自行去掉或改写仅适用于 CI 的 `listen_require_valid_event_per_kind` 等参数。
+**不传 `--target` 时**，除 `UdpDiscovery` 外其余用例会 **GTEST_SKIP**（它们测的是直连 `makeClient(host:port)`）。要跑满套件请用 `--device_binary` 或 `--target` / `--host`+`--port`。
 
 ## GTest 过滤语法提示
 

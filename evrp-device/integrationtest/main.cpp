@@ -12,8 +12,9 @@ int main(int argc, char** argv) {
 
   gflags::SetUsageMessage(
       "Host-side integration tests: connect, GetCapabilities, InputListen, "
-      "Playback, UDP discovery (--target or --host/--port; optional "
-      "--device_binary for CI)");
+      "Playback, UDP discovery (--target or --host/--port for direct tests; "
+      "UdpDiscovery alone can omit them if --discovery_port matches device; "
+      "optional --device_binary for CI)");
   ::testing::InitGoogleTest(&argc, argv);
   gflags::ParseCommandLineFlags(&argc, &argv, true);
   logService->setLevel(logLevelFromString(FLAGS_log_level));

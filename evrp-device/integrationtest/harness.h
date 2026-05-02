@@ -18,6 +18,8 @@ class IntegrationHarness {
   static bool initialize();
   static void shutdown();
   static const IntegrationEnv& env();
+  /** False when neither --device_binary nor --target/--host+--port (discovery-only). */
+  static bool hasDirectTarget();
 
   static std::unique_ptr<evrp::device::api::IClient> connectDirectClient(
       int timeout_ms);

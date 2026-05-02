@@ -5,11 +5,17 @@
 #include "integration_gflags_declare.h"
 
 TEST_F(DeviceIntegration, DirectConnect) {
+  if (!IntegrationHarness::hasDirectTarget()) {
+    GTEST_SKIP() << "Requires --target / --host+--port or --device_binary";
+  }
   auto client = IntegrationHarness::connectDirectClient(FLAGS_rpc_wait_ms);
   ASSERT_TRUE(client);
 }
 
 TEST_F(DeviceIntegration, GetCapabilities) {
+  if (!IntegrationHarness::hasDirectTarget()) {
+    GTEST_SKIP() << "Requires --target / --host+--port or --device_binary";
+  }
   auto client = IntegrationHarness::connectDirectClient(FLAGS_rpc_wait_ms);
   ASSERT_TRUE(client);
   ASSERT_TRUE(

@@ -8,8 +8,8 @@ class DeviceIntegration : public ::testing::Test {
  protected:
   static void SetUpTestSuite() {
     ASSERT_TRUE(IntegrationHarness::initialize())
-        << "Set --device_binary or EVRP_DEVICE_BINARY, or --target / --host & "
-           "--port";
+        << "Set --discovery_port (no --target) for discovery-only, or "
+           "--target/--host & --port, or --device_binary / EVRP_DEVICE_BINARY";
   }
 
   static void TearDownTestSuite() { IntegrationHarness::shutdown(); }
