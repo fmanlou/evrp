@@ -1,14 +1,10 @@
 #pragma once
 
-#include <cstdint>
 #include <memory>
-#include <string>
 
 class ISetting;
 
 namespace evrp::device::server {
-
-bool parseListenPort(const std::string& listen_address, std::uint16_t* out_port);
 
 class IDiscoveryResponder {
  public:

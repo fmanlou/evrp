@@ -16,34 +16,6 @@
 
 namespace evrp::device::server {
 
-bool parseListenPort(const std::string& listen_address, std::uint16_t* out_port) {
-  if (!out_port || listen_address.empty()) {
-    return false;
-  }
-  std::size_t pos = listen_address.rfind(':');
-  if (listen_address.size() >= 2 && listen_address.front() == '[') {
-    std::size_t close = listen_address.rfind(']');
-    if (close == std::string::npos || close + 2 > listen_address.size() ||
-        listen_address[close + 1] != ':') {
-      return false;
-    }
-    pos = close + 1;
-  }
-  if (pos == std::string::npos || pos + 1 >= listen_address.size()) {
-    return false;
-  }
-  try {
-    long p = std::stol(listen_address.substr(pos + 1));
-    if (p < 1 || p > 65535) {
-      return false;
-    }
-    *out_port = static_cast<std::uint16_t>(p);
-    return true;
-  } catch (...) {
-    return false;
-  }
-}
-
 namespace {
 
 void discoveryResponderLoop(std::uint16_t grpcListenPort,

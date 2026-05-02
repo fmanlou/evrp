@@ -17,6 +17,7 @@
 #include "evrp/device/impl/server/grpc/grpcinputdeviceservice.h"
 #include "evrp/device/impl/server/grpc/grpcinputlisten.h"
 #include "evrp/device/impl/server/grpc/grpcplaybackservice.h"
+#include "evrp/sdk/listenaddress.h"
 #include "evrp/sdk/logger.h"
 #include "evrp/sdk/setting/isetting.h"
 #include "evrp/sdk/setting/memorysetting.h"
@@ -43,7 +44,7 @@ class ServerImpl final : public IServer {
 
   int run() override {
     std::uint16_t grpc_port = 0;
-    if (evrp::device::server::parseListenPort(listen_address_, &grpc_port)) {
+    if (evrp::sdk::parseListenPort(listen_address_, &grpc_port)) {
       discoveryTop_.insert(evrp::sdk::kDeviceDiscoverySettingGrpcListenPort,
                           static_cast<int>(grpc_port));
       discoveryResponder_->start();
