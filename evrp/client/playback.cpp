@@ -13,6 +13,7 @@
 #include "evrp/sdk/luaeventcomposer/luaeventcomposer.h"
 #include "evrp/sdk/evdev.h"
 #include "evrp/sdk/logger.h"
+#include "evrp/sdk/scopeguard.h"
 
 Playback::Playback(MemorySetting parsed, evrp::device::api::IPlayback *playback,
                    IEnhancedFileSystem *fs)
@@ -71,15 +72,11 @@ int Playback::run() {
     logError("Failed to open input file {}: {}", path, strerror(err));
     return 1;
   }
-  struct InputFdGuard {
-    IEnhancedFileSystem *fs;
-    int fd;
-    ~InputFdGuard() {
-      if (fd >= 0) {
-        fs->closeFd(fd);
-      }
+  evrp::sdk::ScopeGuard closeInputFd{[fs = fs_, fd = inFd]() {
+    if (fd >= 0) {
+      fs->closeFd(fd);
     }
-  } inputFdGuard{fs_, inFd};
+  }};
 
   std::string content;
   if (!fs_->readInputAll(inFd, &content)) {
