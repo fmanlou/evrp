@@ -19,7 +19,7 @@ class Record {
   int run();
 
  private:
-  MemorySetting parsed_;
+  MemorySetting setting_;
   evrp::device::api::IInputListener *listener_{nullptr};
   IEnhancedFileSystem *fs_{nullptr};
 };

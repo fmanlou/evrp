@@ -19,14 +19,14 @@
 
 Record::Record(MemorySetting parsed, evrp::device::api::IInputListener *listener,
                IEnhancedFileSystem *fs)
-    : parsed_(std::move(parsed)), listener_(listener), fs_(fs) {}
+    : setting_(std::move(parsed)), listener_(listener), fs_(fs) {}
 
 Record::Record(MemorySetting parsed, const evrp::Ioc &ioc)
     : Record(std::move(parsed), ioc.get<evrp::device::api::IInputListener>(),
              ioc.get<IEnhancedFileSystem>()) {}
 
 int Record::run() {
-  logService->setLevel(parsed_.get("logLevel", logging::LogLevel::Info));
+  logService->setLevel(setting_.get("logLevel", logging::LogLevel::Info));
   if (!listener_) {
     logError("Record has no IInputListener.");
     return 1;
@@ -36,19 +36,19 @@ int Record::run() {
     return 1;
   }
   const std::vector<evrp::device::api::DeviceKind> kinds =
-      parsed_.get("kinds", std::vector<evrp::device::api::DeviceKind>{});
+      setting_.get("kinds", std::vector<evrp::device::api::DeviceKind>{});
   if (!listener_->startListening(kinds)) {
     logError(
         "startListening failed. Is evrp-device running on {} with input "
         "devices available?",
-        parsed_.get<std::string>("device", {}));
+        setting_.get<std::string>("device", {}));
     return 1;
   }
   evrp::sdk::ScopeGuard stopListening{[&]() {
     listener_->cancelListening();
   }};
 
-  const std::string outputPath = parsed_.get<std::string>("outputPath", {});
+  const std::string outputPath = setting_.get<std::string>("outputPath", {});
   int outFd = fs_->openFd(outputPath, O_WRONLY | O_CREAT | O_TRUNC, 0644);
   if (outFd < 0) {
     int err = errno;
@@ -114,7 +114,7 @@ int Record::run() {
   };
   constexpr int kWaitMs = 500;
   logInfo("Recording from evrp-device at {} (Ctrl+C to stop)",
-          parsed_.get<std::string>("device", {}));
+          setting_.get<std::string>("device", {}));
 
   while (!sigint.stopRequested() && writeOk) {
     if (!listener_->waitForInputEvent(kWaitMs)) {
