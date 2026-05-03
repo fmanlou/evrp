@@ -15,18 +15,23 @@
 #include "evrp/sdk/eventformat.h"
 #include "evrp/sdk/filesystem/enhancedfilesystem.h"
 #include "evrp/sdk/scopeguard.h"
-#include "evrp/sdk/logger.h"
 
 Record::Record(MemorySetting parsed, evrp::device::api::IInputListener *listener,
                IEnhancedFileSystem *fs)
-    : setting_(std::move(parsed)), listener_(listener), fs_(fs) {}
+    : listener_(listener), fs_(fs) {
+  logLevel_ = parsed.get("logLevel", logging::LogLevel::Info);
+  kinds_ =
+      parsed.get("kinds", std::vector<evrp::device::api::DeviceKind>{});
+  device_ = parsed.get<std::string>("device", {});
+  outputPath_ = parsed.get<std::string>("outputPath", {});
+}
 
 Record::Record(MemorySetting parsed, const evrp::Ioc &ioc)
     : Record(std::move(parsed), ioc.get<evrp::device::api::IInputListener>(),
              ioc.get<IEnhancedFileSystem>()) {}
 
 int Record::run() {
-  logService->setLevel(setting_.get("logLevel", logging::LogLevel::Info));
+  logService->setLevel(logLevel_);
   if (!listener_) {
     logError("Record has no IInputListener.");
     return 1;
@@ -35,27 +40,25 @@ int Record::run() {
     logError("Record has no IEnhancedFileSystem.");
     return 1;
   }
-  const std::vector<evrp::device::api::DeviceKind> kinds =
-      setting_.get("kinds", std::vector<evrp::device::api::DeviceKind>{});
-  if (!listener_->startListening(kinds)) {
+  if (!listener_->startListening(kinds_)) {
     logError(
         "startListening failed. Is evrp-device running on {} with input "
         "devices available?",
-        setting_.get<std::string>("device", {}));
+        device_);
     return 1;
   }
   evrp::sdk::ScopeGuard stopListening{[&]() {
     listener_->cancelListening();
   }};
 
-  const std::string outputPath = setting_.get<std::string>("outputPath", {});
-  int outFd = fs_->openFd(outputPath, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+  int outFd =
+      fs_->openFd(outputPath_, O_WRONLY | O_CREAT | O_TRUNC, 0644);
   if (outFd < 0) {
     int err = errno;
-    logError("Failed to open output file {}: {}", outputPath, strerror(err));
+    logError("Failed to open output file {}: {}", outputPath_, strerror(err));
     return 1;
   }
-  const bool ownOutputFd = !outputPath.empty();
+  const bool ownOutputFd = !outputPath_.empty();
   evrp::sdk::ScopeGuard closeOutputFd{[fs = fs_, fd = outFd,
                                        own = ownOutputFd]() {
     if (own && fd >= 0) {
@@ -113,8 +116,7 @@ int Record::run() {
     lastClientEventUs = now.tv_sec * 1000000LL + now.tv_usec;
   };
   constexpr int kWaitMs = 500;
-  logInfo("Recording from evrp-device at {} (Ctrl+C to stop)",
-          setting_.get<std::string>("device", {}));
+  logInfo("Recording from evrp-device at {} (Ctrl+C to stop)", device_);
 
   while (!sigint.stopRequested() && writeOk) {
     if (!listener_->waitForInputEvent(kWaitMs)) {
