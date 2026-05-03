@@ -14,6 +14,7 @@
 #include "evrp/sdk/evdev.h"
 #include "evrp/sdk/eventformat.h"
 #include "evrp/sdk/filesystem/enhancedfilesystem.h"
+#include "evrp/sdk/scopeguard.h"
 #include "evrp/sdk/logger.h"
 
 Record::Record(MemorySetting parsed, evrp::device::api::IInputListener *listener,
@@ -43,14 +44,9 @@ int Record::run() {
         parsed_.get<std::string>("device", {}));
     return 1;
   }
-  struct StopListenGuard {
-    evrp::device::api::IInputListener *l;
-    ~StopListenGuard() {
-      if (l) {
-        l->cancelListening();
-      }
-    }
-  } stopGuard{listener_};
+  evrp::sdk::ScopeGuard stopListening{[&]() {
+    listener_->cancelListening();
+  }};
 
   const std::string outputPath = parsed_.get<std::string>("outputPath", {});
   int outFd = fs_->openFd(outputPath, O_WRONLY | O_CREAT | O_TRUNC, 0644);

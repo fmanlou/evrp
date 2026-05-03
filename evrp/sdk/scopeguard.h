@@ -2,6 +2,9 @@
 
 #include <utility>
 
+namespace evrp::sdk {
+
+// Runs a callable when leaving scope (function body, or earlier return).
 template <typename F>
 class ScopeGuard {
  public:
@@ -17,7 +20,4 @@ class ScopeGuard {
   F f_;
 };
 
-template <typename F>
-ScopeGuard<F> makeScopeGuard(F &&f) {
-  return ScopeGuard<F>(std::forward<F>(f));
-}
+}  // namespace evrp::sdk
