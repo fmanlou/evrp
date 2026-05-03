@@ -56,16 +56,12 @@ int Record::run() {
     return 1;
   }
   const bool ownOutputFd = !outputPath.empty();
-  struct OutputFdGuard {
-    IEnhancedFileSystem *fs;
-    int fd;
-    bool own;
-    ~OutputFdGuard() {
-      if (own && fd >= 0) {
-        fs->closeFd(fd);
-      }
+  evrp::sdk::ScopeGuard closeOutputFd{[fs = fs_, fd = outFd,
+                                       own = ownOutputFd]() {
+    if (own && fd >= 0) {
+      fs->closeFd(fd);
     }
-  } outputFdGuard{fs_, outFd, ownOutputFd};
+  }};
 
   struct timeval sessionStart = {};
   gettimeofday(&sessionStart, nullptr);
