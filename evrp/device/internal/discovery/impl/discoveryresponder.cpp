@@ -112,7 +112,7 @@ class UdpDiscoveryResponder final : public IDiscoveryResponder {
     }
     evrp::sdk::DiscoveryLinkMode link_mode{};
     const std::string mode_str = settings_.get<std::string>(
-        evrp::sdk::kDeviceDiscoverySettingLinkMode, std::string("multicast"));
+        evrp::sdk::kDeviceDiscoverySettingLinkMode, std::string("broadcast"));
     if (!evrp::sdk::tryParseDiscoveryLinkMode(mode_str, &link_mode)) {
       logError(
           "discovery_link_mode invalid: {} (expected multicast or broadcast)",

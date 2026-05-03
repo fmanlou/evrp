@@ -27,8 +27,8 @@ DEFINE_int32(
     "UDP port for IPv4 device discovery (empty --device; "
     "evrp-device --discovery_port must match).");
 DEFINE_string(
-    discovery_link_mode, "multicast",
-    "Discovery probes: \"multicast\" (default) or \"broadcast\"; must match "
+    discovery_link_mode, "broadcast",
+    "Discovery probes: \"broadcast\" (default) or \"multicast\"; must match "
     "evrp-device.");
 
 namespace evrp::device::api {
@@ -252,7 +252,7 @@ class UdpDeviceDiscovererImpl final : public IUdpDeviceDiscoverer {
         evrp::sdk::kDeviceDiscoverySettingPort, evrp::sdk::kDeviceDiscoveryUdpPort);
     evrp::sdk::DiscoveryLinkMode link_mode{};
     const std::string mode_str = settings_.get<std::string>(
-        evrp::sdk::kDeviceDiscoverySettingLinkMode, std::string("multicast"));
+        evrp::sdk::kDeviceDiscoverySettingLinkMode, std::string("broadcast"));
     if (!evrp::sdk::tryParseDiscoveryLinkMode(mode_str, &link_mode)) {
       return {};
     }

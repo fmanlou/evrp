@@ -40,7 +40,7 @@ int Runner::run() {
   if (!deviceClient) {
     logError(
         "Could not connect to evrp-device{} (session handshake failed). "
-        "Start `evrp-device`, set --device=HOST:PORT, or rely on UDP multicast "
+        "Start `evrp-device`, set --device=HOST:PORT, or rely on UDP broadcast "
         "discovery (default when --device is unset; see --discovery_port and "
         "--discovery_link_mode).",
         device_.empty() ? std::string("") : (" at " + device_));

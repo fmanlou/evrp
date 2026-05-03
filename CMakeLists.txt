@@ -248,8 +248,7 @@ target_include_directories(evrp_client PUBLIC "${EVRP_ROOT}" ${EVRP_CLIENT_DIR}
                                               ${EVRP_SDK_DIR})
 target_link_libraries(evrp_client PUBLIC evrp_device evrp_sdk gflags::gflags)
 
-add_executable(evrp evrp-client/main.cpp)
-target_link_libraries(evrp PRIVATE evrp_client)
+add_subdirectory(evrp-client)
 
 add_executable(evrp_tests tests/inputdevice_test.cpp tests/argparser_test.cpp
                                   tests/listenaddress_test.cpp
@@ -258,24 +257,4 @@ target_link_libraries(evrp_tests PRIVATE evrp_client evrp_sdk GTest::gtest_main)
 include(GoogleTest)
 gtest_discover_tests(evrp_tests)
 
-add_executable(evrp-device evrp-device/main.cpp)
-target_link_libraries(evrp-device PRIVATE evrp_device gRPC::grpc++ gflags::gflags)
-
-add_executable(
-  evrp_device_integration_test
-  evrp-device/integrationtest/main.cpp
-  evrp-device/integrationtest/harness.cpp
-  evrp-device/integrationtest/case_connect.cpp
-  evrp-device/integrationtest/case_inputlisten.cpp
-  evrp-device/integrationtest/case_playback.cpp
-  evrp-device/integrationtest/case_discovery.cpp)
-target_include_directories(evrp_device_integration_test PRIVATE "${EVRP_ROOT}")
-target_link_libraries(
-  evrp_device_integration_test PRIVATE evrp_device gflags::gflags GTest::gtest)
-add_dependencies(evrp_device_integration_test evrp-device)
-
-gtest_discover_tests(
-  evrp_device_integration_test
-  DISCOVERY_MODE PRE_TEST
-  EXTRA_ARGS --device_binary=$<TARGET_FILE:evrp-device>
-             --listen_require_valid_event_per_kind=false)
+add_subdirectory(evrp-device "${CMAKE_BINARY_DIR}/subdirs/evrp-device")
