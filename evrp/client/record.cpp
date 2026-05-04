@@ -16,18 +16,18 @@
 #include "evrp/sdk/filesystem/enhancedfilesystem.h"
 #include "evrp/sdk/scopeguard.h"
 
-Record::Record(MemorySetting parsed, evrp::device::api::IInputListener *listener,
+Record::Record(MemorySetting setting, evrp::device::api::IInputListener *listener,
                IEnhancedFileSystem *fs)
     : listener_(listener), fs_(fs) {
-  logLevel_ = parsed.get("logLevel", logging::LogLevel::Info);
+  logLevel_ = setting.get("logLevel", logging::LogLevel::Info);
   kinds_ =
-      parsed.get("kinds", std::vector<evrp::device::api::DeviceKind>{});
-  device_ = parsed.get<std::string>("device", {});
-  outputPath_ = parsed.get<std::string>("outputPath", {});
+      setting.get("kinds", std::vector<evrp::device::api::DeviceKind>{});
+  device_ = setting.get<std::string>("device", {});
+  outputPath_ = setting.get<std::string>("outputPath", {});
 }
 
-Record::Record(MemorySetting parsed, const evrp::Ioc &ioc)
-    : Record(std::move(parsed), ioc.get<evrp::device::api::IInputListener>(),
+Record::Record(MemorySetting setting, const evrp::Ioc &ioc)
+    : Record(std::move(setting), ioc.get<evrp::device::api::IInputListener>(),
              ioc.get<IEnhancedFileSystem>()) {}
 
 int Record::run() {

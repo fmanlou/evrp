@@ -16,10 +16,10 @@ class IInputListener;
 
 class Record {
  public:
-  Record(MemorySetting parsed, evrp::device::api::IInputListener *listener,
+  Record(MemorySetting setting, evrp::device::api::IInputListener *listener,
          IEnhancedFileSystem *fs);
 
-  Record(MemorySetting parsed, const evrp::Ioc &ioc);
+  Record(MemorySetting setting, const evrp::Ioc &ioc);
 
   int run();
 
