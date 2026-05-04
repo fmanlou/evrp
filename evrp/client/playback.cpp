@@ -4,6 +4,7 @@
 
 #include <cerrno>
 #include <cstring>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -84,9 +85,9 @@ int Playback::run() {
     return 1;
   }
 
-  LuaEventComposer eventComposer;
+  auto eventComposer = std::make_unique<LuaEventComposer>();
   std::vector<evrp::device::api::InputEvent> events;
-  const int composeErr = eventComposer.toEvents(content, &events);
+  const int composeErr = eventComposer->toEvents(content, &events);
   if (composeErr != 0) {
     logError("Replay compose failed (e.g. Lua error).");
     return 1;
