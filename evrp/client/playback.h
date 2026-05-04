@@ -11,10 +11,10 @@ class IPlayback;
 
 class Playback {
  public:
-  Playback(MemorySetting parsed, evrp::device::api::IPlayback *playback,
+  Playback(MemorySetting setting, evrp::device::api::IPlayback *playback,
            IEnhancedFileSystem *fs);
 
-  Playback(MemorySetting parsed, const evrp::Ioc &ioc);
+  Playback(MemorySetting setting, const evrp::Ioc &ioc);
 
   int run();
 

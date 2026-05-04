@@ -16,12 +16,12 @@
 #include "evrp/sdk/logger.h"
 #include "evrp/sdk/scopeguard.h"
 
-Playback::Playback(MemorySetting parsed, evrp::device::api::IPlayback *playback,
+Playback::Playback(MemorySetting setting, evrp::device::api::IPlayback *playback,
                    IEnhancedFileSystem *fs)
-    : setting_(std::move(parsed)), remote_(playback), fs_(fs) {}
+    : setting_(std::move(setting)), remote_(playback), fs_(fs) {}
 
-Playback::Playback(MemorySetting parsed, const evrp::Ioc &ioc)
-    : Playback(std::move(parsed), ioc.get<evrp::device::api::IPlayback>(),
+Playback::Playback(MemorySetting setting, const evrp::Ioc &ioc)
+    : Playback(std::move(setting), ioc.get<evrp::device::api::IPlayback>(),
                ioc.get<IEnhancedFileSystem>()) {}
 
 namespace {
