@@ -1,7 +1,10 @@
 #pragma once
 
-#include "evrp/sdk/setting/memorysetting.h"
+#include <string>
+
 #include "evrp/sdk/ioc.h"
+#include "evrp/sdk/logger.h"
+#include "evrp/sdk/setting/memorysetting.h"
 
 class IEnhancedFileSystem;
 
@@ -19,7 +22,9 @@ class Playback {
   int run();
 
  private:
-  MemorySetting setting_;
   evrp::device::api::IPlayback *remote_{nullptr};
   IEnhancedFileSystem *fs_{nullptr};
+  logging::LogLevel logLevel_{};
+  std::string playbackPath_;
+  std::string device_;
 };

@@ -18,7 +18,11 @@
 
 Playback::Playback(MemorySetting setting, evrp::device::api::IPlayback *playback,
                    IEnhancedFileSystem *fs)
-    : setting_(std::move(setting)), remote_(playback), fs_(fs) {}
+    : remote_(playback),
+      fs_(fs),
+      logLevel_(setting.get("logLevel", logging::LogLevel::Info)),
+      playbackPath_(setting.get<std::string>("playbackPath", {})),
+      device_(setting.get<std::string>("device", {})) {}
 
 Playback::Playback(MemorySetting setting, const evrp::Ioc &ioc)
     : Playback(std::move(setting), ioc.get<evrp::device::api::IPlayback>(),
@@ -48,13 +52,10 @@ bool deviceUploadAndPlay(evrp::device::api::IPlayback *remote,
 }  // namespace
 
 int Playback::run() {
-  const std::string playbackPath = setting_.get<std::string>("playbackPath", {});
-  if (playbackPath.empty()) {
+  if (playbackPath_.empty()) {
     logError("Playback mode requires a file path after -p.");
     return 1;
   }
-
-  const std::string &path = playbackPath;
 
   if (!remote_) {
     logError("Playback has no IPlayback.");
@@ -65,12 +66,12 @@ int Playback::run() {
     return 1;
   }
 
-  logService->setLevel(setting_.get("logLevel", logging::LogLevel::Info));
+  logService->setLevel(logLevel_);
 
-  int inFd = fs_->openFd(path, O_RDONLY, 0);
+  int inFd = fs_->openFd(playbackPath_, O_RDONLY, 0);
   if (inFd < 0) {
     int err = errno;
-    logError("Failed to open input file {}: {}", path, strerror(err));
+    logError("Failed to open input file {}: {}", playbackPath_, strerror(err));
     return 1;
   }
   evrp::sdk::ScopeGuard closeInputFd{[fs = fs_, fd = inFd]() {
@@ -99,7 +100,7 @@ int Playback::run() {
   }
 
   logInfo("Replay text → events, playing via evrp-device at {} (Ctrl+C tries to stop)...",
-          setting_.get<std::string>("device", {}));
+          device_);
 
   SigintGuard sigint;
   if (sigint.stopRequested()) {
