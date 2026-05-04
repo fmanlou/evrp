@@ -19,7 +19,7 @@ class Playback {
   int run();
 
  private:
-  MemorySetting parsed_;
+  MemorySetting setting_;
   evrp::device::api::IPlayback *remote_{nullptr};
   IEnhancedFileSystem *fs_{nullptr};
 };
