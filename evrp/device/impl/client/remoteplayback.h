@@ -32,6 +32,8 @@ class RemotePlayback final : public api::IPlayback {
 
   int playbackIndex() const override;
 
+  bool isPlayback() const override;
+
   bool stopPlayback() override;
 
  private:
@@ -41,6 +43,7 @@ class RemotePlayback final : public api::IPlayback {
 
   std::mutex callMu_;
   std::atomic<int> reportedIndex_{-1};
+  std::atomic<bool> playing_{false};
 };
 
 }

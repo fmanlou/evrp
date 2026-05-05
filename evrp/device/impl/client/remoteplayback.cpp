@@ -2,8 +2,9 @@
 
 #include <google/protobuf/empty.pb.h>
 
-#include "evrp/sdk/sessionmetadata.h"
 #include "evrp/device/internal/tofromproto.h"
+#include "evrp/sdk/scopeguard.h"
+#include "evrp/sdk/sessionmetadata.h"
 
 namespace evrp::device::client {
 
@@ -42,15 +43,21 @@ bool RemotePlayback::upload(const std::vector<api::InputEvent>& events,
 
 int RemotePlayback::playbackIndex() const { return reportedIndex_; }
 
+bool RemotePlayback::isPlayback() const {
+  return playing_;
+}
+
 bool RemotePlayback::playback(api::OperationResult* resultOut,
                               evrp::CountingSemaphore* progressNotify) {
   std::lock_guard<std::mutex> lock(callMu_);
 
+  playing_ = true;
+  evrp::sdk::ScopeGuard clearPlaying{[this]() { playing_ = false; }};
+
   reportedIndex_ = -1;
 
   std::unique_ptr<grpc::ClientContext> stream_ctx;
-  std::unique_ptr<grpc::ClientReader<v1::PlaybackProgress>>
-      reader;
+  std::unique_ptr<grpc::ClientReader<v1::PlaybackProgress>> reader;
   std::thread progress_thread;
 
   if (progressNotify != nullptr) {
@@ -59,8 +66,7 @@ bool RemotePlayback::playback(api::OperationResult* resultOut,
     google::protobuf::Empty sub_req;
     reader = stub_->SubscribePlayback(stream_ctx.get(), sub_req);
 
-    grpc::ClientReader<v1::PlaybackProgress>* raw_reader =
-        reader.get();
+    grpc::ClientReader<v1::PlaybackProgress>* raw_reader = reader.get();
     progress_thread = std::thread([raw_reader, progressNotify, this]() {
       v1::PlaybackProgress msg;
       while (raw_reader->Read(&msg)) {
@@ -104,4 +110,4 @@ bool RemotePlayback::stopPlayback() {
   return stub_->Stop(&ctx, req, &resp).ok();
 }
 
-}
+}  // namespace evrp::device::client

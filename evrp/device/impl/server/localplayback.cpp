@@ -23,6 +23,10 @@ bool LocalPlayback::upload(const std::vector<api::InputEvent>& events,
 
 int LocalPlayback::playbackIndex() const { return currentEventIndex_; }
 
+bool LocalPlayback::isPlayback() const {
+  return playing_;
+}
+
 bool LocalPlayback::playback(
     api::OperationResult* resultOut,
     evrp::CountingSemaphore* progressNotify) {

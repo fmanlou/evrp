@@ -24,12 +24,14 @@ class LocalPlayback final : public api::IPlayback {
 
   int playbackIndex() const override;
 
+  bool isPlayback() const override;
+
   bool stopPlayback() override;
 
  private:
   mutable std::mutex mu_;
   std::vector<api::InputEvent> cached_;
-  bool playing_{false};
+  std::atomic<bool> playing_{false};
   std::atomic<bool> stopRequested_{false};
   int currentEventIndex_{-1};
 };

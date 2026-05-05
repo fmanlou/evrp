@@ -27,6 +27,8 @@ class PostedPlayback final : public api::IPlayback,
 
   int playbackIndex() const override;
 
+  bool isPlayback() const override;
+
   bool stopPlayback() override;
 
  private:

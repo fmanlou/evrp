@@ -19,6 +19,8 @@ class IPlayback {
 
   virtual int playbackIndex() const = 0;
 
+  virtual bool isPlayback() const = 0;
+
   virtual bool stopPlayback() = 0;
 };
 
