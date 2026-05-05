@@ -2,6 +2,8 @@
 
 #include <gflags/gflags.h>
 
+#include <cctype>
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -14,8 +16,16 @@ DECLARE_string(discovery_link_mode);
 
 DEFINE_bool(
     record, false,
-    "Start recording. Remaining args: device kinds (touchpad, touchscreen, "
-    "mouse, keyboard). If none, record all four.");
+    "Start recording. Output: --output|-o or -r OUTPUT_FILE. Select devices "
+    "with "
+    "--kind=KIND,... (touchpad|touchscreen|mouse|keyboard); omit --kind to "
+    "record "
+    "all four. The token after -r is always the output path, not a device "
+    "kind.");
+DEFINE_string(kind, "",
+              "Recording: comma-separated device kinds (touchpad, touchscreen, "
+              "mouse, "
+              "keyboard). Empty means record all kinds when recording.");
 DEFINE_string(playback, "",
               "Playback: read events or run Lua script (.lua) from this file.");
 DEFINE_string(output, "",
@@ -38,6 +48,7 @@ void resetArgFlags() {
   FLAGS_record = false;
   FLAGS_playback = "";
   FLAGS_output = "";
+  FLAGS_kind = "";
   FLAGS_log_level = "info";
   FLAGS_wait_leading = true;
   FLAGS_wait_trailing = true;
@@ -48,6 +59,15 @@ void normalizeLegacyArgs(std::vector<std::string>* args) {
   auto& a = *args;
   for (size_t i = 1; i < a.size();) {
     if (a[i] == "-r") {
+      if (i + 1 < a.size()) {
+        const std::string& next = a[i + 1];
+        if (!next.empty() && next[0] != '-') {
+          a[i] = "--record";
+          a[i + 1] = "--output=" + next;
+          i += 2;
+          continue;
+        }
+      }
       a[i] = "--record";
       ++i;
     } else if (a[i] == "-p" && i + 1 < a.size()) {
@@ -75,19 +95,65 @@ void normalizeLegacyArgs(std::vector<std::string>* args) {
   }
 }
 
+std::vector<evrp::device::api::DeviceKind> kindsFromKindFlag() {
+  std::vector<evrp::device::api::DeviceKind> kinds;
+  const std::string& raw = FLAGS_kind;
+  if (raw.empty()) {
+    return kinds;
+  }
+  size_t segmentStart = 0;
+  while (segmentStart < raw.size()) {
+    while (segmentStart < raw.size() &&
+           std::isspace(static_cast<unsigned char>(raw[segmentStart]))) {
+      ++segmentStart;
+    }
+    if (segmentStart >= raw.size()) {
+      break;
+    }
+    const size_t comma = raw.find(',', segmentStart);
+    const size_t segmentEnd =
+        comma == std::string::npos ? raw.size() : comma;
+    size_t left = segmentStart;
+    size_t right = segmentEnd;
+    while (left < right &&
+           std::isspace(static_cast<unsigned char>(raw[left]))) {
+      ++left;
+    }
+    while (right > left &&
+           std::isspace(static_cast<unsigned char>(raw[right - 1]))) {
+      --right;
+    }
+    if (left < right) {
+      const std::string token = raw.substr(left, right - left);
+      evrp::device::api::DeviceKind k{};
+      if (parseKind(token, &k)) {
+        kinds.push_back(k);
+      }
+    }
+    if (comma == std::string::npos) {
+      break;
+    }
+    segmentStart = comma + 1;
+  }
+  return kinds;
+}
+
 }  // namespace
 
 void printUsage(const char* prog) {
   std::cout
       << "Usage: " << prog
-      << " --record|-r [-o FILE|--output=FILE] "
-         "[--log_level=LEVEL|--log-level=LEVEL] "
-         "[touchpad] [touchscreen] [mouse] [keyboard] ...\n"
+      << " --record|-r [--output=FILE|-o FILE|-r OUTPUT] "
+         "[--kind=TYPES] [--log_level=LEVEL|--log-level=LEVEL] ...\n"
       << "       " << prog
       << " --playback=FILE|-p FILE [--log_level=LEVEL|--log-level=LEVEL]\n"
-      << "  --record / -r: start recording. With no device kinds, record "
-         "touchpad, "
-         "touchscreen, mouse, keyboard.\n"
+      << "  --record / -r: start recording. The token after -r (if present and "
+         "not another flag) is the output file (--output equivalence). Device "
+         "kinds "
+         "are set only via --kind=... .\n"
+      << "  --kind=comma,separated,...: recording device kinds "
+         "(touchpad|touchscreen|mouse|keyboard). "
+         "Omit to record all four.\n"
       << "  --playback=FILE / -p FILE: playback events or run Lua script "
          "(.lua). "
          "Non-event lines in event files are executed as Lua.\n"
@@ -148,16 +214,7 @@ void parseArgvInto(ISetting& options, int argc, char* argv[]) {
   bool executeWaitBeforeFirst = FLAGS_wait_leading;
   bool executeWaitAfterLast = FLAGS_wait_trailing;
 
-  std::vector<evrp::device::api::DeviceKind> kinds;
-  for (int i = 1; i < argcMut; ++i) {
-    if (!argvMut[i]) {
-      continue;
-    }
-    evrp::device::api::DeviceKind k;
-    if (parseKind(argvMut[i], &k)) {
-      kinds.push_back(k);
-    }
-  }
+  std::vector<evrp::device::api::DeviceKind> kinds = kindsFromKindFlag();
 
   if (recording && kinds.empty()) {
     kinds = {evrp::device::api::DeviceKind::kTouchpad,

@@ -58,7 +58,8 @@ TEST(ArgParser, ParseOptionsWithNoArgsDisablesRecording) {
 }
 
 TEST(ArgParser, ParseOptionsEnableRecordingAndKinds) {
-  std::vector<std::string> storage = {"evrp", "-r", "mouse", "keyboard"};
+  std::vector<std::string> storage = {"evrp", "-r",
+                                      "--kind=mouse,keyboard"};
   std::vector<char *> argv = buildArgv(&storage);
 
   MemorySetting map;
@@ -72,7 +73,7 @@ TEST(ArgParser, ParseOptionsEnableRecordingAndKinds) {
 
 TEST(ArgParser, ParseOptionsReadsOutputPath) {
   std::vector<std::string> storage = {"evrp", "-r", "-o", "events.log",
-                                      "touchpad"};
+                                      "--kind=touchpad"};
   std::vector<char *> argv = buildArgv(&storage);
 
   MemorySetting map;
@@ -83,6 +84,45 @@ TEST(ArgParser, ParseOptionsReadsOutputPath) {
   auto kinds = map.get("kinds", std::vector<api::DeviceKind>{});
   ASSERT_EQ(kinds.size(), 1u);
   EXPECT_EQ(kinds[0], api::DeviceKind::kTouchpad);
+}
+
+TEST(ArgParser, ParseOptionsDashRWithOutputFileTreatsUnknownTokenAsOutput) {
+  std::vector<std::string> storage = {"evrp", "-r", "1.ev"};
+  std::vector<char *> argv = buildArgv(&storage);
+
+  MemorySetting map;
+  parseArgvInto(map, static_cast<int>(argv.size()), argv.data());
+  EXPECT_TRUE(map.get<bool>("recording", false));
+  EXPECT_EQ(map.get<std::string>("outputPath", {}), "1.ev");
+  auto kinds = map.get("kinds", std::vector<api::DeviceKind>{});
+  ASSERT_EQ(kinds.size(), 4u);
+}
+
+TEST(ArgParser, ParseOptionsDashRFollowedByNameIsAlwaysOutputNotKind) {
+  std::vector<std::string> storage = {"evrp", "-r", "mouse"};
+  std::vector<char *> argv = buildArgv(&storage);
+
+  MemorySetting map;
+  parseArgvInto(map, static_cast<int>(argv.size()), argv.data());
+  EXPECT_TRUE(map.get<bool>("recording", false));
+  EXPECT_EQ(map.get<std::string>("outputPath", {}), "mouse");
+  auto kinds = map.get("kinds", std::vector<api::DeviceKind>{});
+  ASSERT_EQ(kinds.size(), 4u);
+}
+
+TEST(ArgParser, ParseOptionsDashROutputPathThenKindsFromFlagOnly) {
+  std::vector<std::string> storage = {"evrp", "-r", "1.ev",
+                                      "--kind=touchpad,mouse"};
+  std::vector<char *> argv = buildArgv(&storage);
+
+  MemorySetting map;
+  parseArgvInto(map, static_cast<int>(argv.size()), argv.data());
+  EXPECT_TRUE(map.get<bool>("recording", false));
+  EXPECT_EQ(map.get<std::string>("outputPath", {}), "1.ev");
+  auto kinds = map.get("kinds", std::vector<api::DeviceKind>{});
+  ASSERT_EQ(kinds.size(), 2u);
+  EXPECT_EQ(kinds[0], api::DeviceKind::kTouchpad);
+  EXPECT_EQ(kinds[1], api::DeviceKind::kMouse);
 }
 
 TEST(ArgParser, ParseOptionsEnablePlaybackAndPath) {
@@ -130,7 +170,7 @@ TEST(ArgParser, ParseOptionsLogLevel) {
             logging::LogLevel::Debug);
 
   std::vector<std::string> storage1 = {"evrp", "-r", "--log-level=debug",
-                                       "keyboard"};
+                                       "--kind=keyboard"};
   std::vector<char *> argv1 = buildArgv(&storage1);
   MemorySetting map1;
   parseArgvInto(map1, static_cast<int>(argv1.size()), argv1.data());
@@ -156,8 +196,8 @@ TEST(ArgParser, ParseOptionsPlaybackWithLogLevel) {
 }
 
 TEST(ArgParser, ParseOptionsDeviceOverride) {
-  std::vector<std::string> storage = {"evrp", "-r", "--device=10.0.0.5:9999",
-                                      "mouse"};
+  std::vector<std::string> storage = {"evrp", "-r",
+                                      "--device=10.0.0.5:9999", "--kind=mouse"};
   std::vector<char *> argv = buildArgv(&storage);
 
   MemorySetting map;

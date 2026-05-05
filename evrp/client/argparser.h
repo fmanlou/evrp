@@ -12,5 +12,7 @@ bool parseKind(const std::string& s, evrp::device::api::DeviceKind* outKind);
 /// program (string), recording (bool), playback (bool),
 /// logLevel (logging::LogLevel), playbackPath, outputPath,
 /// device (string): empty → UDP discovery; else host:port for direct gRPC;
-/// kinds (vector<DeviceKind>), executeWaitBeforeFirst, executeWaitAfterLast (bool).
+/// kinds (vector<DeviceKind>): comma-separated `--kind` when recording; if
+/// omitted while recording, all four device kinds.
+/// executeWaitBeforeFirst / executeWaitAfterLast (bool).
 void parseArgvInto(ISetting& options, int argc, char* argv[]);
