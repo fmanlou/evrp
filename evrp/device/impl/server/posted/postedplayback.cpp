@@ -29,13 +29,11 @@ int PostedPlayback::playbackIndex() const {
 }
 
 bool PostedPlayback::isPlayback() const {
-  return syncDispatch_.postSync<bool>(
-      [this]() { return inner_.isPlayback(); });
+  return inner_.isPlayback();
 }
 
 bool PostedPlayback::stopPlayback() {
-  return syncDispatch_.postSync<bool>(
-      [this]() { return inner_.stopPlayback(); });
+  return inner_.stopPlayback();
 }
 
 }
