@@ -95,49 +95,6 @@ void normalizeLegacyArgs(std::vector<std::string>* args) {
   }
 }
 
-std::vector<evrp::device::api::DeviceKind> kindsFromKindFlag() {
-  std::vector<evrp::device::api::DeviceKind> kinds;
-  const std::string& raw = FLAGS_kind;
-  if (raw.empty()) {
-    return kinds;
-  }
-  size_t segmentStart = 0;
-  while (segmentStart < raw.size()) {
-    while (segmentStart < raw.size() &&
-           std::isspace(static_cast<unsigned char>(raw[segmentStart]))) {
-      ++segmentStart;
-    }
-    if (segmentStart >= raw.size()) {
-      break;
-    }
-    const size_t comma = raw.find(',', segmentStart);
-    const size_t segmentEnd =
-        comma == std::string::npos ? raw.size() : comma;
-    size_t left = segmentStart;
-    size_t right = segmentEnd;
-    while (left < right &&
-           std::isspace(static_cast<unsigned char>(raw[left]))) {
-      ++left;
-    }
-    while (right > left &&
-           std::isspace(static_cast<unsigned char>(raw[right - 1]))) {
-      --right;
-    }
-    if (left < right) {
-      const std::string token = raw.substr(left, right - left);
-      evrp::device::api::DeviceKind k{};
-      if (parseKind(token, &k)) {
-        kinds.push_back(k);
-      }
-    }
-    if (comma == std::string::npos) {
-      break;
-    }
-    segmentStart = comma + 1;
-  }
-  return kinds;
-}
-
 }  // namespace
 
 void printUsage(const char* prog) {
@@ -179,6 +136,49 @@ bool parseKind(const std::string& s, evrp::device::api::DeviceKind* outKind) {
     return true;
   }
   return false;
+}
+
+static std::vector<evrp::device::api::DeviceKind> kindsFromKindFlag() {
+  std::vector<evrp::device::api::DeviceKind> kinds;
+  const std::string& raw = FLAGS_kind;
+  if (raw.empty()) {
+    return kinds;
+  }
+  size_t segmentStart = 0;
+  while (segmentStart < raw.size()) {
+    while (segmentStart < raw.size() &&
+           std::isspace(static_cast<unsigned char>(raw[segmentStart]))) {
+      ++segmentStart;
+    }
+    if (segmentStart >= raw.size()) {
+      break;
+    }
+    const size_t comma = raw.find(',', segmentStart);
+    const size_t segmentEnd =
+        comma == std::string::npos ? raw.size() : comma;
+    size_t left = segmentStart;
+    size_t right = segmentEnd;
+    while (left < right &&
+           std::isspace(static_cast<unsigned char>(raw[left]))) {
+      ++left;
+    }
+    while (right > left &&
+           std::isspace(static_cast<unsigned char>(raw[right - 1]))) {
+      --right;
+    }
+    if (left < right) {
+      const std::string token = raw.substr(left, right - left);
+      evrp::device::api::DeviceKind k{};
+      if (parseKind(token, &k)) {
+        kinds.push_back(k);
+      }
+    }
+    if (comma == std::string::npos) {
+      break;
+    }
+    segmentStart = comma + 1;
+  }
+  return kinds;
 }
 
 void parseArgvInto(ISetting& options, int argc, char* argv[]) {

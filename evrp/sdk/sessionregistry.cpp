@@ -11,8 +11,9 @@
 DEFINE_int32(
     session_lease_ms,
     3000,
-    "Business session expires if Heartbeat is not received within this "
-    "interval (ms).");
+    "Business session expires after this idle interval (ms) without renewal. "
+    "Renewed by Heartbeat RPC or by successful device/business RPCs checked "
+    "via requireActiveBusinessCall.");
 
 namespace evrp::session {
 namespace {
@@ -25,7 +26,7 @@ std::string randomSessionId() {
   return ss.str();
 }
 
-}  
+}  // namespace
 
 SessionRegistry::SessionRegistry(int leaseTimeoutMs) {
   int ms = leaseTimeoutMs > 0 ? leaseTimeoutMs : FLAGS_session_lease_ms;
@@ -129,6 +130,9 @@ grpc::Status SessionRegistry::requireActiveBusinessCall(
         "session lease expired; call Connect and keep Heartbeat within "
         "lease_timeout_ms");
   }
+  // Renew lease: business RPCs (record, playback, etc.) imply liveness even
+  // when the client does not call Heartbeat.
+  it->second.lastHeartbeat = now;
   return grpc::Status::OK;
 }
 
