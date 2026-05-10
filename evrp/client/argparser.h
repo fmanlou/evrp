@@ -15,4 +15,6 @@ bool parseKind(const std::string& s, evrp::device::api::DeviceKind* outKind);
 /// kinds (vector<DeviceKind>): comma-separated `--kind` when recording; if
 /// omitted while recording, all four device kinds.
 /// executeWaitBeforeFirst / executeWaitAfterLast (bool).
+/// keyboardCtrlCFilter (string): off | full | ending (recording keyboard;
+/// default ending).
 void parseArgvInto(ISetting& options, int argc, char* argv[]);

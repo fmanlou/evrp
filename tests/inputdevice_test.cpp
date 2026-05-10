@@ -94,13 +94,17 @@ TEST(InputDevice, CtrlAThenReleaseShouldBeRecorded) {
   std::vector<Event> emitted;
 
   processKeyboardEventWithCtrlFilter(makeKeyEvent(KEY_LEFTCTRL, 1),
-                                          &state, &emitted);
-  processKeyboardEventWithCtrlFilter(makeKeyEvent(KEY_A, 1), &state,
-                                          &emitted);
-  processKeyboardEventWithCtrlFilter(makeKeyEvent(KEY_A, 0), &state,
-                                          &emitted);
+                                     KeyboardCtrlCFilterMode::kFull, &state,
+                                     &emitted);
+  processKeyboardEventWithCtrlFilter(makeKeyEvent(KEY_A, 1),
+                                     KeyboardCtrlCFilterMode::kFull, &state,
+                                     &emitted);
+  processKeyboardEventWithCtrlFilter(makeKeyEvent(KEY_A, 0),
+                                     KeyboardCtrlCFilterMode::kFull, &state,
+                                     &emitted);
   processKeyboardEventWithCtrlFilter(makeKeyEvent(KEY_LEFTCTRL, 0),
-                                          &state, &emitted);
+                                     KeyboardCtrlCFilterMode::kFull, &state,
+                                     &emitted);
 
   ASSERT_EQ(emitted.size(), 4u);
   EXPECT_EQ(emitted[0].code, KEY_LEFTCTRL);
@@ -114,17 +118,23 @@ TEST(InputDevice, CtrlAThenCtrlCShouldDropWholeCtrlWindow) {
   std::vector<Event> emitted;
 
   processKeyboardEventWithCtrlFilter(makeKeyEvent(KEY_LEFTCTRL, 1),
-                                          &state, &emitted);
-  processKeyboardEventWithCtrlFilter(makeKeyEvent(KEY_A, 1), &state,
-                                          &emitted);
-  processKeyboardEventWithCtrlFilter(makeKeyEvent(KEY_A, 0), &state,
-                                          &emitted);
-  processKeyboardEventWithCtrlFilter(makeKeyEvent(KEY_C, 1), &state,
-                                          &emitted);
-  processKeyboardEventWithCtrlFilter(makeKeyEvent(KEY_C, 0), &state,
-                                          &emitted);
+                                     KeyboardCtrlCFilterMode::kFull, &state,
+                                     &emitted);
+  processKeyboardEventWithCtrlFilter(makeKeyEvent(KEY_A, 1),
+                                     KeyboardCtrlCFilterMode::kFull, &state,
+                                     &emitted);
+  processKeyboardEventWithCtrlFilter(makeKeyEvent(KEY_A, 0),
+                                     KeyboardCtrlCFilterMode::kFull, &state,
+                                     &emitted);
+  processKeyboardEventWithCtrlFilter(makeKeyEvent(KEY_C, 1),
+                                     KeyboardCtrlCFilterMode::kFull, &state,
+                                     &emitted);
+  processKeyboardEventWithCtrlFilter(makeKeyEvent(KEY_C, 0),
+                                     KeyboardCtrlCFilterMode::kFull, &state,
+                                     &emitted);
   processKeyboardEventWithCtrlFilter(makeKeyEvent(KEY_LEFTCTRL, 0),
-                                          &state, &emitted);
+                                     KeyboardCtrlCFilterMode::kFull, &state,
+                                     &emitted);
 
   EXPECT_TRUE(emitted.empty());
 }
@@ -134,18 +144,115 @@ TEST(InputDevice, EventAfterCtrlReleaseShouldRecordNormally) {
   std::vector<Event> emitted;
 
   processKeyboardEventWithCtrlFilter(makeKeyEvent(KEY_LEFTCTRL, 1),
-                                          &state, &emitted);
-  processKeyboardEventWithCtrlFilter(makeKeyEvent(KEY_C, 1), &state,
-                                          &emitted);
-  processKeyboardEventWithCtrlFilter(makeKeyEvent(KEY_C, 0), &state,
-                                          &emitted);
+                                     KeyboardCtrlCFilterMode::kFull, &state,
+                                     &emitted);
+  processKeyboardEventWithCtrlFilter(makeKeyEvent(KEY_C, 1),
+                                     KeyboardCtrlCFilterMode::kFull, &state,
+                                     &emitted);
+  processKeyboardEventWithCtrlFilter(makeKeyEvent(KEY_C, 0),
+                                     KeyboardCtrlCFilterMode::kFull, &state,
+                                     &emitted);
   processKeyboardEventWithCtrlFilter(makeKeyEvent(KEY_LEFTCTRL, 0),
-                                          &state, &emitted);
-  processKeyboardEventWithCtrlFilter(makeKeyEvent(KEY_B, 1), &state,
-                                          &emitted);
+                                     KeyboardCtrlCFilterMode::kFull, &state,
+                                     &emitted);
+  processKeyboardEventWithCtrlFilter(makeKeyEvent(KEY_B, 1),
+                                     KeyboardCtrlCFilterMode::kFull, &state,
+                                     &emitted);
 
   ASSERT_EQ(emitted.size(), 1u);
   EXPECT_EQ(emitted[0].code, KEY_B);
+}
+
+TEST(InputDevice, CtrlCEndingOnlyDropsReleasePhase) {
+  keyboard_filter_state state = {};
+  std::vector<Event> emitted;
+
+  processKeyboardEventWithCtrlFilter(makeKeyEvent(KEY_LEFTCTRL, 1),
+                                     KeyboardCtrlCFilterMode::kEndingOnly,
+                                     &state, &emitted);
+  processKeyboardEventWithCtrlFilter(makeKeyEvent(KEY_C, 1),
+                                     KeyboardCtrlCFilterMode::kEndingOnly,
+                                     &state, &emitted);
+  processKeyboardEventWithCtrlFilter(makeKeyEvent(KEY_C, 0),
+                                     KeyboardCtrlCFilterMode::kEndingOnly,
+                                     &state, &emitted);
+  processKeyboardEventWithCtrlFilter(makeKeyEvent(KEY_LEFTCTRL, 0),
+                                     KeyboardCtrlCFilterMode::kEndingOnly,
+                                     &state, &emitted);
+
+  ASSERT_EQ(emitted.size(), 2u);
+  EXPECT_EQ(emitted[0].code, KEY_LEFTCTRL);
+  EXPECT_EQ(emitted[0].value, 1);
+  EXPECT_EQ(emitted[1].code, KEY_C);
+  EXPECT_EQ(emitted[1].value, 1);
+}
+
+TEST(InputDevice, CtrlCEndingOnlyAfterCtrlAThenRecordsB) {
+  keyboard_filter_state state = {};
+  std::vector<Event> emitted;
+
+  processKeyboardEventWithCtrlFilter(makeKeyEvent(KEY_LEFTCTRL, 1),
+                                     KeyboardCtrlCFilterMode::kEndingOnly,
+                                     &state, &emitted);
+  processKeyboardEventWithCtrlFilter(makeKeyEvent(KEY_A, 1),
+                                     KeyboardCtrlCFilterMode::kEndingOnly,
+                                     &state, &emitted);
+  processKeyboardEventWithCtrlFilter(makeKeyEvent(KEY_A, 0),
+                                     KeyboardCtrlCFilterMode::kEndingOnly,
+                                     &state, &emitted);
+  processKeyboardEventWithCtrlFilter(makeKeyEvent(KEY_C, 1),
+                                     KeyboardCtrlCFilterMode::kEndingOnly,
+                                     &state, &emitted);
+  processKeyboardEventWithCtrlFilter(makeKeyEvent(KEY_C, 0),
+                                     KeyboardCtrlCFilterMode::kEndingOnly,
+                                     &state, &emitted);
+  processKeyboardEventWithCtrlFilter(makeKeyEvent(KEY_LEFTCTRL, 0),
+                                     KeyboardCtrlCFilterMode::kEndingOnly,
+                                     &state, &emitted);
+  processKeyboardEventWithCtrlFilter(makeKeyEvent(KEY_B, 1),
+                                     KeyboardCtrlCFilterMode::kEndingOnly,
+                                     &state, &emitted);
+
+  ASSERT_EQ(emitted.size(), 5u);
+  EXPECT_EQ(emitted[0].code, KEY_LEFTCTRL);
+  EXPECT_EQ(emitted[1].code, KEY_A);
+  EXPECT_EQ(emitted[2].code, KEY_A);
+  EXPECT_EQ(emitted[3].code, KEY_C);
+  EXPECT_EQ(emitted[3].value, 1);
+  EXPECT_EQ(emitted[4].code, KEY_B);
+}
+
+TEST(InputDevice, CtrlCOffPassesThroughFullChord) {
+  keyboard_filter_state state = {};
+  std::vector<Event> emitted;
+
+  processKeyboardEventWithCtrlFilter(makeKeyEvent(KEY_LEFTCTRL, 1),
+                                     KeyboardCtrlCFilterMode::kOff, &state,
+                                     &emitted);
+  processKeyboardEventWithCtrlFilter(makeKeyEvent(KEY_C, 1),
+                                     KeyboardCtrlCFilterMode::kOff, &state,
+                                     &emitted);
+  processKeyboardEventWithCtrlFilter(makeKeyEvent(KEY_C, 0),
+                                     KeyboardCtrlCFilterMode::kOff, &state,
+                                     &emitted);
+  processKeyboardEventWithCtrlFilter(makeKeyEvent(KEY_LEFTCTRL, 0),
+                                     KeyboardCtrlCFilterMode::kOff, &state,
+                                     &emitted);
+
+  ASSERT_EQ(emitted.size(), 4u);
+}
+
+TEST(InputDevice, KeyboardCtrlCFilterModeFromLabel) {
+  EXPECT_EQ(keyboardCtrlCFilterModeFromLabel(""),
+            KeyboardCtrlCFilterMode::kOff);
+  EXPECT_EQ(keyboardCtrlCFilterModeFromLabel("off"),
+            KeyboardCtrlCFilterMode::kOff);
+  EXPECT_EQ(keyboardCtrlCFilterModeFromLabel("FULL"),
+            KeyboardCtrlCFilterMode::kFull);
+  EXPECT_EQ(keyboardCtrlCFilterModeFromLabel(" ending "),
+            KeyboardCtrlCFilterMode::kEndingOnly);
+  EXPECT_EQ(keyboardCtrlCFilterModeFromLabel("endingonly"),
+            KeyboardCtrlCFilterMode::kEndingOnly);
 }
 
 TEST(InputDevice, TouchSegmentBreakAfterTimestamp) {

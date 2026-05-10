@@ -41,6 +41,11 @@ DEFINE_string(
     device, "",
     "evrp-device gRPC host:port. If empty, use UDP discovery (--discovery_port, "
     "--discovery_link_mode). Same-machine targets are tried first.");
+DEFINE_string(
+    keyboard_ctrl_c_filter, "ending",
+    "Recording keyboard: off (no filter), full (drop whole Ctrl+C chord), "
+    "ending (drop KEY_C release and Ctrl release after Ctrl+C press). Default: "
+    "ending.");
 
 namespace {
 
@@ -53,6 +58,7 @@ void resetArgFlags() {
   FLAGS_wait_leading = true;
   FLAGS_wait_trailing = true;
   FLAGS_device = "";
+  FLAGS_keyboard_ctrl_c_filter = "ending";
 }
 
 void normalizeLegacyArgs(std::vector<std::string>* args) {
@@ -126,6 +132,8 @@ void printUsage(const char* prog) {
          "playback, execute [trailing] wait (default: wait).\n"
       << "  --device=HOST:PORT: evrp-device gRPC; omit for UDP discovery "
          "(--discovery_port / --discovery_link_mode).\n"
+      << "  --keyboard_ctrl_c_filter=off|full|ending: recording keyboard Ctrl+C "
+         "filter (default: ending).\n"
       << "  --help: show gflags help.\n";
 }
 
@@ -233,6 +241,7 @@ void parseArgvInto(ISetting& options, int argc, char* argv[]) {
   options.insert("kinds", std::move(kinds));
   options.insert("executeWaitBeforeFirst", executeWaitBeforeFirst);
   options.insert("executeWaitAfterLast", executeWaitAfterLast);
+  options.insert("keyboardCtrlCFilter", FLAGS_keyboard_ctrl_c_filter);
   options.insert(evrp::sdk::kDeviceDiscoverySettingPort, FLAGS_discovery_port);
   options.insert(evrp::sdk::kDeviceDiscoverySettingLinkMode,
                  FLAGS_discovery_link_mode);

@@ -73,10 +73,52 @@ std::string keyboardKeyActionFromValue(int value) {
   return "unknown(" + std::to_string(value) + ")";
 }
 
+KeyboardCtrlCFilterMode keyboardCtrlCFilterModeFromLabel(
+    const std::string &label) {
+  std::string t;
+  t.reserve(label.size());
+  for (unsigned char c : label) {
+    if (!std::isspace(c)) {
+      t.push_back(static_cast<char>(std::tolower(c)));
+    }
+  }
+  if (t == "full") {
+    return KeyboardCtrlCFilterMode::kFull;
+  }
+  if (t == "ending" || t == "endingonly") {
+    return KeyboardCtrlCFilterMode::kEndingOnly;
+  }
+  return KeyboardCtrlCFilterMode::kOff;
+}
+
+static void emitPendingThroughLastCtrlCPress(
+    const std::vector<Event> &pending, std::vector<Event> *emittedEvents) {
+  if (!emittedEvents || pending.empty()) {
+    return;
+  }
+  std::size_t last_c_press = pending.size();
+  for (std::size_t i = 0; i < pending.size(); ++i) {
+    const Event &e = pending[i];
+    if (e.type == EV_KEY && e.code == KEY_C &&
+        (e.value == 1 || e.value == 2)) {
+      last_c_press = i;
+    }
+  }
+  if (last_c_press < pending.size()) {
+    emittedEvents->insert(emittedEvents->end(), pending.begin(),
+                          pending.begin() + last_c_press + 1);
+  }
+}
+
 void processKeyboardEventWithCtrlFilter(
-    const Event &ev, keyboard_filter_state *state,
-    std::vector<Event> *emittedEvents) {
+    const Event &ev, KeyboardCtrlCFilterMode mode,
+    keyboard_filter_state *state, std::vector<Event> *emittedEvents) {
   if (!state || !emittedEvents) return;
+
+  if (mode == KeyboardCtrlCFilterMode::kOff) {
+    emittedEvents->push_back(ev);
+    return;
+  }
 
   if (ev.type == EV_KEY) {
     bool is_ctrl_key = (ev.code == KEY_LEFTCTRL || ev.code == KEY_RIGHTCTRL);
@@ -97,6 +139,9 @@ void processKeyboardEventWithCtrlFilter(
           emittedEvents->insert(emittedEvents->end(),
                                  state->pending_events.begin(),
                                  state->pending_events.end());
+        } else if (mode == KeyboardCtrlCFilterMode::kEndingOnly) {
+          emitPendingThroughLastCtrlCPress(state->pending_events,
+                                           emittedEvents);
         }
         state->saw_ctrl_c = false;
         state->pending_events.clear();
@@ -121,6 +166,8 @@ void processKeyboardEventWithCtrlFilter(
       emittedEvents->insert(emittedEvents->end(),
                              state->pending_events.begin(),
                              state->pending_events.end());
+    } else if (mode == KeyboardCtrlCFilterMode::kEndingOnly) {
+      emitPendingThroughLastCtrlCPress(state->pending_events, emittedEvents);
     }
     state->saw_ctrl_c = false;
     state->pending_events.clear();
@@ -129,13 +176,19 @@ void processKeyboardEventWithCtrlFilter(
   emittedEvents->push_back(ev);
 }
 
-void flushKeyboardEventFilter(keyboard_filter_state *state,
-                                 std::vector<Event> *emittedEvents) {
+void flushKeyboardEventFilter(KeyboardCtrlCFilterMode mode,
+                              keyboard_filter_state *state,
+                              std::vector<Event> *emittedEvents) {
   if (!state || !emittedEvents) return;
+  if (mode == KeyboardCtrlCFilterMode::kOff) return;
   if (state->ctrl_down_count != 0) return;
-  if (!state->saw_ctrl_c && !state->pending_events.empty()) {
-    emittedEvents->insert(emittedEvents->end(), state->pending_events.begin(),
-                           state->pending_events.end());
+  if (!state->pending_events.empty()) {
+    if (!state->saw_ctrl_c) {
+      emittedEvents->insert(emittedEvents->end(), state->pending_events.begin(),
+                            state->pending_events.end());
+    } else if (mode == KeyboardCtrlCFilterMode::kEndingOnly) {
+      emitPendingThroughLastCtrlCPress(state->pending_events, emittedEvents);
+    }
   }
   state->saw_ctrl_c = false;
   state->pending_events.clear();

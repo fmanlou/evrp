@@ -11,7 +11,6 @@
 
 #include "evrp/device/api/inputlistener.h"
 #include "evrp/device/api/types.h"
-#include "evrp/sdk/evdev.h"
 #include "evrp/sdk/eventformat.h"
 #include "evrp/sdk/filesystem/enhancedfilesystem.h"
 #include "evrp/sdk/scopeguard.h"
@@ -24,6 +23,8 @@ Record::Record(MemorySetting setting, evrp::device::api::IInputListener *listene
       setting.get("kinds", std::vector<evrp::device::api::DeviceKind>{});
   device_ = setting.get<std::string>("device", {});
   outputPath_ = setting.get<std::string>("outputPath", {});
+  keyboardCtrlCFilterMode_ = keyboardCtrlCFilterModeFromLabel(
+      setting.get<std::string>("keyboardCtrlCFilter", "ending"));
 }
 
 Record::Record(MemorySetting setting, const evrp::Ioc &ioc)
@@ -125,7 +126,50 @@ int Record::run() {
     std::vector<evrp::device::api::InputEvent> batch =
         listener_->readInputEvents();
     for (const auto &ine : batch) {
-      writeEventLine(ine.device, ine);
+      if (ine.device == evrp::device::api::DeviceKind::kKeyboard &&
+          keyboardCtrlCFilterMode_ != KeyboardCtrlCFilterMode::kOff) {
+        Event ev = {static_cast<long>(ine.timeSec),
+                    static_cast<long>(ine.timeUsec),
+                    static_cast<unsigned short>(ine.type),
+                    static_cast<unsigned short>(ine.code), ine.value};
+        std::vector<Event> emitted;
+        processKeyboardEventWithCtrlFilter(ev, keyboardCtrlCFilterMode_,
+                                           &keyboardFilterState_, &emitted);
+        for (const Event &e : emitted) {
+          evrp::device::api::InputEvent out = {};
+          out.device = evrp::device::api::DeviceKind::kKeyboard;
+          out.timeSec = e.sec;
+          out.timeUsec = e.usec;
+          out.type = static_cast<uint32_t>(e.type);
+          out.code = static_cast<uint32_t>(e.code);
+          out.value = e.value;
+          writeEventLine(out.device, out);
+          if (!writeOk) {
+            break;
+          }
+        }
+      } else {
+        writeEventLine(ine.device, ine);
+      }
+      if (!writeOk) {
+        break;
+      }
+    }
+  }
+
+  if (writeOk && keyboardCtrlCFilterMode_ != KeyboardCtrlCFilterMode::kOff) {
+    std::vector<Event> flushed;
+    flushKeyboardEventFilter(keyboardCtrlCFilterMode_, &keyboardFilterState_,
+                             &flushed);
+    for (const Event &e : flushed) {
+      evrp::device::api::InputEvent out = {};
+      out.device = evrp::device::api::DeviceKind::kKeyboard;
+      out.timeSec = e.sec;
+      out.timeUsec = e.usec;
+      out.type = static_cast<uint32_t>(e.type);
+      out.code = static_cast<uint32_t>(e.code);
+      out.value = e.value;
+      writeEventLine(out.device, out);
       if (!writeOk) {
         break;
       }

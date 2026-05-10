@@ -5,6 +5,7 @@
 
 #include "evrp/device/api/types.h"
 #include "evrp/sdk/ioc.h"
+#include "evrp/sdk/keyboard/keyboarddevice.h"
 #include "evrp/sdk/logger.h"
 #include "evrp/sdk/setting/memorysetting.h"
 
@@ -30,4 +31,7 @@ class Record {
   std::vector<evrp::device::api::DeviceKind> kinds_;
   std::string device_;
   std::string outputPath_;
+  KeyboardCtrlCFilterMode keyboardCtrlCFilterMode_{
+      KeyboardCtrlCFilterMode::kEndingOnly};
+  keyboard_filter_state keyboardFilterState_{};
 };

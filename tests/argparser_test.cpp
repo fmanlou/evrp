@@ -53,6 +53,7 @@ TEST(ArgParser, ParseOptionsWithNoArgsDisablesRecording) {
   parseArgvInto(map, static_cast<int>(argv.size()), argv.data());
   EXPECT_FALSE(map.get<bool>("recording", false));
   EXPECT_FALSE(map.get<bool>("playback", false));
+  EXPECT_EQ(map.get<std::string>("keyboardCtrlCFilter", {}), "ending");
   EXPECT_TRUE(
       map.get("kinds", std::vector<api::DeviceKind>{}).empty());
 }
@@ -207,4 +208,14 @@ TEST(ArgParser, ParseOptionsDeviceOverride) {
   auto kinds = map.get("kinds", std::vector<api::DeviceKind>{});
   ASSERT_EQ(kinds.size(), 1u);
   EXPECT_EQ(kinds[0], api::DeviceKind::kMouse);
+}
+
+TEST(ArgParser, ParseKeyboardCtrlCFilter) {
+  std::vector<std::string> storage = {
+      "evrp", "-r", "--keyboard_ctrl_c_filter=ending", "--kind=keyboard"};
+  std::vector<char *> argv = buildArgv(&storage);
+
+  MemorySetting map;
+  parseArgvInto(map, static_cast<int>(argv.size()), argv.data());
+  EXPECT_EQ(map.get<std::string>("keyboardCtrlCFilter", {}), "ending");
 }
