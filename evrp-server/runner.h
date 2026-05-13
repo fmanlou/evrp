@@ -4,7 +4,18 @@
 #include <string>
 
 #include "evrp/sdk/logger.h"
+#include "evrp/sdk/setting/isetting.h"
 #include "evrp/sdk/setting/memorysetting.h"
+
+struct RunnerSetting {
+  explicit RunnerSetting(const ISetting& settings);
+
+  std::string program;
+  bool recording{false};
+  bool playback{false};
+  std::string playbackPath;
+  logging::LogLevel logLevel{logging::LogLevel::Info};
+};
 
 class Runner {
  public:
@@ -14,9 +25,5 @@ class Runner {
 
  private:
   std::shared_ptr<MemorySetting> settings_;
-  std::string prog_;
-  bool recording_{false};
-  bool playback_{false};
-  std::string playbackPath_;
-  logging::LogLevel logLevel_{logging::LogLevel::Info};
+  RunnerSetting runnerSetting_;
 };

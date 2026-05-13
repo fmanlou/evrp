@@ -7,34 +7,37 @@
 #include "evrp/sdk/logger.h"
 #include "evrp/sdk/setting/memorysetting.h"
 
-Runner::Runner(std::shared_ptr<MemorySetting> settings)
-    : settings_(std::move(settings)) {
-  prog_ = settings_->get<std::string>("program", "evrp");
-  recording_ = settings_->get<bool>("recording", false);
-  playback_ = settings_->get<bool>("playback", false);
-  playbackPath_ = settings_->get<std::string>("playbackPath", {});
-  logLevel_ = settings_->get("logLevel", logging::LogLevel::Info);
+RunnerSetting::RunnerSetting(const ISetting& settings) {
+  program = settings.get<std::string>("program", "evrp");
+  recording = settings.get<bool>("recording", false);
+  playback = settings.get<bool>("playback", false);
+  playbackPath = settings.get<std::string>("playbackPath", {});
+  logLevel = settings.get("logLevel", logging::LogLevel::Info);
 }
 
-int Runner::run() {
-  logService->setLevel(logLevel_);
+Runner::Runner(std::shared_ptr<MemorySetting> settings)
+    : settings_(std::move(settings)), runnerSetting_(*settings_) {}
 
-  int modeCount = (recording_ ? 1 : 0) + (playback_ ? 1 : 0);
+int Runner::run() {
+  logService->setLevel(runnerSetting_.logLevel);
+
+  int modeCount =
+      (runnerSetting_.recording ? 1 : 0) + (runnerSetting_.playback ? 1 : 0);
   if (modeCount > 1) {
     logError("Cannot use --record and --playback at the same time.");
-    printUsage(prog_.c_str());
+    printUsage(runnerSetting_.program.c_str());
     return 1;
   }
 
   if (modeCount == 0) {
-    printUsage(prog_.c_str());
+    printUsage(runnerSetting_.program.c_str());
     return 1;
   }
 
-  if (playback_) {
-    if (playbackPath_.empty()) {
+  if (runnerSetting_.playback) {
+    if (runnerSetting_.playbackPath.empty()) {
       logError("Playback (--playback) requires a file path.");
-      printUsage(prog_.c_str());
+      printUsage(runnerSetting_.program.c_str());
       return 1;
     }
     return evrp::server::replay(settings_);
