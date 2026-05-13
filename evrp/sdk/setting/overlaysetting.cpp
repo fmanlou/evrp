@@ -1,6 +1,7 @@
 #include "evrp/sdk/setting/overlaysetting.h"
 
 #include "evrp/sdk/setting/memorysetting.h"
+#include <unordered_set>
 #include <utility>
 
 OverlaySetting::OverlaySetting(ISetting* top) {
@@ -60,4 +61,20 @@ std::any OverlaySetting::get(const std::string& key) const {
 
 void OverlaySetting::insert(std::string key, std::any value) {
   top_->insert(std::move(key), std::move(value));
+}
+
+std::vector<std::string> OverlaySetting::keys() const {
+  std::vector<std::string> result = top_->keys();
+  std::unordered_set<std::string> seen(result.begin(), result.end());
+  for (const ISetting* layer : below_) {
+    if (!layer) {
+      continue;
+    }
+    for (const std::string& k : layer->keys()) {
+      if (seen.insert(k).second) {
+        result.push_back(k);
+      }
+    }
+  }
+  return result;
 }

@@ -4,6 +4,7 @@
 #include <string>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 class ISetting {
  public:
@@ -17,6 +18,7 @@ class ISetting {
   virtual bool contains(const std::string& key) const = 0;
   virtual std::any get(const std::string& key) const = 0;
   virtual void insert(std::string key, std::any value) = 0;
+  virtual std::vector<std::string> keys() const = 0;
 
   template <typename T>
   T get(const std::string& key, T defaultValue) const {
@@ -36,4 +38,7 @@ class ISetting {
   void insert(std::string key, T&& value) {
     insert(std::move(key), std::any(std::forward<T>(value)));
   }
+
+ protected:
+  ISetting() = default;
 };

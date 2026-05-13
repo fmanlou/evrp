@@ -13,3 +13,12 @@ std::any MemorySetting::get(const std::string& key) const {
 void MemorySetting::insert(std::string key, std::any value) {
   values_.insert_or_assign(std::move(key), std::move(value));
 }
+
+std::vector<std::string> MemorySetting::keys() const {
+  std::vector<std::string> out;
+  out.reserve(values_.size());
+  for (const auto& entry : values_) {
+    out.push_back(entry.first);
+  }
+  return out;
+}

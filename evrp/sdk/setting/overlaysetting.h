@@ -2,6 +2,7 @@
 
 #include <initializer_list>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "evrp/sdk/setting/isetting.h"
@@ -25,6 +26,7 @@ class OverlaySetting final : public ISetting {
   bool contains(const std::string& key) const override;
   std::any get(const std::string& key) const override;
   void insert(std::string key, std::any value) override;
+  std::vector<std::string> keys() const override;
 
  private:
   std::unique_ptr<ISetting> ownedTop_;
