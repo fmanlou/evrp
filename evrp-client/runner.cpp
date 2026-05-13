@@ -3,14 +3,9 @@
 #include <memory>
 
 #include "evrp-client/argparser.h"
+#include "evrp/client/api/evrp.h"
 #include "evrp/sdk/logger.h"
-#include "evrp/sdk/setting/isetting.h"
 #include "evrp/sdk/setting/memorysetting.h"
-
-namespace evrp::client {
-int runnerRecord(std::shared_ptr<ISetting> settings);
-int runnerReplay(std::shared_ptr<ISetting> settings);
-}  // namespace evrp::client
 
 Runner::Runner(MemorySetting settings) : settings_(std::move(settings)) {
   prog_ = settings_.get<std::string>("program", "evrp");
@@ -41,10 +36,10 @@ int Runner::run() {
       printUsage(prog_.c_str());
       return 1;
     }
-    return evrp::client::runnerReplay(
+    return evrp::client::replay(
         std::make_shared<MemorySetting>(std::move(settings_)));
   }
 
-  return evrp::client::runnerRecord(
+  return evrp::client::record(
       std::make_shared<MemorySetting>(std::move(settings_)));
 }
