@@ -4,8 +4,8 @@
 #include <optional>
 #include <string>
 
-#include "evrp/server/impl/playback.h"
-#include "evrp/server/impl/record.h"
+#include "evrp/server/impl/server/playback.h"
+#include "evrp/server/impl/server/record.h"
 #include "evrp/device/api/client.h"
 #include "evrp/sdk/filesystem/enhancedfilesystem.h"
 #include "evrp/sdk/filesystem/filesystem.h"
