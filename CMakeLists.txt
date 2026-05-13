@@ -275,7 +275,8 @@ add_library(
   evrp/server/impl/server/localevrp.cpp
   evrp/server/impl/server/record.cpp
   evrp/server/impl/server/playback.cpp
-  evrp/server/impl/server/grpc/grpcevrpservice.cpp
+  evrp/server/impl/server/server.cpp
+  evrp/server/impl/server/grpc/grpcevrpserviceimpl.cpp
   evrp/server/impl/client/remoteevrp.cpp)
 target_include_directories(evrp_server PUBLIC "${EVRP_ROOT}" ${EVRP_SERVER_DIR}
                                               ${EVRP_SDK_DIR} "${GEN_DIR}")

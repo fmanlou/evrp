@@ -2,9 +2,7 @@
 
 #include <memory>
 
-namespace grpc {
-class Service;
-}
+#include "evrp/v1/server/service/evrp.grpc.pb.h"
 
 namespace evrp::server {
 
@@ -22,8 +20,7 @@ class Server {
   grpc::Service* grpc_service();
 
  private:
-  struct Impl;
-  std::unique_ptr<Impl> impl_;
+  std::unique_ptr<evrp::v1::server::EvrpService::Service> service_;
 };
 
 }  // namespace evrp::server
