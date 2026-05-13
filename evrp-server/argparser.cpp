@@ -138,8 +138,8 @@ void printUsage(const char* prog) {
       << "  --help: show gflags help.\n";
 }
 
-static std::vector<evrp::device::api::DeviceKind> kindsFromKindFlag() {
-  std::vector<evrp::device::api::DeviceKind> kinds;
+static std::vector<evrp::sdk::DeviceKind> kindsFromKindFlag() {
+  std::vector<evrp::sdk::DeviceKind> kinds;
   const std::string& raw = FLAGS_kind;
   if (raw.empty()) {
     return kinds;
@@ -168,9 +168,9 @@ static std::vector<evrp::device::api::DeviceKind> kindsFromKindFlag() {
     }
     if (left < right) {
       const std::string token = raw.substr(left, right - left);
-      evrp::device::api::DeviceKind k{};
+      evrp::sdk::DeviceKind k{};
       evrp::sdk::toKind(token, &k);
-      if (k != evrp::device::api::DeviceKind::kUnspecified) {
+      if (k != evrp::sdk::DeviceKind::kUnspecified) {
         kinds.push_back(k);
       }
     }
@@ -215,13 +215,13 @@ void parseArgvInto(ISetting& options, int argc, char* argv[]) {
   bool executeWaitBeforeFirst = FLAGS_wait_leading;
   bool executeWaitAfterLast = FLAGS_wait_trailing;
 
-  std::vector<evrp::device::api::DeviceKind> kinds = kindsFromKindFlag();
+  std::vector<evrp::sdk::DeviceKind> kinds = kindsFromKindFlag();
 
   if (recording && kinds.empty()) {
-    kinds = {evrp::device::api::DeviceKind::kTouchpad,
-             evrp::device::api::DeviceKind::kTouchscreen,
-             evrp::device::api::DeviceKind::kMouse,
-             evrp::device::api::DeviceKind::kKeyboard};
+    kinds = {evrp::sdk::DeviceKind::kTouchpad,
+             evrp::sdk::DeviceKind::kTouchscreen,
+             evrp::sdk::DeviceKind::kMouse,
+             evrp::sdk::DeviceKind::kKeyboard};
   }
 
   options.insert("program", program);

@@ -11,7 +11,7 @@ class LocalInputDeviceKindsProvider final
  public:
   LocalInputDeviceKindsProvider() = default;
 
-  std::vector<api::DeviceKind> kinds() override;
+  std::vector<evrp::sdk::DeviceKind> kinds() override;
 };
 
 }

@@ -36,17 +36,17 @@ Playback::Playback(std::shared_ptr<ISetting> setting, const evrp::Ioc &ioc)
 namespace {
 
 bool deviceUploadAndPlay(evrp::device::api::IPlayback *remote,
-                         const std::vector<evrp::device::api::InputEvent> &events) {
+                         const std::vector<evrp::sdk::InputEvent> &events) {
   if (events.empty()) {
     return true;
   }
-  evrp::device::api::StatusCode uploadResult;
+  evrp::sdk::StatusCode uploadResult;
   if (!remote->upload(events, &uploadResult) || uploadResult.code != 0) {
     logError("Upload to evrp-device failed (code={}): {}", uploadResult.code,
              uploadResult.message);
     return false;
   }
-  evrp::device::api::StatusCode playResult;
+  evrp::sdk::StatusCode playResult;
   if (!remote->playback(&playResult) || playResult.code != 0) {
     logError("Playback failed (code={}): {}", playResult.code, playResult.message);
     return false;
@@ -92,7 +92,7 @@ int Playback::run() {
   }
 
   auto eventComposer = std::make_unique<LuaEventComposer>();
-  std::vector<evrp::device::api::InputEvent> events;
+  std::vector<evrp::sdk::InputEvent> events;
   const int composeErr = eventComposer->toEvents(content, &events);
   if (composeErr != 0) {
     logError("Replay compose failed (e.g. Lua error).");

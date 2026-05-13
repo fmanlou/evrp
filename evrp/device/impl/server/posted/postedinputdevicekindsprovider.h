@@ -21,7 +21,7 @@ class PostedInputDeviceKindsProvider final
   PostedInputDeviceKindsProvider& operator=(
       const PostedInputDeviceKindsProvider&) = delete;
 
-  std::vector<api::DeviceKind> kinds() override;
+  std::vector<evrp::sdk::DeviceKind> kinds() override;
 
  private:
   api::IDeviceKindsProvider& inner_;

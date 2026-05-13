@@ -10,17 +10,17 @@ KeyboardEventWriter::KeyboardEventWriter(IRawEventWriter *writer)
     : writer_(writer) {}
 
 bool KeyboardEventWriter::press(unsigned short key_code) {
-  return writer_->writeRaw(evrp::device::api::DeviceKind::kKeyboard, EV_KEY,
+  return writer_->writeRaw(evrp::sdk::DeviceKind::kKeyboard, EV_KEY,
                            key_code, 1);
 }
 
 bool KeyboardEventWriter::release(unsigned short key_code) {
-  return writer_->writeRaw(evrp::device::api::DeviceKind::kKeyboard, EV_KEY,
+  return writer_->writeRaw(evrp::sdk::DeviceKind::kKeyboard, EV_KEY,
                            key_code, 0);
 }
 
 bool KeyboardEventWriter::repeat(unsigned short key_code) {
-  return writer_->writeRaw(evrp::device::api::DeviceKind::kKeyboard, EV_KEY,
+  return writer_->writeRaw(evrp::sdk::DeviceKind::kKeyboard, EV_KEY,
                            key_code, 2);
 }
 
@@ -32,6 +32,6 @@ bool KeyboardEventWriter::write(unsigned short type, unsigned short code,
     if (value == 2) return repeat(code);
     return true;  
   }
-  return writer_->writeRaw(evrp::device::api::DeviceKind::kKeyboard, type,
+  return writer_->writeRaw(evrp::sdk::DeviceKind::kKeyboard, type,
                            code, value);
 }

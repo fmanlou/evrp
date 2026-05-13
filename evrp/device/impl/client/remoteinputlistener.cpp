@@ -17,7 +17,7 @@ RemoteInputListener::RemoteInputListener(std::shared_ptr<grpc::Channel> channel,
 RemoteInputListener::~RemoteInputListener() { cancelListening(); }
 
 bool RemoteInputListener::startListening(
-    const std::vector<api::DeviceKind>& kinds) {
+    const std::vector<evrp::sdk::DeviceKind>& kinds) {
   if (listeningActive_) {
     return false;
   }
@@ -44,7 +44,7 @@ bool RemoteInputListener::startListening(
   return true;
 }
 
-std::vector<api::InputEvent> RemoteInputListener::readInputEvents() {
+std::vector<evrp::sdk::InputEvent> RemoteInputListener::readInputEvents() {
   if (!listeningActive_) {
     return {};
   }

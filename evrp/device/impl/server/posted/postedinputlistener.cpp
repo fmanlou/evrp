@@ -16,13 +16,13 @@ void PostedInputListener::shutdown() {
 PostedInputListener::~PostedInputListener() { shutdown(); }
 
 bool PostedInputListener::startListening(
-    const std::vector<api::DeviceKind>& kinds) {
+    const std::vector<evrp::sdk::DeviceKind>& kinds) {
   return syncDispatch_.postSync<bool>(
       [this, kinds]() { return inner_.startListening(kinds); });
 }
 
-std::vector<api::InputEvent> PostedInputListener::readInputEvents() {
-  return syncDispatch_.postSync<std::vector<api::InputEvent>>(
+std::vector<evrp::sdk::InputEvent> PostedInputListener::readInputEvents() {
+  return syncDispatch_.postSync<std::vector<evrp::sdk::InputEvent>>(
       [this]() { return inner_.readInputEvents(); });
 }
 

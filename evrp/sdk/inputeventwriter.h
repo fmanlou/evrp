@@ -15,23 +15,23 @@ class InputEventWriter : public IRawEventWriter {
   InputEventWriter(IEnhancedFileSystem *fs, ICursorPos *cursor = nullptr);
   ~InputEventWriter();
 
-  bool write(evrp::device::api::DeviceKind device, unsigned short type,
+  bool write(evrp::sdk::DeviceKind device, unsigned short type,
              unsigned short code, int value);
 
   KeyboardEventWriter *keyboardWriter() { return &keyboardWriter_; }
   MouseEventWriter *mouseWriter() { return &mouseWriter_; }
 
-  bool writeRaw(evrp::device::api::DeviceKind device, unsigned short type,
+  bool writeRaw(evrp::sdk::DeviceKind device, unsigned short type,
                 unsigned short code, int value) override;
 
  private:
-  int getFd(evrp::device::api::DeviceKind device);
+  int getFd(evrp::sdk::DeviceKind device);
   bool writeEvent(int fd, unsigned short type, unsigned short code, int value);
   bool writeEventWithSync(int fd, unsigned short type, unsigned short code,
                           int value);
 
   IEnhancedFileSystem *fs_;
-  std::map<evrp::device::api::DeviceKind, int> kindToFd_;
+  std::map<evrp::sdk::DeviceKind, int> kindToFd_;
   KeyboardEventWriter keyboardWriter_;
   MouseEventWriter mouseWriter_;
 };

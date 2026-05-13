@@ -34,7 +34,7 @@ DECLARE_string(discovery_link_mode);
 namespace {
 
 bool queryKindsForHarness(evrp::device::api::IDeviceKindsProvider* provider,
-                          std::vector<evrp::device::api::DeviceKind>* out) {
+                          std::vector<evrp::sdk::DeviceKind>* out) {
   if (!provider || !out) {
     return false;
   }
@@ -211,11 +211,11 @@ struct DeviceProcess {
 
 std::unique_ptr<DeviceProcess> g_proc;
 
-std::vector<evrp::device::api::DeviceKind> kindsForRecording(
-    const std::vector<evrp::device::api::DeviceKind>& caps) {
-  std::vector<evrp::device::api::DeviceKind> out;
-  for (evrp::device::api::DeviceKind k : caps) {
-    if (k != evrp::device::api::DeviceKind::kUnspecified) {
+std::vector<evrp::sdk::DeviceKind> kindsForRecording(
+    const std::vector<evrp::sdk::DeviceKind>& caps) {
+  std::vector<evrp::sdk::DeviceKind> out;
+  for (evrp::sdk::DeviceKind k : caps) {
+    if (k != evrp::sdk::DeviceKind::kUnspecified) {
       out.push_back(k);
     }
   }
@@ -223,20 +223,20 @@ std::vector<evrp::device::api::DeviceKind> kindsForRecording(
 }
 
 bool deviceHasKeyboard(
-    const std::vector<evrp::device::api::DeviceKind>& caps) {
-  for (evrp::device::api::DeviceKind k : caps) {
-    if (k == evrp::device::api::DeviceKind::kKeyboard) {
+    const std::vector<evrp::sdk::DeviceKind>& caps) {
+  for (evrp::sdk::DeviceKind k : caps) {
+    if (k == evrp::sdk::DeviceKind::kKeyboard) {
       return true;
     }
   }
   return false;
 }
 
-std::vector<evrp::device::api::DeviceKind> dedupeKindsPreserveOrder(
-    const std::vector<evrp::device::api::DeviceKind>& kinds) {
-  std::vector<evrp::device::api::DeviceKind> out;
-  for (evrp::device::api::DeviceKind k : kinds) {
-    if (k == evrp::device::api::DeviceKind::kUnspecified) {
+std::vector<evrp::sdk::DeviceKind> dedupeKindsPreserveOrder(
+    const std::vector<evrp::sdk::DeviceKind>& kinds) {
+  std::vector<evrp::sdk::DeviceKind> out;
+  for (evrp::sdk::DeviceKind k : kinds) {
+    if (k == evrp::sdk::DeviceKind::kUnspecified) {
       continue;
     }
     if (std::find(out.begin(), out.end(), k) == out.end()) {
@@ -247,8 +247,8 @@ std::vector<evrp::device::api::DeviceKind> dedupeKindsPreserveOrder(
 }
 
 bool isValidListenProbeEvent(
-    evrp::device::api::DeviceKind expectedKind,
-    const evrp::device::api::InputEvent& e) {
+    evrp::sdk::DeviceKind expectedKind,
+    const evrp::sdk::InputEvent& e) {
   if (e.device != expectedKind) {
     return false;
   }
@@ -258,12 +258,12 @@ bool isValidListenProbeEvent(
   return true;
 }
 
-std::vector<evrp::device::api::InputEvent> minimalKeyTapEvents() {
-  std::vector<evrp::device::api::InputEvent> v;
+std::vector<evrp::sdk::InputEvent> minimalKeyTapEvents() {
+  std::vector<evrp::sdk::InputEvent> v;
   int usec = 0;
   for (int value : {1, 0}) {
-    evrp::device::api::InputEvent e;
-    e.device = evrp::device::api::DeviceKind::kKeyboard;
+    evrp::sdk::InputEvent e;
+    e.device = evrp::sdk::DeviceKind::kKeyboard;
     e.timeSec = 0;
     e.timeUsec = usec;
     e.type = static_cast<uint32_t>(EV_KEY);
@@ -390,7 +390,7 @@ bool IntegrationHarness::waitUntilGetCapabilitiesOk(
       std::chrono::steady_clock::now() +
       std::chrono::milliseconds(total_timeout_ms);
   while (std::chrono::steady_clock::now() < overall) {
-    std::vector<evrp::device::api::DeviceKind> kinds;
+    std::vector<evrp::sdk::DeviceKind> kinds;
     if (queryKindsForHarness(provider, &kinds)) {
       return true;
     }
@@ -402,7 +402,7 @@ bool IntegrationHarness::waitUntilGetCapabilitiesOk(
 
 bool IntegrationHarness::fetchCapabilities(
     evrp::device::api::IClient& client,
-    std::vector<evrp::device::api::DeviceKind>* kinds_out) {
+    std::vector<evrp::sdk::DeviceKind>* kinds_out) {
   kinds_out->clear();
   evrp::device::api::IDeviceKindsProvider* const provider =
       client.deviceKindsProvider();
@@ -420,12 +420,12 @@ bool IntegrationHarness::fetchCapabilities(
 
 bool IntegrationHarness::runInputListenTest(
     evrp::device::api::IClient& client,
-    const std::vector<evrp::device::api::DeviceKind>& caps) {
+    const std::vector<evrp::sdk::DeviceKind>& caps) {
   if (!FLAGS_test_input_listen) {
     logInfo("InputListen: skipped (--test_input_listen=false)");
     return true;
   }
-  std::vector<evrp::device::api::DeviceKind> kinds =
+  std::vector<evrp::sdk::DeviceKind> kinds =
       dedupeKindsPreserveOrder(kindsForRecording(caps));
   if (kinds.empty()) {
     logInfo(
@@ -450,7 +450,7 @@ bool IntegrationHarness::runInputListenTest(
       return false;
     }
     (void)listener->waitForInputEvent(FLAGS_listen_wait_ms);
-    const std::vector<evrp::device::api::InputEvent> batch =
+    const std::vector<evrp::sdk::InputEvent> batch =
         listener->readInputEvents();
     logInfo(
         "InputListen: ReadInputEvents count={} "
@@ -469,7 +469,7 @@ bool IntegrationHarness::runInputListenTest(
   }
 
   for (size_t ki = 0; ki < kinds.size(); ++ki) {
-    const evrp::device::api::DeviceKind kind = kinds[ki];
+    const evrp::sdk::DeviceKind kind = kinds[ki];
     const std::string kindLabel = evrp::sdk::toString(kind);
     if (ki > 0 && FLAGS_listen_between_kinds_ms > 0) {
       std::this_thread::sleep_for(
@@ -501,9 +501,9 @@ bool IntegrationHarness::runInputListenTest(
         slice = static_cast<int>(std::max<int64_t>(remaining.count(), 0));
       }
       (void)listener->waitForInputEvent(slice);
-      const std::vector<evrp::device::api::InputEvent> batch =
+      const std::vector<evrp::sdk::InputEvent> batch =
           listener->readInputEvents();
-      for (const evrp::device::api::InputEvent& e : batch) {
+      for (const evrp::sdk::InputEvent& e : batch) {
         if (isValidListenProbeEvent(kind, e)) {
           gotValid = true;
           logInfo(
@@ -536,7 +536,7 @@ bool IntegrationHarness::runInputListenTest(
 
 bool IntegrationHarness::runPlaybackTest(
     evrp::device::api::IClient& client,
-    const std::vector<evrp::device::api::DeviceKind>& caps) {
+    const std::vector<evrp::sdk::DeviceKind>& caps) {
   if (!FLAGS_test_playback) {
     logInfo("Playback: skipped (--test_playback=false)");
     return true;
@@ -554,14 +554,14 @@ bool IntegrationHarness::runPlaybackTest(
     logError("Playback: no playback client");
     return false;
   }
-  evrp::device::api::StatusCode up;
+  evrp::sdk::StatusCode up;
   if (!playback->upload(events, &up)) {
     logError("Playback: Upload failed code={} msg={}", up.code, up.message);
     return false;
   }
   logInfo("Playback: Upload ok ({} events)", events.size());
 
-  evrp::device::api::StatusCode play;
+  evrp::sdk::StatusCode play;
   const bool ok = playback->playback(&play, nullptr);
   if (!ok) {
     logError(

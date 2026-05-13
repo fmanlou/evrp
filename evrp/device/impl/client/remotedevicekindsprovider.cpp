@@ -7,15 +7,15 @@ namespace evrp::device::client {
 RemoteDeviceKindsProvider::RemoteDeviceKindsProvider(RemoteInputDeviceClient* device)
     : device_(device) {}
 
-bool RemoteDeviceKindsProvider::rpcKinds(std::vector<api::DeviceKind>* out) {
+bool RemoteDeviceKindsProvider::rpcKinds(std::vector<evrp::sdk::DeviceKind>* out) {
   if (!out || !device_) {
     return false;
   }
   return device_->getCapabilities(out);
 }
 
-std::vector<api::DeviceKind> RemoteDeviceKindsProvider::kinds() {
-  std::vector<api::DeviceKind> out;
+std::vector<evrp::sdk::DeviceKind> RemoteDeviceKindsProvider::kinds() {
+  std::vector<evrp::sdk::DeviceKind> out;
   (void)rpcKinds(&out);
   return out;
 }

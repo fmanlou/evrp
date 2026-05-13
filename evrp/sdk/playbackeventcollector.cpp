@@ -6,8 +6,6 @@
 #include "evrp/device/api/playback.h"
 #include "evrp/sdk/logger.h"
 
-namespace api = evrp::device::api;
-
 void PlaybackEventCollector::clear() {
   events_.clear();
   timelineUs_ = 0;
@@ -15,7 +13,7 @@ void PlaybackEventCollector::clear() {
 }
 
 void PlaybackEventCollector::appendBatchWithTimeline(
-    std::vector<api::InputEvent> batch) {
+    std::vector<evrp::sdk::InputEvent> batch) {
   if (batch.empty()) {
     return;
   }
@@ -38,11 +36,11 @@ void PlaybackEventCollector::appendBatchWithTimeline(
   events_.insert(events_.end(), batch.begin(), batch.end());
 }
 
-bool PlaybackEventCollector::writeRaw(api::DeviceKind device, unsigned short type,
+bool PlaybackEventCollector::writeRaw(evrp::sdk::DeviceKind device, unsigned short type,
                                       unsigned short code, int value) {
-  std::vector<api::InputEvent> batch;
+  std::vector<evrp::sdk::InputEvent> batch;
   auto push = [&](unsigned short t, unsigned short c, int v) {
-    api::InputEvent e;
+    evrp::sdk::InputEvent e;
     e.device = device;
     e.type = static_cast<uint32_t>(t);
     e.code = static_cast<uint32_t>(c);
@@ -64,25 +62,25 @@ bool PlaybackEventCollector::writeRaw(api::DeviceKind device, unsigned short typ
   return true;
 }
 
-std::vector<api::InputEvent> PlaybackEventCollector::takeEvents() {
-  std::vector<api::InputEvent> out = std::move(events_);
+std::vector<evrp::sdk::InputEvent> PlaybackEventCollector::takeEvents() {
+  std::vector<evrp::sdk::InputEvent> out = std::move(events_);
   clear();
   return out;
 }
 
-bool PlaybackEventCollector::uploadAndPlay(api::IPlayback* playback) {
+bool PlaybackEventCollector::uploadAndPlay(evrp::device::api::IPlayback* playback) {
   if (!playback) {
     return false;
   }
   if (events_.empty()) {
     return true;
   }
-  api::StatusCode up;
+  evrp::sdk::StatusCode up;
   if (!playback->upload(events_, &up) || up.code != 0) {
     logError("Playback buffer: upload failed (code={}): {}", up.code, up.message);
     return false;
   }
-  api::StatusCode play;
+  evrp::sdk::StatusCode play;
   if (!playback->playback(&play) || play.code != 0) {
     logError("Playback buffer: playback failed (code={}): {}", play.code,
              play.message);

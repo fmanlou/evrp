@@ -17,7 +17,7 @@ bool parseTrailingLine(const std::string &line, long long *out_deltaUs);
 std::string eventTypeName(unsigned short type);
 std::string eventCodeName(unsigned short type, unsigned short code);
 
-std::string formatEventLine(evrp::device::api::DeviceKind device,
+std::string formatEventLine(evrp::sdk::DeviceKind device,
                             const Event &ev, long long deltaUs);
 
 std::string formatLeadingLine(long long deltaUs);

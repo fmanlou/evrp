@@ -153,7 +153,7 @@ std::string eventCodeName(unsigned short type, unsigned short code) {
   return "";
 }
 
-std::string formatEventLine(evrp::device::api::DeviceKind device,
+std::string formatEventLine(evrp::sdk::DeviceKind device,
                             const Event &ev, long long deltaUs) {
   std::ostringstream oss;
   std::string code_name = eventCodeName(ev.type, ev.code);
@@ -174,7 +174,7 @@ std::string formatEventLine(evrp::device::api::DeviceKind device,
     oss << "(" << code_name << ")";
   }
   oss << " value=" << ev.value;
-  if (device == evrp::device::api::DeviceKind::kKeyboard) {
+  if (device == evrp::sdk::DeviceKind::kKeyboard) {
     if (ev.type == EV_KEY) {
       oss << " // key=" << keyboardKeyNameFromCode(ev.code)
           << " action=" << keyboardKeyActionFromValue(ev.value);

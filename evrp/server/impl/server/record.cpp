@@ -25,7 +25,7 @@ Record::Record(std::shared_ptr<ISetting> setting,
   }
   logLevel_ = setting->get("logLevel", logging::LogLevel::Info);
   kinds_ =
-      setting->get("kinds", std::vector<evrp::device::api::DeviceKind>{});
+      setting->get("kinds", std::vector<evrp::sdk::DeviceKind>{});
   device_ = setting->get<std::string>("device", {});
   outputPath_ = setting->get<std::string>("outputPath", {});
   keyboardCtrlCFilterMode_ = keyboardCtrlCFilterModeFromLabel(
@@ -90,8 +90,8 @@ int Record::run() {
     }
     logDebug("{}", line);
   };
-  auto writeEventLine = [&](evrp::device::api::DeviceKind device,
-                            const evrp::device::api::InputEvent &ine) {
+  auto writeEventLine = [&](evrp::sdk::DeviceKind device,
+                            const evrp::sdk::InputEvent &ine) {
     if (!writeOk) {
       return;
     }
@@ -128,10 +128,10 @@ int Record::run() {
     if (!listener_->waitForInputEvent(kWaitMs)) {
       continue;
     }
-    std::vector<evrp::device::api::InputEvent> batch =
+    std::vector<evrp::sdk::InputEvent> batch =
         listener_->readInputEvents();
     for (const auto &ine : batch) {
-      if (ine.device == evrp::device::api::DeviceKind::kKeyboard &&
+      if (ine.device == evrp::sdk::DeviceKind::kKeyboard &&
           keyboardCtrlCFilterMode_ != KeyboardCtrlCFilterMode::kOff) {
         Event ev = {static_cast<long>(ine.timeSec),
                     static_cast<long>(ine.timeUsec),
@@ -141,8 +141,8 @@ int Record::run() {
         processKeyboardEventWithCtrlFilter(ev, keyboardCtrlCFilterMode_,
                                            &keyboardFilterState_, &emitted);
         for (const Event &e : emitted) {
-          evrp::device::api::InputEvent out = {};
-          out.device = evrp::device::api::DeviceKind::kKeyboard;
+          evrp::sdk::InputEvent out = {};
+          out.device = evrp::sdk::DeviceKind::kKeyboard;
           out.timeSec = e.sec;
           out.timeUsec = e.usec;
           out.type = static_cast<uint32_t>(e.type);
@@ -167,8 +167,8 @@ int Record::run() {
     flushKeyboardEventFilter(keyboardCtrlCFilterMode_, &keyboardFilterState_,
                              &flushed);
     for (const Event &e : flushed) {
-      evrp::device::api::InputEvent out = {};
-      out.device = evrp::device::api::DeviceKind::kKeyboard;
+      evrp::sdk::InputEvent out = {};
+      out.device = evrp::sdk::DeviceKind::kKeyboard;
       out.timeSec = e.sec;
       out.timeUsec = e.usec;
       out.type = static_cast<uint32_t>(e.type);

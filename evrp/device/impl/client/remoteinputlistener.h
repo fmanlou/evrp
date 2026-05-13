@@ -22,9 +22,9 @@ class RemoteInputListener final : public api::IInputListener {
   RemoteInputListener(const RemoteInputListener&) = delete;
   RemoteInputListener& operator=(const RemoteInputListener&) = delete;
 
-  bool startListening(const std::vector<api::DeviceKind>& kinds) override;
+  bool startListening(const std::vector<evrp::sdk::DeviceKind>& kinds) override;
 
-  std::vector<api::InputEvent> readInputEvents() override;
+  std::vector<evrp::sdk::InputEvent> readInputEvents() override;
 
   bool waitForInputEvent(int timeoutMs) override;
 

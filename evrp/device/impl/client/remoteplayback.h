@@ -24,10 +24,10 @@ class RemotePlayback final : public api::IPlayback {
   RemotePlayback(const RemotePlayback&) = delete;
   RemotePlayback& operator=(const RemotePlayback&) = delete;
 
-  bool upload(const std::vector<api::InputEvent>& events,
-              api::StatusCode* resultOut) override;
+  bool upload(const std::vector<evrp::sdk::InputEvent>& events,
+              evrp::sdk::StatusCode* resultOut) override;
 
-  bool playback(api::StatusCode* resultOut,
+  bool playback(evrp::sdk::StatusCode* resultOut,
                 evrp::CountingSemaphore* progressNotify = nullptr) override;
 
   int playbackIndex() const override;

@@ -13,23 +13,21 @@ extern "C" {
 #include "lua.h"
 }
 
-namespace api = evrp::device::api;
-
 namespace {
 
-int64_t eventTimeUs(const api::InputEvent& e) {
+int64_t eventTimeUs(const evrp::sdk::InputEvent& e) {
   return static_cast<int64_t>(e.timeSec) * 1000000LL +
          static_cast<int64_t>(e.timeUsec);
 }
 
-void setEventTimeUs(api::InputEvent& e, int64_t tUs) {
+void setEventTimeUs(evrp::sdk::InputEvent& e, int64_t tUs) {
   e.timeSec = static_cast<decltype(e.timeSec)>(tUs / 1000000LL);
   e.timeUsec = static_cast<decltype(e.timeUsec)>(tUs % 1000000LL);
 }
 
-api::InputEvent recordFieldsToEvent(api::DeviceKind device, unsigned short type,
+evrp::sdk::InputEvent recordFieldsToEvent(evrp::sdk::DeviceKind device, unsigned short type,
                                     unsigned short code, int value) {
-  api::InputEvent e;
+  evrp::sdk::InputEvent e;
   e.device = device;
   e.timeSec = 0;
   e.timeUsec = 0;
@@ -57,8 +55,8 @@ bool textLooksLikeRecordingFormat(const std::string& text) {
     if (label == "trailing" && parseTrailingLine(line, &tmp)) {
       return true;
     }
-    api::DeviceKind dev = evrp::sdk::toKind(label);
-    if (dev != api::DeviceKind::kUnspecified &&
+    evrp::sdk::DeviceKind dev = evrp::sdk::toKind(label);
+    if (dev != evrp::sdk::DeviceKind::kUnspecified &&
         parseEventLine(line, &dus, &t, &c, &v)) {
       return true;
     }
@@ -66,8 +64,8 @@ bool textLooksLikeRecordingFormat(const std::string& text) {
   return false;
 }
 
-void appendShiftedLuaBatch(std::vector<api::InputEvent>* out,
-                           std::vector<api::InputEvent> batch, int64_t placementUs) {
+void appendShiftedLuaBatch(std::vector<evrp::sdk::InputEvent>* out,
+                           std::vector<evrp::sdk::InputEvent> batch, int64_t placementUs) {
   if (batch.empty() || !out) {
     return;
   }
@@ -82,7 +80,7 @@ void appendShiftedLuaBatch(std::vector<api::InputEvent>* out,
   }
 }
 
-int64_t vectorMaxTimeUs(const std::vector<api::InputEvent>& v) {
+int64_t vectorMaxTimeUs(const std::vector<evrp::sdk::InputEvent>& v) {
   int64_t m = 0;
   for (const auto& e : v) {
     m = std::max(m, eventTimeUs(e));
@@ -90,7 +88,7 @@ int64_t vectorMaxTimeUs(const std::vector<api::InputEvent>& v) {
   return m;
 }
 
-int64_t vectorMinTimeUs(const std::vector<api::InputEvent>& v) {
+int64_t vectorMinTimeUs(const std::vector<evrp::sdk::InputEvent>& v) {
   if (v.empty()) {
     return 0;
   }
@@ -101,7 +99,7 @@ int64_t vectorMinTimeUs(const std::vector<api::InputEvent>& v) {
   return m;
 }
 
-void normalizeTimelineToZero(std::vector<api::InputEvent>* events) {
+void normalizeTimelineToZero(std::vector<evrp::sdk::InputEvent>* events) {
   if (!events || events->empty()) {
     return;
   }
@@ -114,7 +112,7 @@ void normalizeTimelineToZero(std::vector<api::InputEvent>* events) {
 }
 
 int LuaEventComposer::toEvents(const std::string& text,
-                               std::vector<api::InputEvent>* events) {
+                               std::vector<evrp::sdk::InputEvent>* events) {
   if (!events) {
     return LUA_ERRRUN;
   }
@@ -159,11 +157,11 @@ int LuaEventComposer::toEvents(const std::string& text,
       continue;
     }
 
-    api::DeviceKind device = evrp::sdk::toKind(label);
+    evrp::sdk::DeviceKind device = evrp::sdk::toKind(label);
     long long deltaUs = 0;
     unsigned short type = 0, code = 0;
     int value = 0;
-    bool isEvent = (device != api::DeviceKind::kUnspecified) &&
+    bool isEvent = (device != evrp::sdk::DeviceKind::kUnspecified) &&
                     parseEventLine(line, &deltaUs, &type, &code, &value);
 
     if (!isEvent) {
@@ -173,7 +171,7 @@ int LuaEventComposer::toEvents(const std::string& text,
       if (err != LUA_OK) {
         return err;
       }
-      std::vector<api::InputEvent> batch = collector.takeEvents();
+      std::vector<evrp::sdk::InputEvent> batch = collector.takeEvents();
       const int64_t placementUs = std::max(streamMaxUs, fileAnchorUs);
       appendShiftedLuaBatch(events, std::move(batch), placementUs);
       streamMaxUs = vectorMaxTimeUs(*events);
@@ -188,7 +186,7 @@ int LuaEventComposer::toEvents(const std::string& text,
       sawFirstRecorded = true;
     }
 
-    api::InputEvent e = recordFieldsToEvent(device, type, code, value);
+    evrp::sdk::InputEvent e = recordFieldsToEvent(device, type, code, value);
     setEventTimeUs(e, deltaUs + recordedTimeAdjustUs);
     events->push_back(e);
     fileAnchorUs = eventTimeUs(e);

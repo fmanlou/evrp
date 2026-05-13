@@ -19,7 +19,7 @@ class RemoteInputDeviceClient final {
   RemoteInputDeviceClient(const RemoteInputDeviceClient&) = delete;
   RemoteInputDeviceClient& operator=(const RemoteInputDeviceClient&) = delete;
 
-  bool getCapabilities(std::vector<api::DeviceKind>* out);
+  bool getCapabilities(std::vector<evrp::sdk::DeviceKind>* out);
 
   bool getCursorPositionAvailability(bool* available);
 

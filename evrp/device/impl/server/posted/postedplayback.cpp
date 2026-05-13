@@ -9,14 +9,14 @@ PostedPlayback::PostedPlayback(api::IPlayback& inner, asio::io_context& ioContex
 
 PostedPlayback::~PostedPlayback() { shutdown(); }
 
-bool PostedPlayback::upload(const std::vector<api::InputEvent>& events,
-                              api::StatusCode* resultOut) {
+bool PostedPlayback::upload(const std::vector<evrp::sdk::InputEvent>& events,
+                              evrp::sdk::StatusCode* resultOut) {
   return syncDispatch_.postSync<bool>([this, events, resultOut]() {
     return inner_.upload(events, resultOut);
   });
 }
 
-bool PostedPlayback::playback(api::StatusCode* resultOut,
+bool PostedPlayback::playback(evrp::sdk::StatusCode* resultOut,
                               evrp::CountingSemaphore* progressNotify) {
   return syncDispatch_.postSync<bool>([this, resultOut, progressNotify]() {
     return inner_.playback(resultOut, progressNotify);

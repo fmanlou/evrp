@@ -19,7 +19,7 @@ std::string findFirstTouchscreen();
 std::string findFirstMouse();
 std::string findFirstKeyboard();
 
-std::string findDevicePath(evrp::device::api::DeviceKind kind);
+std::string findDevicePath(evrp::sdk::DeviceKind kind);
 
 std::vector<std::string> findAllDevicePaths(
-    evrp::device::api::DeviceKind kind);
+    evrp::sdk::DeviceKind kind);

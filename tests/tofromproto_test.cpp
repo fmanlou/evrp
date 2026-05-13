@@ -32,23 +32,23 @@ TEST(ToFromProto, KindsListFromStruct) {
   lv->add_values()->set_string_value("mouse");
   std::map<std::string, std::any> out;
   evrp::sdk::fromProto(out, s);
-  auto kinds = std::any_cast<const std::vector<evrp::device::api::DeviceKind>&>(
+  auto kinds = std::any_cast<const std::vector<evrp::sdk::DeviceKind>&>(
       out.at("kinds"));
   ASSERT_EQ(kinds.size(), 2u);
-  EXPECT_EQ(kinds[0], evrp::device::api::DeviceKind::kKeyboard);
-  EXPECT_EQ(kinds[1], evrp::device::api::DeviceKind::kMouse);
+  EXPECT_EQ(kinds[0], evrp::sdk::DeviceKind::kKeyboard);
+  EXPECT_EQ(kinds[1], evrp::sdk::DeviceKind::kMouse);
 }
 
 TEST(ToFromProto, RoundtripKindsVector) {
   MemorySetting m;
-  m.insert("kinds", std::vector<evrp::device::api::DeviceKind>{
-                        evrp::device::api::DeviceKind::kTouchpad});
+  m.insert("kinds", std::vector<evrp::sdk::DeviceKind>{
+                        evrp::sdk::DeviceKind::kTouchpad});
   google::protobuf::Struct s;
   evrp::sdk::toProto(m.snapshot(), &s);
   std::map<std::string, std::any> out;
   evrp::sdk::fromProto(out, s);
-  auto kinds = std::any_cast<const std::vector<evrp::device::api::DeviceKind>&>(
+  auto kinds = std::any_cast<const std::vector<evrp::sdk::DeviceKind>&>(
       out.at("kinds"));
   ASSERT_EQ(kinds.size(), 1u);
-  EXPECT_EQ(kinds[0], evrp::device::api::DeviceKind::kTouchpad);
+  EXPECT_EQ(kinds[0], evrp::sdk::DeviceKind::kTouchpad);
 }

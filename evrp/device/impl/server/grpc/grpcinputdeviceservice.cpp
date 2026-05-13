@@ -68,7 +68,7 @@ grpc::Status GrpcInputDeviceService::GetCapabilities(
     return grpc::Status(grpc::StatusCode::FAILED_PRECONDITION,
                         "device kinds provider not configured");
   }
-  for (api::DeviceKind k : deviceKindsProvider_->kinds()) {
+  for (evrp::sdk::DeviceKind k : deviceKindsProvider_->kinds()) {
     response->add_supported_kinds(evrp::sdk::toProto(k));
   }
   return grpc::Status::OK;

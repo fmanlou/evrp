@@ -24,9 +24,9 @@ class LocalInputListener final : public api::IInputListener {
   LocalInputListener(const LocalInputListener&) = delete;
   LocalInputListener& operator=(const LocalInputListener&) = delete;
 
-  bool startListening(const std::vector<api::DeviceKind>& kinds) override;
+  bool startListening(const std::vector<evrp::sdk::DeviceKind>& kinds) override;
 
-  std::vector<api::InputEvent> readInputEvents() override;
+  std::vector<evrp::sdk::InputEvent> readInputEvents() override;
 
   bool waitForInputEvent(int timeoutMs) override;
 
@@ -37,7 +37,7 @@ class LocalInputListener final : public api::IInputListener {
  private:
   struct TrackedDevice {
     int fd{-1};
-    api::DeviceKind kind{api::DeviceKind::kUnspecified};
+    evrp::sdk::DeviceKind kind{evrp::sdk::DeviceKind::kUnspecified};
     std::string path;
   };
 

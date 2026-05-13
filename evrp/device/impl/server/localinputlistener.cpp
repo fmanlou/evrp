@@ -19,8 +19,8 @@ namespace evrp::device::server {
 
 namespace {
 
-api::InputEvent toApiInputEvent(api::DeviceKind device, const Event& ev) {
-  api::InputEvent e;
+evrp::sdk::InputEvent toApiInputEvent(evrp::sdk::DeviceKind device, const Event& ev) {
+  evrp::sdk::InputEvent e;
   e.device = device;
   e.timeSec = ev.sec;
   e.timeUsec = ev.usec;
@@ -70,7 +70,7 @@ void LocalInputListener::closeDevices() {
 }
 
 bool LocalInputListener::startListening(
-    const std::vector<api::DeviceKind>& kinds) {
+    const std::vector<evrp::sdk::DeviceKind>& kinds) {
   std::lock_guard<std::mutex> lock(mu_);
   if (disposed_) {
     return false;
@@ -85,8 +85,8 @@ bool LocalInputListener::startListening(
   std::unordered_set<std::string> opened_paths;
   std::vector<TrackedDevice> new_devices;
 
-  for (api::DeviceKind k : kinds) {
-    if (k == api::DeviceKind::kUnspecified) {
+  for (evrp::sdk::DeviceKind k : kinds) {
+    if (k == evrp::sdk::DeviceKind::kUnspecified) {
       continue;
     }
     const std::string kindLabel = evrp::sdk::toString(k);
@@ -141,7 +141,7 @@ bool LocalInputListener::startListening(
   return true;
 }
 
-std::vector<api::InputEvent> LocalInputListener::readInputEvents() {
+std::vector<evrp::sdk::InputEvent> LocalInputListener::readInputEvents() {
   std::lock_guard<std::mutex> lock(mu_);
   if (disposed_) {
     return {};
@@ -159,7 +159,7 @@ std::vector<api::InputEvent> LocalInputListener::readInputEvents() {
     return {};
   }
 
-  std::vector<api::InputEvent> out;
+  std::vector<evrp::sdk::InputEvent> out;
   Event evbuf[64];
 
   for (size_t i : pollReadyIndices_) {

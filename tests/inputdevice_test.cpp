@@ -46,7 +46,7 @@ TEST(InputDevice, RejectTouchscreenWhenTouchpad) {
 
 TEST(InputDevice, FindAllUnspecifiedYieldsEmpty) {
   const std::vector<std::string> v =
-      findAllDevicePaths(evrp::device::api::DeviceKind::kUnspecified);
+      findAllDevicePaths(evrp::sdk::DeviceKind::kUnspecified);
   EXPECT_TRUE(v.empty());
 }
 

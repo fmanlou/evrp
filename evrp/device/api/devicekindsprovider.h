@@ -10,7 +10,7 @@ class IDeviceKindsProvider {
  public:
   virtual ~IDeviceKindsProvider() = default;
 
-  virtual std::vector<DeviceKind> kinds() = 0;
+  virtual std::vector<evrp::sdk::DeviceKind> kinds() = 0;
 };
 
 }

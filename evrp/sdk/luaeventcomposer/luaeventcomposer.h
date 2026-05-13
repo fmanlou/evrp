@@ -10,11 +10,11 @@ class IEventComposer {
   virtual ~IEventComposer() = default;
 
   virtual int toEvents(const std::string& text,
-                       std::vector<evrp::device::api::InputEvent>* events) = 0;
+                       std::vector<evrp::sdk::InputEvent>* events) = 0;
 };
 
 class LuaEventComposer final : public IEventComposer {
  public:
   int toEvents(const std::string& text,
-               std::vector<evrp::device::api::InputEvent>* events) override;
+               std::vector<evrp::sdk::InputEvent>* events) override;
 };

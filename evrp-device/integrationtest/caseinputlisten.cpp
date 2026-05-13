@@ -12,7 +12,7 @@ TEST_F(DeviceIntegration, InputListen) {
   ASSERT_TRUE(client);
   ASSERT_TRUE(
       IntegrationHarness::waitUntilGetCapabilitiesOk(*client, FLAGS_rpc_wait_ms));
-  std::vector<evrp::device::api::DeviceKind> caps;
+  std::vector<evrp::sdk::DeviceKind> caps;
   ASSERT_TRUE(IntegrationHarness::fetchCapabilities(*client, &caps));
   ASSERT_TRUE(IntegrationHarness::runInputListenTest(*client, caps));
 }

@@ -14,7 +14,7 @@
 
 namespace {
 
-using evrp::device::api::DeviceKind;
+using evrp::sdk::DeviceKind;
 using evrp::sdk::toKind;
 
 void mergeIntoMemorySetting(

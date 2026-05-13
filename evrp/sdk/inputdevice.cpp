@@ -60,8 +60,8 @@ Event makeEvent(unsigned short type, unsigned short code, int value) {
 }
 
 std::vector<std::string> findAllDevicePaths(
-    evrp::device::api::DeviceKind kind) {
-  using evrp::device::api::DeviceKind;
+    evrp::sdk::DeviceKind kind) {
+  using evrp::sdk::DeviceKind;
   std::vector<std::string> out;
   auto pushIf = [&](bool (*pred)(const char*)) {
     for (int i = 0; i < 32; ++i) {
@@ -91,7 +91,7 @@ std::vector<std::string> findAllDevicePaths(
   return out;
 }
 
-std::string findDevicePath(evrp::device::api::DeviceKind kind) {
+std::string findDevicePath(evrp::sdk::DeviceKind kind) {
   const std::vector<std::string> all = findAllDevicePaths(kind);
   if (all.empty()) {
     return {};
@@ -100,17 +100,17 @@ std::string findDevicePath(evrp::device::api::DeviceKind kind) {
 }
 
 std::string findFirstTouchpad() {
-  return findDevicePath(evrp::device::api::DeviceKind::kTouchpad);
+  return findDevicePath(evrp::sdk::DeviceKind::kTouchpad);
 }
 
 std::string findFirstTouchscreen() {
-  return findDevicePath(evrp::device::api::DeviceKind::kTouchscreen);
+  return findDevicePath(evrp::sdk::DeviceKind::kTouchscreen);
 }
 
 std::string findFirstMouse() {
-  return findDevicePath(evrp::device::api::DeviceKind::kMouse);
+  return findDevicePath(evrp::sdk::DeviceKind::kMouse);
 }
 
 std::string findFirstKeyboard() {
-  return findDevicePath(evrp::device::api::DeviceKind::kKeyboard);
+  return findDevicePath(evrp::sdk::DeviceKind::kKeyboard);
 }

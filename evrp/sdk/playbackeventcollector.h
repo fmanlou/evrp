@@ -16,18 +16,18 @@ class PlaybackEventCollector final : public IRawEventWriter {
  public:
   void clear();
 
-  bool writeRaw(evrp::device::api::DeviceKind device, unsigned short type,
+  bool writeRaw(evrp::sdk::DeviceKind device, unsigned short type,
                 unsigned short code, int value) override;
 
   bool uploadAndPlay(evrp::device::api::IPlayback* playback);
 
   /// Moves buffered events out and resets the collector (timeline + buffer).
-  std::vector<evrp::device::api::InputEvent> takeEvents();
+  std::vector<evrp::sdk::InputEvent> takeEvents();
 
  private:
-  void appendBatchWithTimeline(std::vector<evrp::device::api::InputEvent> batch);
+  void appendBatchWithTimeline(std::vector<evrp::sdk::InputEvent> batch);
 
-  std::vector<evrp::device::api::InputEvent> events_;
+  std::vector<evrp::sdk::InputEvent> events_;
   int64_t timelineUs_ = 0;
   bool hasWall_ = false;
   std::chrono::steady_clock::time_point lastWall_{};

@@ -30,7 +30,7 @@ class Record {
   evrp::device::api::IInputListener *listener_{nullptr};
   IEnhancedFileSystem *fs_{nullptr};
   logging::LogLevel logLevel_{};
-  std::vector<evrp::device::api::DeviceKind> kinds_;
+  std::vector<evrp::sdk::DeviceKind> kinds_;
   std::string device_;
   std::string outputPath_;
   KeyboardCtrlCFilterMode keyboardCtrlCFilterMode_{

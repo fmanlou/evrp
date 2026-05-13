@@ -38,7 +38,7 @@ EvdevNodeStats scanEvdevNodesForProbe() {
   return s;
 }
 
-std::string formatKindList(const std::vector<api::DeviceKind>& kinds) {
+std::string formatKindList(const std::vector<evrp::sdk::DeviceKind>& kinds) {
   std::string s;
   for (size_t i = 0; i < kinds.size(); ++i) {
     if (i > 0) {
@@ -51,15 +51,15 @@ std::string formatKindList(const std::vector<api::DeviceKind>& kinds) {
 
 }  
 
-std::vector<api::DeviceKind> LocalInputDeviceKindsProvider::kinds() {
-  static const api::DeviceKind k_order[] = {
-      api::DeviceKind::kTouchpad,
-      api::DeviceKind::kTouchscreen,
-      api::DeviceKind::kMouse,
-      api::DeviceKind::kKeyboard,
+std::vector<evrp::sdk::DeviceKind> LocalInputDeviceKindsProvider::kinds() {
+  static const evrp::sdk::DeviceKind k_order[] = {
+      evrp::sdk::DeviceKind::kTouchpad,
+      evrp::sdk::DeviceKind::kTouchscreen,
+      evrp::sdk::DeviceKind::kMouse,
+      evrp::sdk::DeviceKind::kKeyboard,
   };
-  std::vector<api::DeviceKind> out;
-  for (api::DeviceKind k : k_order) {
+  std::vector<evrp::sdk::DeviceKind> out;
+  for (evrp::sdk::DeviceKind k : k_order) {
     if (!findDevicePath(k).empty()) {
       out.push_back(k);
     }

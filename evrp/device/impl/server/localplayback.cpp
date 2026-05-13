@@ -9,8 +9,8 @@
 
 namespace evrp::device::server {
 
-bool LocalPlayback::upload(const std::vector<api::InputEvent>& events,
-                           api::StatusCode* resultOut) {
+bool LocalPlayback::upload(const std::vector<evrp::sdk::InputEvent>& events,
+                           evrp::sdk::StatusCode* resultOut) {
   std::lock_guard<std::mutex> lock(mu_);
   cached_ = events;
   playing_ = false;
@@ -28,9 +28,9 @@ bool LocalPlayback::isPlayback() const {
 }
 
 bool LocalPlayback::playback(
-    api::StatusCode* resultOut,
+    evrp::sdk::StatusCode* resultOut,
     evrp::CountingSemaphore* progressNotify) {
-  std::vector<api::InputEvent> batch;
+  std::vector<evrp::sdk::InputEvent> batch;
   {
     std::lock_guard<std::mutex> lock(mu_);
     if (cached_.empty()) {
@@ -52,7 +52,7 @@ bool LocalPlayback::playback(
   bool first = true;
   int64_t prev_us = 0;
   for (int i = 0; i < static_cast<int>(batch.size()); ++i) {
-    const api::InputEvent& e = batch[static_cast<size_t>(i)];
+    const evrp::sdk::InputEvent& e = batch[static_cast<size_t>(i)];
     if (stopRequested_) {
       break;
     }

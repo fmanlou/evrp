@@ -28,14 +28,14 @@ class IntegrationHarness {
                                         int total_timeout_ms);
   static bool fetchCapabilities(
       evrp::device::api::IClient& client,
-      std::vector<evrp::device::api::DeviceKind>* kinds_out);
+      std::vector<evrp::sdk::DeviceKind>* kinds_out);
 
   static bool runInputListenTest(
       evrp::device::api::IClient& client,
-      const std::vector<evrp::device::api::DeviceKind>& caps);
+      const std::vector<evrp::sdk::DeviceKind>& caps);
   static bool runPlaybackTest(
       evrp::device::api::IClient& client,
-      const std::vector<evrp::device::api::DeviceKind>& caps);
+      const std::vector<evrp::sdk::DeviceKind>& caps);
   static bool runUdpDiscoveryTest();
 
  private:

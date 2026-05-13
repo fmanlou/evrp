@@ -15,7 +15,7 @@ RemoteInputDeviceClient::RemoteInputDeviceClient(
       deviceSessionId_(std::move(deviceSessionId)) {}
 
 bool RemoteInputDeviceClient::getCapabilities(
-    std::vector<api::DeviceKind>* out) {
+    std::vector<evrp::sdk::DeviceKind>* out) {
   out->clear();
   grpc::ClientContext ctx;
   evrp::session::addSessionMetadata(&ctx, deviceSessionId_);

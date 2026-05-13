@@ -13,8 +13,8 @@ MouseEventWriter::MouseEventWriter(IRawEventWriter *writer,
 
 bool MouseEventWriter::move(int dx, int dy) {
   bool ok = true;
-  if (dx != 0) ok = writer_->writeRaw(evrp::device::api::DeviceKind::kMouse, EV_REL, REL_X, dx);
-  if (ok && dy != 0) ok = writer_->writeRaw(evrp::device::api::DeviceKind::kMouse, EV_REL, REL_Y, dy);
+  if (dx != 0) ok = writer_->writeRaw(evrp::sdk::DeviceKind::kMouse, EV_REL, REL_X, dx);
+  if (ok && dy != 0) ok = writer_->writeRaw(evrp::sdk::DeviceKind::kMouse, EV_REL, REL_Y, dy);
   return ok;
 }
 
@@ -25,8 +25,8 @@ bool MouseEventWriter::moveToScreen(int x, int y) {
 }
 
 bool MouseEventWriter::moveTo(int x, int y) {
-  bool ok = writer_->writeRaw(evrp::device::api::DeviceKind::kMouse, EV_ABS, ABS_X, x);
-  if (ok) ok = writer_->writeRaw(evrp::device::api::DeviceKind::kMouse, EV_ABS, ABS_Y, y);
+  bool ok = writer_->writeRaw(evrp::sdk::DeviceKind::kMouse, EV_ABS, ABS_X, x);
+  if (ok) ok = writer_->writeRaw(evrp::sdk::DeviceKind::kMouse, EV_ABS, ABS_Y, y);
   return ok;
 }
 
@@ -39,19 +39,19 @@ bool MouseEventWriter::moveToScaled(int x, int y, int width, int height) {
 }
 
 bool MouseEventWriter::scrollV(int value) {
-  return writer_->writeRaw(evrp::device::api::DeviceKind::kMouse, EV_REL, REL_WHEEL, value);
+  return writer_->writeRaw(evrp::sdk::DeviceKind::kMouse, EV_REL, REL_WHEEL, value);
 }
 
 bool MouseEventWriter::scrollH(int value) {
-  return writer_->writeRaw(evrp::device::api::DeviceKind::kMouse, EV_REL, REL_HWHEEL, value);
+  return writer_->writeRaw(evrp::sdk::DeviceKind::kMouse, EV_REL, REL_HWHEEL, value);
 }
 
 bool MouseEventWriter::buttonDown(unsigned short btn) {
-  return writer_->writeRaw(evrp::device::api::DeviceKind::kMouse, EV_KEY, btn, 1);
+  return writer_->writeRaw(evrp::sdk::DeviceKind::kMouse, EV_KEY, btn, 1);
 }
 
 bool MouseEventWriter::buttonUp(unsigned short btn) {
-  return writer_->writeRaw(evrp::device::api::DeviceKind::kMouse, EV_KEY, btn, 0);
+  return writer_->writeRaw(evrp::sdk::DeviceKind::kMouse, EV_KEY, btn, 0);
 }
 
 bool MouseEventWriter::buttonClick(unsigned short btn) {
@@ -60,5 +60,5 @@ bool MouseEventWriter::buttonClick(unsigned short btn) {
 
 bool MouseEventWriter::write(unsigned short type, unsigned short code,
                              int value) {
-  return writer_->writeRaw(evrp::device::api::DeviceKind::kMouse, type, code, value);
+  return writer_->writeRaw(evrp::sdk::DeviceKind::kMouse, type, code, value);
 }

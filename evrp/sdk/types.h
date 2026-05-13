@@ -28,11 +28,3 @@ struct StatusCode {
 };
 
 }  // namespace evrp::sdk
-
-namespace evrp::device::api {
-
-using DeviceKind = evrp::sdk::DeviceKind;
-using InputEvent = evrp::sdk::InputEvent;
-using StatusCode = evrp::sdk::StatusCode;
-
-}  // namespace evrp::device::api

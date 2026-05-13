@@ -5,6 +5,6 @@
 class IRawEventWriter {
  public:
   virtual ~IRawEventWriter() = default;
-  virtual bool writeRaw(evrp::device::api::DeviceKind device,
+  virtual bool writeRaw(evrp::sdk::DeviceKind device,
                         unsigned short type, unsigned short code, int value) = 0;
 };

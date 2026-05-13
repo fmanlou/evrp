@@ -28,22 +28,22 @@ TEST(ArgParser, UseUdpDeviceDiscoveryWhenDeviceUnset) {
 }
 
 TEST(ArgParser, ParseKindAcceptsKnownKinds) {
-  EXPECT_EQ(evrp::sdk::toKind("touchpad"), api::DeviceKind::kTouchpad);
-  EXPECT_EQ(evrp::sdk::toKind("touchscreen"), api::DeviceKind::kTouchscreen);
-  EXPECT_EQ(evrp::sdk::toKind("mouse"), api::DeviceKind::kMouse);
-  EXPECT_EQ(evrp::sdk::toKind("keyboard"), api::DeviceKind::kKeyboard);
+  EXPECT_EQ(evrp::sdk::toKind("touchpad"), evrp::sdk::DeviceKind::kTouchpad);
+  EXPECT_EQ(evrp::sdk::toKind("touchscreen"), evrp::sdk::DeviceKind::kTouchscreen);
+  EXPECT_EQ(evrp::sdk::toKind("mouse"), evrp::sdk::DeviceKind::kMouse);
+  EXPECT_EQ(evrp::sdk::toKind("keyboard"), evrp::sdk::DeviceKind::kKeyboard);
 
-  api::DeviceKind k = api::DeviceKind::kUnspecified;
+  evrp::sdk::DeviceKind k = evrp::sdk::DeviceKind::kUnspecified;
   evrp::sdk::toKind("mouse", &k);
-  EXPECT_EQ(k, api::DeviceKind::kMouse);
+  EXPECT_EQ(k, evrp::sdk::DeviceKind::kMouse);
 }
 
 TEST(ArgParser, ParseKindRejectsUnknownKind) {
-  EXPECT_EQ(evrp::sdk::toKind("joystick"), api::DeviceKind::kUnspecified);
+  EXPECT_EQ(evrp::sdk::toKind("joystick"), evrp::sdk::DeviceKind::kUnspecified);
 
-  api::DeviceKind k = api::DeviceKind::kKeyboard;
+  evrp::sdk::DeviceKind k = evrp::sdk::DeviceKind::kKeyboard;
   evrp::sdk::toKind("joystick", &k);
-  EXPECT_EQ(k, api::DeviceKind::kUnspecified);
+  EXPECT_EQ(k, evrp::sdk::DeviceKind::kUnspecified);
 }
 
 TEST(ArgParser, ParseOptionsWithNoArgsDisablesRecording) {
@@ -56,7 +56,7 @@ TEST(ArgParser, ParseOptionsWithNoArgsDisablesRecording) {
   EXPECT_FALSE(map.get<bool>("playback", false));
   EXPECT_EQ(map.get<std::string>("keyboardCtrlCFilter", {}), "ending");
   EXPECT_TRUE(
-      map.get("kinds", std::vector<api::DeviceKind>{}).empty());
+      map.get("kinds", std::vector<evrp::sdk::DeviceKind>{}).empty());
 }
 
 TEST(ArgParser, ParseOptionsEnableRecordingAndKinds) {
@@ -67,10 +67,10 @@ TEST(ArgParser, ParseOptionsEnableRecordingAndKinds) {
   MemorySetting map;
   parseArgvInto(map, static_cast<int>(argv.size()), argv.data());
   EXPECT_TRUE(map.get<bool>("recording", false));
-  auto kinds = map.get("kinds", std::vector<api::DeviceKind>{});
+  auto kinds = map.get("kinds", std::vector<evrp::sdk::DeviceKind>{});
   ASSERT_EQ(kinds.size(), 2u);
-  EXPECT_EQ(kinds[0], api::DeviceKind::kMouse);
-  EXPECT_EQ(kinds[1], api::DeviceKind::kKeyboard);
+  EXPECT_EQ(kinds[0], evrp::sdk::DeviceKind::kMouse);
+  EXPECT_EQ(kinds[1], evrp::sdk::DeviceKind::kKeyboard);
 }
 
 TEST(ArgParser, ParseOptionsReadsOutputPath) {
@@ -83,9 +83,9 @@ TEST(ArgParser, ParseOptionsReadsOutputPath) {
   EXPECT_TRUE(map.get<bool>("recording", false));
   EXPECT_FALSE(map.get<bool>("playback", false));
   EXPECT_EQ(map.get<std::string>("outputPath", {}), "events.log");
-  auto kinds = map.get("kinds", std::vector<api::DeviceKind>{});
+  auto kinds = map.get("kinds", std::vector<evrp::sdk::DeviceKind>{});
   ASSERT_EQ(kinds.size(), 1u);
-  EXPECT_EQ(kinds[0], api::DeviceKind::kTouchpad);
+  EXPECT_EQ(kinds[0], evrp::sdk::DeviceKind::kTouchpad);
 }
 
 TEST(ArgParser, ParseOptionsDashRWithOutputFileTreatsUnknownTokenAsOutput) {
@@ -96,7 +96,7 @@ TEST(ArgParser, ParseOptionsDashRWithOutputFileTreatsUnknownTokenAsOutput) {
   parseArgvInto(map, static_cast<int>(argv.size()), argv.data());
   EXPECT_TRUE(map.get<bool>("recording", false));
   EXPECT_EQ(map.get<std::string>("outputPath", {}), "1.ev");
-  auto kinds = map.get("kinds", std::vector<api::DeviceKind>{});
+  auto kinds = map.get("kinds", std::vector<evrp::sdk::DeviceKind>{});
   ASSERT_EQ(kinds.size(), 4u);
 }
 
@@ -108,7 +108,7 @@ TEST(ArgParser, ParseOptionsDashRFollowedByNameIsAlwaysOutputNotKind) {
   parseArgvInto(map, static_cast<int>(argv.size()), argv.data());
   EXPECT_TRUE(map.get<bool>("recording", false));
   EXPECT_EQ(map.get<std::string>("outputPath", {}), "mouse");
-  auto kinds = map.get("kinds", std::vector<api::DeviceKind>{});
+  auto kinds = map.get("kinds", std::vector<evrp::sdk::DeviceKind>{});
   ASSERT_EQ(kinds.size(), 4u);
 }
 
@@ -121,10 +121,10 @@ TEST(ArgParser, ParseOptionsDashROutputPathThenKindsFromFlagOnly) {
   parseArgvInto(map, static_cast<int>(argv.size()), argv.data());
   EXPECT_TRUE(map.get<bool>("recording", false));
   EXPECT_EQ(map.get<std::string>("outputPath", {}), "1.ev");
-  auto kinds = map.get("kinds", std::vector<api::DeviceKind>{});
+  auto kinds = map.get("kinds", std::vector<evrp::sdk::DeviceKind>{});
   ASSERT_EQ(kinds.size(), 2u);
-  EXPECT_EQ(kinds[0], api::DeviceKind::kTouchpad);
-  EXPECT_EQ(kinds[1], api::DeviceKind::kMouse);
+  EXPECT_EQ(kinds[0], evrp::sdk::DeviceKind::kTouchpad);
+  EXPECT_EQ(kinds[1], evrp::sdk::DeviceKind::kMouse);
 }
 
 TEST(ArgParser, ParseOptionsEnablePlaybackAndPath) {
@@ -137,7 +137,7 @@ TEST(ArgParser, ParseOptionsEnablePlaybackAndPath) {
   EXPECT_TRUE(map.get<bool>("playback", false));
   EXPECT_EQ(map.get<std::string>("playbackPath", {}), "events.log");
   EXPECT_TRUE(
-      map.get("kinds", std::vector<api::DeviceKind>{}).empty());
+      map.get("kinds", std::vector<evrp::sdk::DeviceKind>{}).empty());
 }
 
 TEST(ArgParser, ParseOptionsRecordDefaultsKindsWhenNoTypes) {
@@ -147,12 +147,12 @@ TEST(ArgParser, ParseOptionsRecordDefaultsKindsWhenNoTypes) {
   MemorySetting map;
   parseArgvInto(map, static_cast<int>(argv.size()), argv.data());
   EXPECT_TRUE(map.get<bool>("recording", false));
-  auto kinds = map.get("kinds", std::vector<api::DeviceKind>{});
+  auto kinds = map.get("kinds", std::vector<evrp::sdk::DeviceKind>{});
   ASSERT_EQ(kinds.size(), 4u);
-  EXPECT_EQ(kinds[0], api::DeviceKind::kTouchpad);
-  EXPECT_EQ(kinds[1], api::DeviceKind::kTouchscreen);
-  EXPECT_EQ(kinds[2], api::DeviceKind::kMouse);
-  EXPECT_EQ(kinds[3], api::DeviceKind::kKeyboard);
+  EXPECT_EQ(kinds[0], evrp::sdk::DeviceKind::kTouchpad);
+  EXPECT_EQ(kinds[1], evrp::sdk::DeviceKind::kTouchscreen);
+  EXPECT_EQ(kinds[2], evrp::sdk::DeviceKind::kMouse);
+  EXPECT_EQ(kinds[3], evrp::sdk::DeviceKind::kKeyboard);
 }
 
 TEST(ArgParser, LogLevelFromString) {
@@ -179,9 +179,9 @@ TEST(ArgParser, ParseOptionsLogLevel) {
   EXPECT_TRUE(map1.get<bool>("recording", false));
   EXPECT_EQ(map1.get("logLevel", logging::LogLevel::Info),
             logging::LogLevel::Debug);
-  auto kinds = map1.get("kinds", std::vector<api::DeviceKind>{});
+  auto kinds = map1.get("kinds", std::vector<evrp::sdk::DeviceKind>{});
   ASSERT_EQ(kinds.size(), 1u);
-  EXPECT_EQ(kinds[0], api::DeviceKind::kKeyboard);
+  EXPECT_EQ(kinds[0], evrp::sdk::DeviceKind::kKeyboard);
 }
 
 TEST(ArgParser, ParseOptionsPlaybackWithLogLevel) {
@@ -206,9 +206,9 @@ TEST(ArgParser, ParseOptionsDeviceOverride) {
   parseArgvInto(map, static_cast<int>(argv.size()), argv.data());
   EXPECT_TRUE(map.get<bool>("recording", false));
   EXPECT_EQ(map.get<std::string>("device", {}), "10.0.0.5:9999");
-  auto kinds = map.get("kinds", std::vector<api::DeviceKind>{});
+  auto kinds = map.get("kinds", std::vector<evrp::sdk::DeviceKind>{});
   ASSERT_EQ(kinds.size(), 1u);
-  EXPECT_EQ(kinds[0], api::DeviceKind::kMouse);
+  EXPECT_EQ(kinds[0], evrp::sdk::DeviceKind::kMouse);
 }
 
 TEST(ArgParser, ParseKeyboardCtrlCFilter) {

@@ -12,8 +12,8 @@ PostedInputDeviceKindsProvider::~PostedInputDeviceKindsProvider() {
   shutdown();
 }
 
-std::vector<api::DeviceKind> PostedInputDeviceKindsProvider::kinds() {
-  return syncDispatch_.postSync<std::vector<api::DeviceKind>>(
+std::vector<evrp::sdk::DeviceKind> PostedInputDeviceKindsProvider::kinds() {
+  return syncDispatch_.postSync<std::vector<evrp::sdk::DeviceKind>>(
       [this]() { return inner_.kinds(); });
 }
 
