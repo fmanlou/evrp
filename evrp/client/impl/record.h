@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -7,9 +8,9 @@
 #include "evrp/sdk/ioc.h"
 #include "evrp/sdk/keyboard/keyboarddevice.h"
 #include "evrp/sdk/logger.h"
-#include "evrp/sdk/setting/memorysetting.h"
 
 class IEnhancedFileSystem;
+class ISetting;
 
 namespace evrp::device::api {
 class IInputListener;
@@ -17,10 +18,11 @@ class IInputListener;
 
 class Record {
  public:
-  Record(MemorySetting setting, evrp::device::api::IInputListener *listener,
+  Record(std::shared_ptr<ISetting> setting,
+         evrp::device::api::IInputListener *listener,
          IEnhancedFileSystem *fs);
 
-  Record(MemorySetting setting, const evrp::Ioc &ioc);
+  Record(std::shared_ptr<ISetting> setting, const evrp::Ioc &ioc);
 
   int run();
 

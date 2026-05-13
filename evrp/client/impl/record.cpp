@@ -14,20 +14,25 @@
 #include "evrp/sdk/eventformat.h"
 #include "evrp/sdk/filesystem/enhancedfilesystem.h"
 #include "evrp/sdk/scopeguard.h"
+#include "evrp/sdk/setting/isetting.h"
 
-Record::Record(MemorySetting setting, evrp::device::api::IInputListener *listener,
+Record::Record(std::shared_ptr<ISetting> setting,
+               evrp::device::api::IInputListener *listener,
                IEnhancedFileSystem *fs)
     : listener_(listener), fs_(fs) {
-  logLevel_ = setting.get("logLevel", logging::LogLevel::Info);
+  if (!setting) {
+    return;
+  }
+  logLevel_ = setting->get("logLevel", logging::LogLevel::Info);
   kinds_ =
-      setting.get("kinds", std::vector<evrp::device::api::DeviceKind>{});
-  device_ = setting.get<std::string>("device", {});
-  outputPath_ = setting.get<std::string>("outputPath", {});
+      setting->get("kinds", std::vector<evrp::device::api::DeviceKind>{});
+  device_ = setting->get<std::string>("device", {});
+  outputPath_ = setting->get<std::string>("outputPath", {});
   keyboardCtrlCFilterMode_ = keyboardCtrlCFilterModeFromLabel(
-      setting.get<std::string>("keyboardCtrlCFilter", "ending"));
+      setting->get<std::string>("keyboardCtrlCFilter", "ending"));
 }
 
-Record::Record(MemorySetting setting, const evrp::Ioc &ioc)
+Record::Record(std::shared_ptr<ISetting> setting, const evrp::Ioc &ioc)
     : Record(std::move(setting), ioc.get<evrp::device::api::IInputListener>(),
              ioc.get<IEnhancedFileSystem>()) {}
 

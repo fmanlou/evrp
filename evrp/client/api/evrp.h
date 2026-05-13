@@ -1,11 +1,13 @@
 #pragma once
 
-#include "evrp/sdk/setting/memorysetting.h"
+#include <memory>
+
+#include "evrp/sdk/setting/isetting.h"
 
 namespace evrp::client {
 
-int runRecord(MemorySetting settings);
+int record(std::shared_ptr<ISetting> settings);
 
-int runReplay(MemorySetting settings);
+int replay(std::shared_ptr<ISetting> settings);
 
 }

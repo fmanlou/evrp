@@ -15,16 +15,21 @@
 #include "evrp/sdk/evdev.h"
 #include "evrp/sdk/logger.h"
 #include "evrp/sdk/scopeguard.h"
+#include "evrp/sdk/setting/isetting.h"
 
-Playback::Playback(MemorySetting setting, evrp::device::api::IPlayback *playback,
+Playback::Playback(std::shared_ptr<ISetting> setting,
+                   evrp::device::api::IPlayback *playback,
                    IEnhancedFileSystem *fs)
     : remote_(playback), fs_(fs) {
-  logLevel_ = setting.get("logLevel", logging::LogLevel::Info);
-  playbackPath_ = setting.get<std::string>("playbackPath", {});
-  device_ = setting.get<std::string>("device", {});
+  if (!setting) {
+    return;
+  }
+  logLevel_ = setting->get("logLevel", logging::LogLevel::Info);
+  playbackPath_ = setting->get<std::string>("playbackPath", {});
+  device_ = setting->get<std::string>("device", {});
 }
 
-Playback::Playback(MemorySetting setting, const evrp::Ioc &ioc)
+Playback::Playback(std::shared_ptr<ISetting> setting, const evrp::Ioc &ioc)
     : Playback(std::move(setting), ioc.get<evrp::device::api::IPlayback>(),
                ioc.get<IEnhancedFileSystem>()) {}
 

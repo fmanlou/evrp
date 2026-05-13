@@ -1,5 +1,3 @@
-#include "evrp/client/api/evrp.h"
-
 #include <functional>
 #include <memory>
 #include <string>
@@ -11,20 +9,25 @@
 #include "evrp/sdk/filesystem/filesystem.h"
 #include "evrp/sdk/ioc.h"
 #include "evrp/sdk/logger.h"
+#include "evrp/sdk/setting/isetting.h"
 
-namespace evrp::client {
 namespace {
 
 int connectDeviceAndRun(
-    MemorySetting settings,
-    const std::function<int(MemorySetting&&, Ioc&)>& body) {
+    std::shared_ptr<ISetting> settings,
+    const std::function<int(std::shared_ptr<ISetting>, evrp::Ioc&)>& body) {
+  if (!settings) {
+    logError("settings is null.");
+    return 1;
+  }
+
   logging::LogLevel logLevel =
-      settings.get("logLevel", logging::LogLevel::Info);
+      settings->get("logLevel", logging::LogLevel::Info);
   logService->setLevel(logLevel);
 
-  std::string device = settings.get<std::string>("device", {});
+  std::string device = settings->get<std::string>("device", {});
   std::unique_ptr<evrp::device::api::IClient> deviceClient =
-      evrp::device::api::makeClient(device, settings);
+      evrp::device::api::makeClient(device, *settings);
   if (!deviceClient) {
     logError(
         "Could not connect to evrp-device{} (session handshake failed). "
@@ -34,9 +37,9 @@ int connectDeviceAndRun(
         device.empty() ? std::string("") : (" at " + device));
     return 1;
   }
-  settings.insert("device", deviceClient->serverAddress());
+  settings->insert("device", deviceClient->serverAddress());
 
-  Ioc ioc;
+  evrp::Ioc ioc;
   ioc.emplace(deviceClient->playback());
   ioc.emplace(deviceClient->inputListener());
 
@@ -49,22 +52,28 @@ int connectDeviceAndRun(
 
 }  // namespace
 
-int runRecord(MemorySetting settings) {
+namespace evrp::client {
+
+int runnerRecord(std::shared_ptr<ISetting> settings) {
   return connectDeviceAndRun(std::move(settings),
-                             [](MemorySetting&& s, Ioc& ioc) {
+                             [](std::shared_ptr<ISetting> s, evrp::Ioc& ioc) {
                                return Record(std::move(s), ioc).run();
                              });
 }
 
-int runReplay(MemorySetting settings) {
+int runnerReplay(std::shared_ptr<ISetting> settings) {
+  if (!settings) {
+    logError("settings is null.");
+    return 1;
+  }
   std::string playbackPath =
-      settings.get<std::string>("playbackPath", {});
+      settings->get<std::string>("playbackPath", {});
   if (playbackPath.empty()) {
     logError("Replay requires playbackPath in settings.");
     return 1;
   }
   return connectDeviceAndRun(std::move(settings),
-                             [](MemorySetting&& s, Ioc& ioc) {
+                             [](std::shared_ptr<ISetting> s, evrp::Ioc& ioc) {
                                return Playback(std::move(s), ioc).run();
                              });
 }

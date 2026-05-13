@@ -1,12 +1,13 @@
 #pragma once
 
+#include <memory>
 #include <string>
 
 #include "evrp/sdk/ioc.h"
 #include "evrp/sdk/logger.h"
-#include "evrp/sdk/setting/memorysetting.h"
 
 class IEnhancedFileSystem;
+class ISetting;
 
 namespace evrp::device::api {
 class IPlayback;
@@ -14,10 +15,11 @@ class IPlayback;
 
 class Playback {
  public:
-  Playback(MemorySetting setting, evrp::device::api::IPlayback *playback,
+  Playback(std::shared_ptr<ISetting> setting,
+           evrp::device::api::IPlayback *playback,
            IEnhancedFileSystem *fs);
 
-  Playback(MemorySetting setting, const evrp::Ioc &ioc);
+  Playback(std::shared_ptr<ISetting> setting, const evrp::Ioc &ioc);
 
   int run();
 
