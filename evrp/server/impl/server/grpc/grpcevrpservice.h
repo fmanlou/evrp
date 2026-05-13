@@ -6,7 +6,7 @@
 
 namespace evrp::server {
 
-class GrpcEvrpServiceImpl final
+class GrpcEvrpService final
     : public evrp::v1::server::EvrpService::Service {
  public:
   grpc::Status Record(grpc::ServerContext*,

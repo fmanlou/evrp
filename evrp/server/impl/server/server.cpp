@@ -2,11 +2,11 @@
 
 #include <memory>
 
-#include "evrp/server/impl/server/grpc/grpcevrpserviceimpl.h"
+#include "evrp/server/impl/server/grpc/grpcevrpservice.h"
 #include "evrp/v1/server/service/evrp.grpc.pb.h"
 
 evrp::server::Server::Server()
-    : service_(std::make_unique<evrp::server::GrpcEvrpServiceImpl>()) {}
+    : service_(std::make_unique<evrp::server::GrpcEvrpService>()) {}
 
 evrp::server::Server::~Server() = default;
 

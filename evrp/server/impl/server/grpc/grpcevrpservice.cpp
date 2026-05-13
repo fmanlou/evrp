@@ -1,4 +1,4 @@
-#include "evrp/server/impl/server/grpc/grpcevrpserviceimpl.h"
+#include "evrp/server/impl/server/grpc/grpcevrpservice.h"
 
 #include <map>
 #include <memory>
@@ -29,7 +29,7 @@ void mergeIntoMemorySetting(MemorySetting& settings,
 
 namespace evrp::server {
 
-grpc::Status GrpcEvrpServiceImpl::Record(
+grpc::Status GrpcEvrpService::Record(
     grpc::ServerContext*,
     const google::protobuf::Struct* request,
     evrp::v1::sdk::StatusCode* response) {
@@ -57,7 +57,7 @@ grpc::Status GrpcEvrpServiceImpl::Record(
   return grpc::Status::OK;
 }
 
-grpc::Status GrpcEvrpServiceImpl::Replay(
+grpc::Status GrpcEvrpService::Replay(
     grpc::ServerContext*,
     const google::protobuf::Struct* request,
     evrp::v1::sdk::StatusCode* response) {
