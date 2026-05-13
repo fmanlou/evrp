@@ -1,6 +1,7 @@
 #pragma once
 
 #include <any>
+#include <map>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -19,6 +20,8 @@ class ISetting {
   virtual std::any get(const std::string& key) const = 0;
   virtual void insert(std::string key, std::any value) = 0;
   virtual std::vector<std::string> keys() const = 0;
+
+  virtual std::map<std::string, std::any> snapshot() const = 0;
 
   template <typename T>
   T get(const std::string& key, T defaultValue) const {

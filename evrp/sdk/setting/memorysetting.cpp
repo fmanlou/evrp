@@ -22,3 +22,7 @@ std::vector<std::string> MemorySetting::keys() const {
   }
   return out;
 }
+
+std::map<std::string, std::any> MemorySetting::snapshot() const {
+  return values_;
+}

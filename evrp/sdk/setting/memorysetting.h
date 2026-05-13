@@ -23,6 +23,7 @@ class MemorySetting final : public ISetting {
   std::any get(const std::string& key) const override;
   void insert(std::string key, std::any value) override;
   std::vector<std::string> keys() const override;
+  std::map<std::string, std::any> snapshot() const override;
 
  private:
   std::map<std::string, std::any> values_;

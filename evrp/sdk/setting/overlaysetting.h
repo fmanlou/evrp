@@ -1,6 +1,7 @@
 #pragma once
 
 #include <initializer_list>
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -27,6 +28,7 @@ class OverlaySetting final : public ISetting {
   std::any get(const std::string& key) const override;
   void insert(std::string key, std::any value) override;
   std::vector<std::string> keys() const override;
+  std::map<std::string, std::any> snapshot() const override;
 
  private:
   std::unique_ptr<ISetting> ownedTop_;

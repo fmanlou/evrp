@@ -78,3 +78,11 @@ std::vector<std::string> OverlaySetting::keys() const {
   }
   return result;
 }
+
+std::map<std::string, std::any> OverlaySetting::snapshot() const {
+  std::map<std::string, std::any> out;
+  for (const std::string& k : keys()) {
+    out.emplace(k, get(k));
+  }
+  return out;
+}

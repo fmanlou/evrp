@@ -1,7 +1,19 @@
 #include "evrp/sdk/setting/memorysetting.h"
 #include "evrp/sdk/setting/overlaysetting.h"
 
+#include <any>
 #include <gtest/gtest.h>
+#include <map>
+
+TEST(MemorySetting, SnapshotCopiesEntries) {
+  MemorySetting s;
+  s.insert("a", 1);
+  std::map<std::string, std::any> snap = s.snapshot();
+  ASSERT_EQ(snap.size(), 1u);
+  EXPECT_EQ(std::any_cast<int>(snap.at("a")), 1);
+  s.insert("a", 99);
+  EXPECT_EQ(std::any_cast<int>(snap.at("a")), 1);
+}
 
 TEST(OverlaySetting, TopShadowsBelow) {
   MemorySetting base;
@@ -87,4 +99,17 @@ TEST(OverlaySetting, NullTopWithLowersInConstructor) {
   base.insert("k", 7);
   OverlaySetting overlay(nullptr, {&base});
   EXPECT_EQ(overlay.get<int>("k", 0), 7);
+}
+
+TEST(OverlaySetting, SnapshotMergesLayersLikeGet) {
+  MemorySetting base;
+  base.insert("k", 1);
+  base.insert("only_base", 2);
+  MemorySetting top;
+  top.insert("k", 3);
+  OverlaySetting o(&top);
+  o.addLower(&base);
+  std::map<std::string, std::any> snap = o.snapshot();
+  EXPECT_EQ(std::any_cast<int>(snap.at("k")), 3);
+  EXPECT_EQ(std::any_cast<int>(snap.at("only_base")), 2);
 }
