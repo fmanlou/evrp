@@ -1,11 +1,11 @@
 syntax = "proto3";
 
-package evrp.server.v1;
+package evrp.v1.server;
 
 import "google/protobuf/struct.proto";
 import "evrp/v1/sdk/types/common.proto";
 
 service EvrpService {
-  rpc Record(google.protobuf.Struct) returns (evrp.sdk.v1.StatusCode);
-  rpc Replay(google.protobuf.Struct) returns (evrp.sdk.v1.StatusCode);
+  rpc Record(google.protobuf.Struct) returns (evrp.v1.sdk.StatusCode);
+  rpc Replay(google.protobuf.Struct) returns (evrp.v1.sdk.StatusCode);
 }

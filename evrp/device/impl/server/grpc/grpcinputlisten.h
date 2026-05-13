@@ -19,7 +19,7 @@ class SessionRegistry;
 namespace evrp::device::server {
 
 class GrpcInputListenService final
-    : public v1::InputListenService::Service {
+    : public evrp::v1::device::InputListenService::Service {
  public:
   GrpcInputListenService(const evrp::Ioc& ioc, evrp::session::SessionRegistry& sessions);
   ~GrpcInputListenService();
@@ -31,18 +31,18 @@ class GrpcInputListenService final
 
   grpc::Status StartRecording(
       grpc::ServerContext* context,
-      const v1::StartRecordingRequest* request,
+      const evrp::v1::device::StartRecordingRequest* request,
       google::protobuf::Empty* response) override;
 
   grpc::Status WaitForInputEvent(
       grpc::ServerContext* context,
-      const v1::WaitForInputEventRequest* request,
-      v1::WaitForInputEventResponse* response) override;
+      const evrp::v1::device::WaitForInputEventRequest* request,
+      evrp::v1::device::WaitForInputEventResponse* response) override;
 
   grpc::Status ReadInputEvents(
       grpc::ServerContext* context,
       const google::protobuf::Empty* request,
-      v1::ReadInputEventsResponse* response) override;
+      evrp::v1::device::ReadInputEventsResponse* response) override;
 
   grpc::Status StopRecording(grpc::ServerContext* context,
                              const google::protobuf::Empty* request,

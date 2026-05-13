@@ -38,7 +38,7 @@ class RemotePlayback final : public api::IPlayback {
 
  private:
   std::shared_ptr<grpc::Channel> channel_;
-  std::unique_ptr<v1::PlaybackService::Stub> stub_;
+  std::unique_ptr<evrp::v1::device::PlaybackService::Stub> stub_;
   std::string deviceSessionId_;
 
   std::mutex callMu_;

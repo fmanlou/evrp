@@ -8,13 +8,13 @@
 namespace evrp::device::server {
 
 class GrpcSessionService final
-    : public ::evrp::sdk::v1::SessionService::Service {
+    : public ::evrp::v1::sdk::SessionService::Service {
  public:
   explicit GrpcSessionService(evrp::session::SessionRegistry& registry);
 
   grpc::Status Connect(grpc::ServerContext* context,
                        const google::protobuf::Empty* request,
-                       ::evrp::sdk::v1::ConnectResponse* response) override;
+                       ::evrp::v1::sdk::ConnectResponse* response) override;
 
   grpc::Status Heartbeat(grpc::ServerContext* context,
                          const google::protobuf::Empty* request,

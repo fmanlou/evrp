@@ -71,7 +71,7 @@ void GrpcInputListenService::watchdogLoop() {
 
 grpc::Status GrpcInputListenService::StartRecording(
     grpc::ServerContext* context,
-    const v1::StartRecordingRequest* request,
+    const evrp::v1::device::StartRecordingRequest* request,
     google::protobuf::Empty* ) {
   if (grpc::Status st = evrp::session::requireBusinessSession(context, sessions_); !st.ok()) {
     return st;
@@ -108,8 +108,8 @@ grpc::Status GrpcInputListenService::StartRecording(
 
 grpc::Status GrpcInputListenService::WaitForInputEvent(
     grpc::ServerContext* context,
-    const v1::WaitForInputEventRequest* request,
-    v1::WaitForInputEventResponse* response) {
+    const evrp::v1::device::WaitForInputEventRequest* request,
+    evrp::v1::device::WaitForInputEventResponse* response) {
   if (grpc::Status st = evrp::session::requireBusinessSession(context, sessions_); !st.ok()) {
     return st;
   }
@@ -176,7 +176,7 @@ grpc::Status GrpcInputListenService::WaitForInputEvent(
 grpc::Status GrpcInputListenService::ReadInputEvents(
     grpc::ServerContext* context,
     const google::protobuf::Empty* ,
-    v1::ReadInputEventsResponse* response) {
+    evrp::v1::device::ReadInputEventsResponse* response) {
   if (grpc::Status st = evrp::session::requireBusinessSession(context, sessions_); !st.ok()) {
     return st;
   }

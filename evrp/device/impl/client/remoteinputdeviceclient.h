@@ -27,7 +27,7 @@ class RemoteInputDeviceClient final {
 
  private:
   std::shared_ptr<grpc::Channel> channel_;
-  std::unique_ptr<v1::InputDeviceService::Stub> stub_;
+  std::unique_ptr<evrp::v1::device::InputDeviceService::Stub> stub_;
   std::string deviceSessionId_;
 };
 

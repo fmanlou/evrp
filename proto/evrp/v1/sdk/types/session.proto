@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package evrp.sdk.v1;
+package evrp.v1.sdk;
 
 message ConnectResponse {
   string session_id = 1;

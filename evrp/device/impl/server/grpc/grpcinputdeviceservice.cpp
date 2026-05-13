@@ -16,8 +16,8 @@ GrpcInputDeviceService::GrpcInputDeviceService(
 
 grpc::Status GrpcInputDeviceService::GetCursorPositionAvailability(
     grpc::ServerContext* context,
-    const v1::GetCursorPositionAvailabilityRequest* ,
-    v1::GetCursorPositionAvailabilityResponse* response) {
+    const evrp::v1::device::GetCursorPositionAvailabilityRequest* ,
+    evrp::v1::device::GetCursorPositionAvailabilityResponse* response) {
   if (grpc::Status st = evrp::session::requireBusinessSession(context, sessions_); !st.ok()) {
     return st;
   }
@@ -31,8 +31,8 @@ grpc::Status GrpcInputDeviceService::GetCursorPositionAvailability(
 
 grpc::Status GrpcInputDeviceService::ReadCursorPosition(
     grpc::ServerContext* context,
-    const v1::ReadCursorPositionRequest* ,
-    v1::ReadCursorPositionResponse* response) {
+    const evrp::v1::device::ReadCursorPositionRequest* ,
+    evrp::v1::device::ReadCursorPositionResponse* response) {
   if (grpc::Status st = evrp::session::requireBusinessSession(context, sessions_); !st.ok()) {
     return st;
   }
@@ -56,8 +56,8 @@ grpc::Status GrpcInputDeviceService::ReadCursorPosition(
 
 grpc::Status GrpcInputDeviceService::GetCapabilities(
     grpc::ServerContext* context,
-    const v1::GetCapabilitiesRequest* ,
-    v1::GetCapabilitiesResponse* response) {
+    const evrp::v1::device::GetCapabilitiesRequest* ,
+    evrp::v1::device::GetCapabilitiesResponse* response) {
   if (grpc::Status st = evrp::session::requireBusinessSession(context, sessions_); !st.ok()) {
     return st;
   }

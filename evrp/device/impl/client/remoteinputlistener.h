@@ -33,7 +33,7 @@ class RemoteInputListener final : public api::IInputListener {
   bool isListening() const override;
 
  private:
-  std::unique_ptr<v1::InputListenService::Stub> stub_;
+  std::unique_ptr<evrp::v1::device::InputListenService::Stub> stub_;
   std::string deviceSessionId_;
 
   bool listeningActive_{false};

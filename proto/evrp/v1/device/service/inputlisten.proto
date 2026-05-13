@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package evrp.device.v1;
+package evrp.v1.device;
 
 import "google/protobuf/empty.proto";
 import "evrp/v1/device/types/inputlisten.proto";

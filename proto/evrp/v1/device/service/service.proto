@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package evrp.device.v1;
+package evrp.v1.device;
 
 import "evrp/v1/device/types/service.proto";
 

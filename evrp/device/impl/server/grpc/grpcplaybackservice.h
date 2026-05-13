@@ -18,24 +18,24 @@ class SessionRegistry;
 namespace evrp::device::server {
 
 class GrpcPlaybackService final
-    : public v1::PlaybackService::Service {
+    : public evrp::v1::device::PlaybackService::Service {
  public:
   GrpcPlaybackService(const evrp::Ioc& ioc, evrp::session::SessionRegistry& sessions);
 
   grpc::Status Upload(
       grpc::ServerContext* context,
-      const v1::UploadRecordingRequest* request,
-      evrp::sdk::v1::StatusCode* response) override;
+      const evrp::v1::device::UploadRecordingRequest* request,
+      evrp::v1::sdk::StatusCode* response) override;
 
   grpc::Status Playback(
       grpc::ServerContext* context,
-      const v1::PlaybackRecordingRequest* request,
-      evrp::sdk::v1::StatusCode* response) override;
+      const evrp::v1::device::PlaybackRecordingRequest* request,
+      evrp::v1::sdk::StatusCode* response) override;
 
   grpc::Status SubscribePlayback(
       grpc::ServerContext* context,
       const google::protobuf::Empty* request,
-      grpc::ServerWriter<v1::PlaybackProgress>* writer) override;
+      grpc::ServerWriter<evrp::v1::device::PlaybackProgress>* writer) override;
 
   grpc::Status Stop(grpc::ServerContext* context,
                     const google::protobuf::Empty* request,

@@ -38,10 +38,10 @@ bool sessionConnect(const std::shared_ptr<grpc::Channel>& channel,
   }
   out->sessionId.clear();
   out->leaseTimeoutMs = 0;
-  evrp::sdk::v1::SessionService::Stub stub(channel);
+  evrp::v1::sdk::SessionService::Stub stub(channel);
   grpc::ClientContext ctx;
   google::protobuf::Empty req;
-  evrp::sdk::v1::ConnectResponse resp;
+  evrp::v1::sdk::ConnectResponse resp;
   grpc::Status s = stub.Connect(&ctx, req, &resp);
   if (!s.ok()) {
     return false;
@@ -59,11 +59,11 @@ bool sessionConnectWithDeadline(const std::shared_ptr<grpc::Channel>& channel,
   }
   out->sessionId.clear();
   out->leaseTimeoutMs = 0;
-  evrp::sdk::v1::SessionService::Stub stub(channel);
+  evrp::v1::sdk::SessionService::Stub stub(channel);
   grpc::ClientContext ctx;
   ctx.set_deadline(std::chrono::system_clock::now() + rpc_timeout);
   google::protobuf::Empty req;
-  evrp::sdk::v1::ConnectResponse resp;
+  evrp::v1::sdk::ConnectResponse resp;
   grpc::Status s = stub.Connect(&ctx, req, &resp);
   if (!s.ok()) {
     return false;
@@ -75,7 +75,7 @@ bool sessionConnectWithDeadline(const std::shared_ptr<grpc::Channel>& channel,
 
 bool sessionHeartbeat(const std::shared_ptr<grpc::Channel>& channel,
                       const std::string& sessionId) {
-  evrp::sdk::v1::SessionService::Stub stub(channel);
+  evrp::v1::sdk::SessionService::Stub stub(channel);
   grpc::ClientContext ctx;
   evrp::session::addSessionMetadata(&ctx, sessionId);
   google::protobuf::Empty req;
@@ -85,7 +85,7 @@ bool sessionHeartbeat(const std::shared_ptr<grpc::Channel>& channel,
 
 bool sessionDisconnect(const std::shared_ptr<grpc::Channel>& channel,
                        const std::string& sessionId) {
-  evrp::sdk::v1::SessionService::Stub stub(channel);
+  evrp::v1::sdk::SessionService::Stub stub(channel);
   grpc::ClientContext ctx;
   evrp::session::addSessionMetadata(&ctx, sessionId);
   google::protobuf::Empty req;

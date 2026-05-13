@@ -11,7 +11,7 @@ RemoteInputDeviceClient::RemoteInputDeviceClient(
     std::shared_ptr<grpc::Channel> channel,
     std::string deviceSessionId)
     : channel_(std::move(channel)),
-      stub_(v1::InputDeviceService::NewStub(channel_)),
+      stub_(evrp::v1::device::InputDeviceService::NewStub(channel_)),
       deviceSessionId_(std::move(deviceSessionId)) {}
 
 bool RemoteInputDeviceClient::getCapabilities(
@@ -20,8 +20,8 @@ bool RemoteInputDeviceClient::getCapabilities(
   grpc::ClientContext ctx;
   evrp::session::addSessionMetadata(&ctx, deviceSessionId_);
   ctx.set_deadline(std::chrono::system_clock::now() + std::chrono::seconds(5));
-  v1::GetCapabilitiesRequest req;
-  v1::GetCapabilitiesResponse resp;
+  evrp::v1::device::GetCapabilitiesRequest req;
+  evrp::v1::device::GetCapabilitiesResponse resp;
   grpc::Status s = stub_->GetCapabilities(&ctx, req, &resp);
   if (!s.ok()) {
     return false;
@@ -36,8 +36,8 @@ bool RemoteInputDeviceClient::getCursorPositionAvailability(bool* available) {
   grpc::ClientContext ctx;
   evrp::session::addSessionMetadata(&ctx, deviceSessionId_);
   ctx.set_deadline(std::chrono::system_clock::now() + std::chrono::seconds(5));
-  v1::GetCursorPositionAvailabilityRequest req;
-  v1::GetCursorPositionAvailabilityResponse resp;
+  evrp::v1::device::GetCursorPositionAvailabilityRequest req;
+  evrp::v1::device::GetCursorPositionAvailabilityResponse resp;
   grpc::Status s =
       stub_->GetCursorPositionAvailability(&ctx, req, &resp);
   if (!s.ok()) {
@@ -51,8 +51,8 @@ bool RemoteInputDeviceClient::readCursorPosition(int* outX, int* outY) {
   grpc::ClientContext ctx;
   evrp::session::addSessionMetadata(&ctx, deviceSessionId_);
   ctx.set_deadline(std::chrono::system_clock::now() + std::chrono::seconds(5));
-  v1::ReadCursorPositionRequest req;
-  v1::ReadCursorPositionResponse resp;
+  evrp::v1::device::ReadCursorPositionRequest req;
+  evrp::v1::device::ReadCursorPositionResponse resp;
   grpc::Status s = stub_->ReadCursorPosition(&ctx, req, &resp);
   if (!s.ok()) {
     return false;

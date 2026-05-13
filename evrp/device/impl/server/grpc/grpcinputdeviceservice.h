@@ -17,7 +17,7 @@ class SessionRegistry;
 namespace evrp::device::server {
 
 class GrpcInputDeviceService final
-    : public v1::InputDeviceService::Service {
+    : public evrp::v1::device::InputDeviceService::Service {
  public:
   GrpcInputDeviceService(const evrp::Ioc& ioc, evrp::session::SessionRegistry& sessions);
 
@@ -26,18 +26,18 @@ class GrpcInputDeviceService final
 
   grpc::Status GetCursorPositionAvailability(
       grpc::ServerContext* context,
-      const v1::GetCursorPositionAvailabilityRequest* request,
-      v1::GetCursorPositionAvailabilityResponse* response) override;
+      const evrp::v1::device::GetCursorPositionAvailabilityRequest* request,
+      evrp::v1::device::GetCursorPositionAvailabilityResponse* response) override;
 
   grpc::Status ReadCursorPosition(
       grpc::ServerContext* context,
-      const v1::ReadCursorPositionRequest* request,
-      v1::ReadCursorPositionResponse* response) override;
+      const evrp::v1::device::ReadCursorPositionRequest* request,
+      evrp::v1::device::ReadCursorPositionResponse* response) override;
 
   grpc::Status GetCapabilities(
       grpc::ServerContext* context,
-      const v1::GetCapabilitiesRequest* request,
-      v1::GetCapabilitiesResponse* response) override;
+      const evrp::v1::device::GetCapabilitiesRequest* request,
+      evrp::v1::device::GetCapabilitiesResponse* response) override;
 
  private:
   api::ICursorPosition* cursorPosition_;

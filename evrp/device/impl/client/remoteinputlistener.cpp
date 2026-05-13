@@ -11,7 +11,7 @@ namespace evrp::device::client {
 
 RemoteInputListener::RemoteInputListener(std::shared_ptr<grpc::Channel> channel,
                                          std::string deviceSessionId)
-    : stub_(v1::InputListenService::NewStub(std::move(channel))),
+    : stub_(evrp::v1::device::InputListenService::NewStub(std::move(channel))),
       deviceSessionId_(std::move(deviceSessionId)) {}
 
 RemoteInputListener::~RemoteInputListener() { cancelListening(); }
@@ -22,7 +22,7 @@ bool RemoteInputListener::startListening(
     return false;
   }
 
-  v1::StartRecordingRequest req;
+  evrp::v1::device::StartRecordingRequest req;
   evrp::sdk::toProto(kinds, req.mutable_kinds());
   if (req.kinds_size() == 0) {
     return false;
@@ -52,7 +52,7 @@ std::vector<evrp::sdk::InputEvent> RemoteInputListener::readInputEvents() {
   grpc::ClientContext ctx;
   evrp::session::addSessionMetadata(&ctx, deviceSessionId_);
   google::protobuf::Empty req;
-  v1::ReadInputEventsResponse resp;
+  evrp::v1::device::ReadInputEventsResponse resp;
   grpc::Status st = stub_->ReadInputEvents(&ctx, req, &resp);
   if (!st.ok()) {
     return {};
@@ -71,9 +71,9 @@ bool RemoteInputListener::waitForInputEvent(int timeoutMs) {
 
   grpc::ClientContext ctx;
   evrp::session::addSessionMetadata(&ctx, deviceSessionId_);
-  v1::WaitForInputEventRequest req;
+  evrp::v1::device::WaitForInputEventRequest req;
   req.set_timeout_ms(timeoutMs);
-  v1::WaitForInputEventResponse resp;
+  evrp::v1::device::WaitForInputEventResponse resp;
   grpc::Status st = stub_->WaitForInputEvent(&ctx, req, &resp);
   if (!st.ok()) {
     return false;

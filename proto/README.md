@@ -21,8 +21,8 @@ Unary 输入监听（**`device_client` 远程实现**走本服务）。
 
 | RPC | 说明 |
 |-----|------|
-| `Upload` | Unary：一次 `UploadRecordingRequest`（`repeated InputEvent`），应答 `evrp.sdk.v1.StatusCode`（`code` / `message`） |
-| `Playback` | 在 device 上回放当前已缓存资源 → `evrp.sdk.v1.StatusCode`；宜与 `SubscribePlayback` 并行（先订阅） |
+| `Upload` | Unary：一次 `UploadRecordingRequest`（`repeated InputEvent`），应答 `evrp.v1.sdk.StatusCode`（`code` / `message`） |
+| `Playback` | 在 device 上回放当前已缓存资源 → `evrp.v1.sdk.StatusCode`；宜与 `SubscribePlayback` 并行（先订阅） |
 | `SubscribePlayback` | 服务端流：`PlaybackProgress`（`done=false` 为当前事件；`done=true` + `result` 为整场结束，与 Unary `Playback` 一致） |
 | `Stop` | 停止回放 → `Empty` |
 
@@ -44,7 +44,7 @@ Unary 输入监听（**`device_client` 远程实现**走本服务）。
 - `evrp/v1/sdk/types/common.proto` — 跨 RPC 通用载荷（`StatusCode`：`code` / `message`；如 `PlaybackService` 的 Unary 应答）
 - `evrp/v1/sdk/types/session.proto` — Session 消息（`ConnectResponse`）
 - `evrp/v1/sdk/services/session.proto` — `SessionService` gRPC
-- `evrp/v1/server/service/evrp.proto` — 主机侧 gRPC `EvrpService`：`Record` / `Replay` 请求为 **`google.protobuf.Struct`**，应答为 **`evrp.sdk.v1.StatusCode`**（与 `PlaybackService` Unary 共用）；约定字段如 `outputPath`、`playbackPath`、`kinds` 等与 `ISetting::snapshot()` / `evrp::sdk::fromProto` 一致）
+- `evrp/v1/server/service/evrp.proto` — 主机侧 gRPC `EvrpService`：`Record` / `Replay` 请求为 **`google.protobuf.Struct`**，应答为 **`evrp.v1.sdk.StatusCode`**（与 `PlaybackService` Unary 共用）；约定字段如 `outputPath`、`playbackPath`、`kinds` 等与 `ISetting::snapshot()` / `evrp::sdk::fromProto` 一致）
 
 （device 侧每个 `service/*.proto` 只 `import` 与之同名的 `types/<name>.proto`；`PlaybackService` 与 `EvrpService` 均使用 `sdk/types/common.proto` 中的 `StatusCode`。）
 
@@ -70,6 +70,6 @@ protoc -I proto \
 
 ## 版本
 
-**Device**：`package evrp.device.v1`。  
-**Session / SDK 共用类型**：`package evrp.sdk.v1`（`evrp/v1/sdk`：`types/common.proto`（`StatusCode`）、`types/session.proto`、`services/session.proto`）。  
-**主机 EvrpService**：`package evrp.server.v1`（`service/evrp.proto`：`Record`/`Replay` 请求 **`google.protobuf.Struct`**，应答 **`evrp.sdk.v1.StatusCode`**）。
+**Device**：`package evrp.v1.device`。  
+**Session / SDK 共用类型**：`package evrp.v1.sdk`（`evrp/v1/sdk`：`types/common.proto`（`StatusCode`）、`types/session.proto`、`services/session.proto`）。  
+**主机 EvrpService**：`package evrp.v1.server`（`service/evrp.proto`：`Record`/`Replay` 请求 **`google.protobuf.Struct`**，应答 **`evrp.v1.sdk.StatusCode`**）。

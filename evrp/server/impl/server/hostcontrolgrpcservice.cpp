@@ -26,11 +26,11 @@ void mergeIntoMemorySetting(
 }
 
 class EvrpServiceImpl final
-    : public evrp::server::v1::EvrpService::Service {
+    : public evrp::v1::server::EvrpService::Service {
  public:
   grpc::Status Record(grpc::ServerContext*,
                       const google::protobuf::Struct* request,
-                      evrp::sdk::v1::StatusCode* response) override {
+                      evrp::v1::sdk::StatusCode* response) override {
     auto settings = std::make_shared<MemorySetting>();
     std::map<std::string, std::any> protoFields;
     evrp::sdk::fromProto(protoFields, *request);
@@ -57,7 +57,7 @@ class EvrpServiceImpl final
 
   grpc::Status Replay(grpc::ServerContext*,
                       const google::protobuf::Struct* request,
-                      evrp::sdk::v1::StatusCode* response) override {
+                      evrp::v1::sdk::StatusCode* response) override {
     auto settings = std::make_shared<MemorySetting>();
     std::map<std::string, std::any> protoFields;
     evrp::sdk::fromProto(protoFields, *request);
@@ -87,7 +87,7 @@ class EvrpServiceImpl final
 }  // namespace
 
 struct evrp::server::HostControlGrpcService::Impl {
-  std::unique_ptr<evrp::server::v1::EvrpService::Service> service;
+  std::unique_ptr<evrp::v1::server::EvrpService::Service> service;
 
   Impl() : service(std::make_unique<EvrpServiceImpl>()) {}
 };

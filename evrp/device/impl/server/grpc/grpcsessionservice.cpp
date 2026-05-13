@@ -13,7 +13,7 @@ GrpcSessionService::GrpcSessionService(
 grpc::Status GrpcSessionService::Connect(
     grpc::ServerContext* context,
     const google::protobuf::Empty* ,
-    ::evrp::sdk::v1::ConnectResponse* response) {
+    ::evrp::v1::sdk::ConnectResponse* response) {
   const std::string id = registry_.connect(context->peer());
   response->set_session_id(id);
   response->set_lease_timeout_ms(registry_.leaseTimeoutMs());

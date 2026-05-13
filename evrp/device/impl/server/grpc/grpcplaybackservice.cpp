@@ -20,8 +20,8 @@ void GrpcPlaybackService::markPlaybackStreamFinished() {
 
 grpc::Status GrpcPlaybackService::Upload(
     grpc::ServerContext* context,
-    const v1::UploadRecordingRequest* request,
-    evrp::sdk::v1::StatusCode* response) {
+    const evrp::v1::device::UploadRecordingRequest* request,
+    evrp::v1::sdk::StatusCode* response) {
   if (grpc::Status st = evrp::session::requireBusinessSession(context, sessions_); !st.ok()) {
     return st;
   }
@@ -42,8 +42,8 @@ grpc::Status GrpcPlaybackService::Upload(
 
 grpc::Status GrpcPlaybackService::Playback(
     grpc::ServerContext* context,
-    const v1::PlaybackRecordingRequest* ,
-    evrp::sdk::v1::StatusCode* response) {
+    const evrp::v1::device::PlaybackRecordingRequest* ,
+    evrp::v1::sdk::StatusCode* response) {
   if (grpc::Status st = evrp::session::requireBusinessSession(context, sessions_); !st.ok()) {
     return st;
   }
@@ -72,7 +72,7 @@ grpc::Status GrpcPlaybackService::Playback(
 grpc::Status GrpcPlaybackService::SubscribePlayback(
     grpc::ServerContext* context,
     const google::protobuf::Empty* ,
-    grpc::ServerWriter<v1::PlaybackProgress>* writer) {
+    grpc::ServerWriter<evrp::v1::device::PlaybackProgress>* writer) {
   if (grpc::Status st = evrp::session::requireBusinessSession(context, sessions_); !st.ok()) {
     return st;
   }
@@ -110,7 +110,7 @@ grpc::Status GrpcPlaybackService::SubscribePlayback(
       break;
     }
 
-    v1::PlaybackProgress msg;
+    evrp::v1::device::PlaybackProgress msg;
     msg.set_event_index(playback_->playbackIndex());
     if (!writer->Write(msg)) {
       status = grpc::Status(grpc::StatusCode::UNKNOWN, "progress write failed");
