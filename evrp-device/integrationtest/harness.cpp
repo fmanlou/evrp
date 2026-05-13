@@ -23,11 +23,30 @@
 #include "evrp/device/internal/discovery/devicediscovery.h"
 #include "evrp/device/internal/discovery/devicediscoverysettings.h"
 #include "evrp/device/api/devicekindsprovider.h"
+#include "evrp/device/impl/client/remotedevicekindsprovider.h"
 #include "evrp/sdk/logger.h"
 #include "evrp/sdk/setting/memorysetting.h"
 
 DECLARE_int32(discovery_port);
 DECLARE_string(discovery_link_mode);
+
+namespace {
+
+bool queryKindsForHarness(evrp::device::api::IDeviceKindsProvider* provider,
+                          std::vector<evrp::device::api::DeviceKind>* out) {
+  if (!provider || !out) {
+    return false;
+  }
+  if (auto* remote =
+          dynamic_cast<evrp::device::client::RemoteDeviceKindsProvider*>(
+              provider)) {
+    return remote->rpcKinds(out);
+  }
+  *out = provider->kinds();
+  return true;
+}
+
+}  // namespace
 
 DEFINE_string(
     target, "",
@@ -371,7 +390,7 @@ bool IntegrationHarness::waitUntilGetCapabilitiesOk(
       std::chrono::milliseconds(total_timeout_ms);
   while (std::chrono::steady_clock::now() < overall) {
     std::vector<evrp::device::api::DeviceKind> kinds;
-    if (provider->queryKinds(&kinds)) {
+    if (queryKindsForHarness(provider, &kinds)) {
       return true;
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(40));
@@ -390,7 +409,7 @@ bool IntegrationHarness::fetchCapabilities(
     logError("GetCapabilities failed (no device kinds provider)");
     return false;
   }
-  if (!provider->queryKinds(kinds_out)) {
+  if (!queryKindsForHarness(provider, kinds_out)) {
     logError("GetCapabilities failed");
     return false;
   }

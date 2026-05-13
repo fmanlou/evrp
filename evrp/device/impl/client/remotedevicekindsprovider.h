@@ -14,7 +14,9 @@ class RemoteDeviceKindsProvider final : public api::IDeviceKindsProvider {
   RemoteDeviceKindsProvider& operator=(const RemoteDeviceKindsProvider&) = delete;
 
   std::vector<api::DeviceKind> kinds() override;
-  bool queryKinds(std::vector<api::DeviceKind>* out) override;
+
+  /** Fills kinds via GetCapabilities RPC; false on RPC/null device (integration / diagnostics). */
+  bool rpcKinds(std::vector<api::DeviceKind>* out);
 
  private:
   RemoteInputDeviceClient* device_{};
