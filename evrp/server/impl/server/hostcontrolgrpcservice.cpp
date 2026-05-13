@@ -11,9 +11,12 @@
 #include "evrp/v1/server/service/evrp.grpc.pb.h"
 
 #include "evrp/server/api/evrp.h"
+#include "evrp/server/impl/server/localevrp.h"
 #include "evrp/server/impl/server/hostcontrolgrpcservice.h"
 
 namespace {
+
+evrp::server::LocalEvrp kLocalEvrp;
 
 using evrp::sdk::DeviceKind;
 
@@ -47,7 +50,7 @@ class EvrpServiceImpl final
     }
     settings->insert("kinds", std::move(kinds));
 
-    const int code = ::evrp::server::record(settings);
+    const int code = kLocalEvrp.record(settings);
     response->set_code(code);
     if (code != 0) {
       response->set_message("record failed");
@@ -75,7 +78,7 @@ class EvrpServiceImpl final
                           "playbackPath is required");
     }
 
-    const int code = ::evrp::server::replay(settings);
+    const int code = kLocalEvrp.replay(settings);
     response->set_code(code);
     if (code != 0) {
       response->set_message("replay failed");

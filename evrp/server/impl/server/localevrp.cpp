@@ -1,4 +1,4 @@
-#include "evrp/server/api/evrp.h"
+#include "evrp/server/impl/server/localevrp.h"
 
 #include <memory>
 #include <optional>
@@ -62,7 +62,7 @@ std::optional<ConnectedClient> connectDevice(
 
 namespace evrp::server {
 
-int record(std::shared_ptr<ISetting> settings) {
+int LocalEvrp::record(std::shared_ptr<ISetting> settings) {
   auto connected = connectDevice(std::move(settings));
   if (!connected) {
     return 1;
@@ -71,7 +71,7 @@ int record(std::shared_ptr<ISetting> settings) {
   return Record(std::move(c.settings), c.ioc).run();
 }
 
-int replay(std::shared_ptr<ISetting> settings) {
+int LocalEvrp::replay(std::shared_ptr<ISetting> settings) {
   if (!settings) {
     logError("settings is null.");
     return 1;

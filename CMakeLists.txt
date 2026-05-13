@@ -272,10 +272,11 @@ target_link_libraries(evrp_argparser PUBLIC evrp_device evrp_sdk gflags::gflags)
 add_library(
   evrp_server STATIC
   ${EVRP_SERVER_PROTO_SOURCES}
-  evrp/server/impl/server/evrp.cpp
+  evrp/server/impl/server/localevrp.cpp
   evrp/server/impl/server/record.cpp
   evrp/server/impl/server/playback.cpp
-  evrp/server/impl/server/hostcontrolgrpcservice.cpp)
+  evrp/server/impl/server/hostcontrolgrpcservice.cpp
+  evrp/server/impl/client/remoteevrp.cpp)
 target_include_directories(evrp_server PUBLIC "${EVRP_ROOT}" ${EVRP_SERVER_DIR}
                                               ${EVRP_SDK_DIR} "${GEN_DIR}")
 target_link_libraries(

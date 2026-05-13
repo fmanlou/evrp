@@ -4,6 +4,7 @@
 
 #include "evrp-server/argparser.h"
 #include "evrp/server/api/evrp.h"
+#include "evrp/server/impl/server/localevrp.h"
 #include "evrp/sdk/logger.h"
 #include "evrp/sdk/setting/memorysetting.h"
 
@@ -34,14 +35,16 @@ int Runner::run() {
     return 1;
   }
 
+  evrp::server::LocalEvrp evrp;
+
   if (runnerSetting_.playback) {
     if (runnerSetting_.playbackPath.empty()) {
       logError("Playback (--playback) requires a file path.");
       printUsage(runnerSetting_.program.c_str());
       return 1;
     }
-    return evrp::server::replay(settings_);
+    return evrp.replay(settings_);
   }
 
-  return evrp::server::record(settings_);
+  return evrp.record(settings_);
 }
