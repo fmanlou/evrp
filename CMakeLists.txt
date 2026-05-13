@@ -240,10 +240,11 @@ target_link_libraries(
 
 add_library(
   evrp_client STATIC
-  evrp/client/argparser.cpp
-  evrp/client/record.cpp
-  evrp/client/playback.cpp
-  evrp/client/runner.cpp)
+  evrp/client/api/evrp.cpp
+  evrp/client/impl/argparser.cpp
+  evrp/client/impl/record.cpp
+  evrp/client/impl/playback.cpp
+  evrp/client/impl/runner.cpp)
 target_include_directories(evrp_client PUBLIC "${EVRP_ROOT}" ${EVRP_CLIENT_DIR}
                                               ${EVRP_SDK_DIR})
 target_link_libraries(evrp_client PUBLIC evrp_device evrp_sdk gflags::gflags)

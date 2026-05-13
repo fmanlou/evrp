@@ -16,7 +16,6 @@ class Runner {
   std::string prog_;
   bool recording_{false};
   bool playback_{false};
-  std::string device_;
   std::string playbackPath_;
   logging::LogLevel logLevel_{logging::LogLevel::Info};
 };
