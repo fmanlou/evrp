@@ -1,3 +1,5 @@
+#include "evrp/server/impl/server/grpc/grpcevrpservice.h"
+
 #include <map>
 #include <memory>
 #include <string>
@@ -12,7 +14,6 @@
 
 #include "evrp/server/api/evrp.h"
 #include "evrp/server/impl/server/localevrp.h"
-#include "evrp/server/impl/server/hostcontrolgrpcservice.h"
 
 namespace {
 
@@ -89,23 +90,23 @@ class EvrpServiceImpl final
 
 }  // namespace
 
-struct evrp::server::HostControlGrpcService::Impl {
+struct evrp::server::GrpcEvrpService::Impl {
   std::unique_ptr<evrp::v1::server::EvrpService::Service> service;
 
   Impl() : service(std::make_unique<EvrpServiceImpl>()) {}
 };
 
-evrp::server::HostControlGrpcService::HostControlGrpcService()
+evrp::server::GrpcEvrpService::GrpcEvrpService()
     : impl_(std::make_unique<Impl>()) {}
 
-evrp::server::HostControlGrpcService::~HostControlGrpcService() = default;
+evrp::server::GrpcEvrpService::~GrpcEvrpService() = default;
 
-evrp::server::HostControlGrpcService::HostControlGrpcService(
-    HostControlGrpcService&&) noexcept = default;
+evrp::server::GrpcEvrpService::GrpcEvrpService(
+    GrpcEvrpService&&) noexcept = default;
 
-evrp::server::HostControlGrpcService& evrp::server::HostControlGrpcService::operator=(
-    HostControlGrpcService&&) noexcept = default;
+evrp::server::GrpcEvrpService& evrp::server::GrpcEvrpService::operator=(
+    GrpcEvrpService&&) noexcept = default;
 
-grpc::Service* evrp::server::HostControlGrpcService::grpc_service() {
+grpc::Service* evrp::server::GrpcEvrpService::grpc_service() {
   return impl_->service.get();
 }
