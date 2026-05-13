@@ -6,7 +6,8 @@
 #include "evrp/sdk/setting/isetting.h"
 
 void printUsage(const char* prog);
-bool parseKind(const std::string& s, evrp::device::api::DeviceKind* outKind);
+evrp::device::api::DeviceKind toKind(const std::string& s);
+void toKind(const std::string& s, evrp::device::api::DeviceKind* outKind);
 
 /// Fills `options` via `insert` from argv (gflags + legacy flags). Keys/types:
 /// program (string), recording (bool), playback (bool),

@@ -137,13 +137,15 @@ void printUsage(const char* prog) {
       << "  --help: show gflags help.\n";
 }
 
-bool parseKind(const std::string& s, evrp::device::api::DeviceKind* outKind) {
-  evrp::device::api::DeviceKind k = evrp::device::api::deviceKindFromLabel(s);
-  if (k != evrp::device::api::DeviceKind::kUnspecified) {
-    *outKind = k;
-    return true;
+evrp::device::api::DeviceKind toKind(const std::string& s) {
+  return evrp::device::api::deviceKindFromLabel(s);
+}
+
+void toKind(const std::string& s, evrp::device::api::DeviceKind* outKind) {
+  if (!outKind) {
+    return;
   }
-  return false;
+  *outKind = evrp::device::api::deviceKindFromLabel(s);
 }
 
 static std::vector<evrp::device::api::DeviceKind> kindsFromKindFlag() {
@@ -177,7 +179,8 @@ static std::vector<evrp::device::api::DeviceKind> kindsFromKindFlag() {
     if (left < right) {
       const std::string token = raw.substr(left, right - left);
       evrp::device::api::DeviceKind k{};
-      if (parseKind(token, &k)) {
+      toKind(token, &k);
+      if (k != evrp::device::api::DeviceKind::kUnspecified) {
         kinds.push_back(k);
       }
     }
