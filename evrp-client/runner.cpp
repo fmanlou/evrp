@@ -7,12 +7,13 @@
 #include "evrp/sdk/logger.h"
 #include "evrp/sdk/setting/memorysetting.h"
 
-Runner::Runner(MemorySetting settings) : settings_(std::move(settings)) {
-  prog_ = settings_.get<std::string>("program", "evrp");
-  recording_ = settings_.get<bool>("recording", false);
-  playback_ = settings_.get<bool>("playback", false);
-  playbackPath_ = settings_.get<std::string>("playbackPath", {});
-  logLevel_ = settings_.get("logLevel", logging::LogLevel::Info);
+Runner::Runner(std::shared_ptr<MemorySetting> settings)
+    : settings_(std::move(settings)) {
+  prog_ = settings_->get<std::string>("program", "evrp");
+  recording_ = settings_->get<bool>("recording", false);
+  playback_ = settings_->get<bool>("playback", false);
+  playbackPath_ = settings_->get<std::string>("playbackPath", {});
+  logLevel_ = settings_->get("logLevel", logging::LogLevel::Info);
 }
 
 int Runner::run() {
@@ -36,10 +37,8 @@ int Runner::run() {
       printUsage(prog_.c_str());
       return 1;
     }
-    return evrp::client::replay(
-        std::make_shared<MemorySetting>(std::move(settings_)));
+    return evrp::client::replay(settings_);
   }
 
-  return evrp::client::record(
-      std::make_shared<MemorySetting>(std::move(settings_)));
+  return evrp::client::record(settings_);
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <string>
 
 #include "evrp/sdk/logger.h"
@@ -7,12 +8,12 @@
 
 class Runner {
  public:
-  explicit Runner(MemorySetting settings);
+  explicit Runner(std::shared_ptr<MemorySetting> settings);
 
   int run();
 
  private:
-  MemorySetting settings_;
+  std::shared_ptr<MemorySetting> settings_;
   std::string prog_;
   bool recording_{false};
   bool playback_{false};

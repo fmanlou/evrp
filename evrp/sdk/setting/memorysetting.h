@@ -10,6 +10,11 @@ class MemorySetting final : public ISetting {
  public:
   MemorySetting() = default;
 
+  MemorySetting(const MemorySetting&) = delete;
+  MemorySetting& operator=(const MemorySetting&) = delete;
+  MemorySetting(MemorySetting&&) = delete;
+  MemorySetting& operator=(MemorySetting&&) = delete;
+
   using ISetting::get;
   using ISetting::insert;
 
