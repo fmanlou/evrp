@@ -10,6 +10,7 @@
 #include "evrp/v1/server/host_control.grpc.pb.h"
 
 #include "evrp/server/api/evrp.h"
+#include "evrp/server/impl/server/host_control_grpc_service.h"
 
 namespace {
 
