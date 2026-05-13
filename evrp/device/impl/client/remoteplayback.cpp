@@ -25,7 +25,7 @@ bool RemotePlayback::upload(const std::vector<evrp::sdk::InputEvent>& events,
 
   grpc::ClientContext ctx;
   evrp::session::addSessionMetadata(&ctx, deviceSessionId_);
-  v1::OperationResult resp;
+  evrp::sdk::v1::StatusCode resp;
   grpc::Status st = stub_->Upload(&ctx, req, &resp);
   if (!st.ok()) {
     if (resultOut) {
@@ -81,7 +81,7 @@ bool RemotePlayback::playback(evrp::sdk::StatusCode* resultOut,
   grpc::ClientContext playback_ctx;
   evrp::session::addSessionMetadata(&playback_ctx, deviceSessionId_);
   v1::PlaybackRecordingRequest play_req;
-  v1::OperationResult pb_result;
+  evrp::sdk::v1::StatusCode pb_result;
   grpc::Status st = stub_->Playback(&playback_ctx, play_req, &pb_result);
 
   if (progress_thread.joinable()) {

@@ -25,12 +25,12 @@ class GrpcPlaybackService final
   grpc::Status Upload(
       grpc::ServerContext* context,
       const v1::UploadRecordingRequest* request,
-      v1::OperationResult* response) override;
+      evrp::sdk::v1::StatusCode* response) override;
 
   grpc::Status Playback(
       grpc::ServerContext* context,
       const v1::PlaybackRecordingRequest* request,
-      v1::OperationResult* response) override;
+      evrp::sdk::v1::StatusCode* response) override;
 
   grpc::Status SubscribePlayback(
       grpc::ServerContext* context,

@@ -11,7 +11,7 @@
 
 #include "evrp/sdk/types.h"
 #include "evrp/v1/device/types/common.pb.h"
-#include "evrp/v1/device/types/playback.pb.h"
+#include "evrp/v1/sdk/types/common.pb.h"
 
 namespace evrp::sdk {
 
@@ -49,6 +49,6 @@ void fromProto(
 std::vector<InputEvent> fromProto(
     const google::protobuf::RepeatedPtrField<evrp::device::v1::InputEvent>& protoEvents);
 
-void toProto(const StatusCode& r, evrp::device::v1::OperationResult* p);
+void toProto(const StatusCode& r, evrp::sdk::v1::StatusCode* p);
 
 }  // namespace evrp::sdk

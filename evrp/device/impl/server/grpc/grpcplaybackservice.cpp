@@ -21,7 +21,7 @@ void GrpcPlaybackService::markPlaybackStreamFinished() {
 grpc::Status GrpcPlaybackService::Upload(
     grpc::ServerContext* context,
     const v1::UploadRecordingRequest* request,
-    v1::OperationResult* response) {
+    evrp::sdk::v1::StatusCode* response) {
   if (grpc::Status st = evrp::session::requireBusinessSession(context, sessions_); !st.ok()) {
     return st;
   }
@@ -43,7 +43,7 @@ grpc::Status GrpcPlaybackService::Upload(
 grpc::Status GrpcPlaybackService::Playback(
     grpc::ServerContext* context,
     const v1::PlaybackRecordingRequest* ,
-    v1::OperationResult* response) {
+    evrp::sdk::v1::StatusCode* response) {
   if (grpc::Status st = evrp::session::requireBusinessSession(context, sessions_); !st.ok()) {
     return st;
   }

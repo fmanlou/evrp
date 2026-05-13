@@ -4,11 +4,6 @@ package evrp.device.v1;
 
 import "evrp/v1/device/types/common.proto";
 
-message OperationResult {
-  int32 code = 1;
-  string message = 2;
-}
-
 message UploadRecordingRequest {
   repeated InputEvent events = 1;
 }

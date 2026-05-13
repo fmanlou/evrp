@@ -251,7 +251,7 @@ std::vector<InputEvent> fromProto(
   return events;
 }
 
-void toProto(const StatusCode& r, evrp::device::v1::OperationResult* p) {
+void toProto(const StatusCode& r, evrp::sdk::v1::StatusCode* p) {
   p->set_code(r.code);
   p->set_message(r.message);
 }

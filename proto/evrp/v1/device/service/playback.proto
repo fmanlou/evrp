@@ -4,11 +4,12 @@ package evrp.device.v1;
 
 import "google/protobuf/empty.proto";
 import "evrp/v1/device/types/playback.proto";
+import "evrp/v1/sdk/types/common.proto";
 
 service PlaybackService {
-  rpc Upload(UploadRecordingRequest) returns (OperationResult);
+  rpc Upload(UploadRecordingRequest) returns (evrp.sdk.v1.StatusCode);
 
-  rpc Playback(PlaybackRecordingRequest) returns (OperationResult);
+  rpc Playback(PlaybackRecordingRequest) returns (evrp.sdk.v1.StatusCode);
 
   rpc SubscribePlayback(google.protobuf.Empty) returns (stream PlaybackProgress);
 
