@@ -2,9 +2,10 @@ syntax = "proto3";
 
 package evrp.server.v1;
 
-import "evrp/v1/server/types/evrp.proto";
+import "google/protobuf/struct.proto";
+import "evrp/v1/sdk/types/common.proto";
 
-service HostControl {
-  rpc Record(RecordRequest) returns (RunResponse);
-  rpc Replay(ReplayRequest) returns (RunResponse);
+service EvrpService {
+  rpc Record(google.protobuf.Struct) returns (evrp.sdk.v1.StatusCode);
+  rpc Replay(google.protobuf.Struct) returns (evrp.sdk.v1.StatusCode);
 }

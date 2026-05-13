@@ -4,7 +4,8 @@
 #include <utility>
 #include <vector>
 
-#include "evrp/sdk/tofromstring.h"
+#include <google/protobuf/struct.pb.h>
+
 #include "evrp/sdk/setting/memorysetting.h"
 #include "evrp/sdk/tofromproto.h"
 #include "evrp/v1/server/service/evrp.grpc.pb.h"
@@ -15,7 +16,6 @@
 namespace {
 
 using evrp::sdk::DeviceKind;
-using evrp::sdk::toKind;
 
 void mergeIntoMemorySetting(
     MemorySetting& settings,
@@ -25,36 +25,22 @@ void mergeIntoMemorySetting(
   }
 }
 
-class HostControlServiceImpl final
-    : public evrp::server::v1::HostControl::Service {
+class EvrpServiceImpl final
+    : public evrp::server::v1::EvrpService::Service {
  public:
   grpc::Status Record(grpc::ServerContext*,
-                      const evrp::server::v1::RecordRequest* request,
-                      evrp::server::v1::RunResponse* response) override {
+                      const google::protobuf::Struct* request,
+                      evrp::sdk::v1::StatusCode* response) override {
     auto settings = std::make_shared<MemorySetting>();
     std::map<std::string, std::any> protoFields;
-    evrp::sdk::fromProto(protoFields, request->settings());
+    evrp::sdk::fromProto(protoFields, *request);
     mergeIntoMemorySetting(*settings, protoFields);
     settings->insert("program", std::string("evrp-grpc"));
     settings->insert("recording", true);
     settings->insert("playback", false);
-    if (!request->output_path().empty()) {
-      settings->insert("outputPath", request->output_path());
-    }
 
-    std::vector<DeviceKind> kinds;
-    if (request->kinds_size() > 0) {
-      kinds.reserve(static_cast<size_t>(request->kinds_size()));
-      for (int i = 0; i < request->kinds_size(); ++i) {
-        DeviceKind k = toKind(request->kinds(static_cast<int>(i)));
-        if (k != DeviceKind::kUnspecified) {
-          kinds.push_back(k);
-        }
-      }
-    }
-    if (kinds.empty()) {
-      kinds = settings->get("kinds", std::vector<DeviceKind>{});
-    }
+    std::vector<DeviceKind> kinds =
+        settings->get("kinds", std::vector<DeviceKind>{});
     if (kinds.empty()) {
       kinds = {DeviceKind::kTouchpad, DeviceKind::kTouchscreen,
                DeviceKind::kMouse, DeviceKind::kKeyboard};
@@ -62,7 +48,7 @@ class HostControlServiceImpl final
     settings->insert("kinds", std::move(kinds));
 
     const int code = ::evrp::server::record(settings);
-    response->set_exit_code(code);
+    response->set_code(code);
     if (code != 0) {
       response->set_message("record failed");
     }
@@ -70,30 +56,27 @@ class HostControlServiceImpl final
   }
 
   grpc::Status Replay(grpc::ServerContext*,
-                      const evrp::server::v1::ReplayRequest* request,
-                      evrp::server::v1::RunResponse* response) override {
+                      const google::protobuf::Struct* request,
+                      evrp::sdk::v1::StatusCode* response) override {
     auto settings = std::make_shared<MemorySetting>();
     std::map<std::string, std::any> protoFields;
-    evrp::sdk::fromProto(protoFields, request->settings());
+    evrp::sdk::fromProto(protoFields, *request);
     mergeIntoMemorySetting(*settings, protoFields);
     settings->insert("program", std::string("evrp-grpc"));
     settings->insert("recording", false);
     settings->insert("playback", true);
-    if (!request->playback_path().empty()) {
-      settings->insert("playbackPath", request->playback_path());
-    }
 
     const std::string playbackPath =
         settings->get<std::string>("playbackPath", {});
     if (playbackPath.empty()) {
-      response->set_exit_code(1);
-      response->set_message("playback_path is required");
+      response->set_code(1);
+      response->set_message("playbackPath is required");
       return grpc::Status(grpc::StatusCode::INVALID_ARGUMENT,
-                          "playback_path is required");
+                          "playbackPath is required");
     }
 
     const int code = ::evrp::server::replay(settings);
-    response->set_exit_code(code);
+    response->set_code(code);
     if (code != 0) {
       response->set_message("replay failed");
     }
@@ -104,9 +87,9 @@ class HostControlServiceImpl final
 }  // namespace
 
 struct evrp::server::HostControlGrpcService::Impl {
-  std::unique_ptr<evrp::server::v1::HostControl::Service> service;
+  std::unique_ptr<evrp::server::v1::EvrpService::Service> service;
 
-  Impl() : service(std::make_unique<HostControlServiceImpl>()) {}
+  Impl() : service(std::make_unique<EvrpServiceImpl>()) {}
 };
 
 evrp::server::HostControlGrpcService::HostControlGrpcService()

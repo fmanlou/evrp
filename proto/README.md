@@ -44,10 +44,9 @@ Unary 输入监听（**`device_client` 远程实现**走本服务）。
 - `evrp/v1/sdk/types/common.proto` — 跨 RPC 通用载荷（`StatusCode`：`code` / `message`；如 `PlaybackService` 的 Unary 应答）
 - `evrp/v1/sdk/types/session.proto` — Session 消息（`ConnectResponse`）
 - `evrp/v1/sdk/services/session.proto` — `SessionService` gRPC
-- `evrp/v1/server/types/evrp.proto` — `HostControl` 请求/应答消息（`RecordRequest` / `ReplayRequest` / `RunResponse`）
-- `evrp/v1/server/service/evrp.proto` — 主机侧 gRPC `HostControl`（`Record` / `Replay`）；请求里 `settings` 为 `google.protobuf.Struct`（与 `ISetting::snapshot()` 键约定一致），由 `evrp::sdk::fromProto`（写入 `std::map<std::string, std::any>`）/ `toProto` 与快照互转
+- `evrp/v1/server/service/evrp.proto` — 主机侧 gRPC `EvrpService`：`Record` / `Replay` 请求为 **`google.protobuf.Struct`**，应答为 **`evrp.sdk.v1.StatusCode`**（与 `PlaybackService` Unary 共用）；约定字段如 `outputPath`、`playbackPath`、`kinds` 等与 `ISetting::snapshot()` / `evrp::sdk::fromProto` 一致）
 
-（device 侧每个 `service/*.proto` 只 `import` 与之同名的 `types/<name>.proto`；`PlaybackService` 另 `import` `sdk/types/common.proto` 以使用 `StatusCode`。server 侧 `service/evrp.proto` 对应 `types/evrp.proto`。）
+（device 侧每个 `service/*.proto` 只 `import` 与之同名的 `types/<name>.proto`；`PlaybackService` 与 `EvrpService` 均使用 `sdk/types/common.proto` 中的 `StatusCode`。）
 
 ## 生成 C++ 代码（示例）
 
@@ -66,7 +65,6 @@ protoc -I proto \
   proto/evrp/v1/sdk/types/common.proto \
   proto/evrp/v1/sdk/types/session.proto \
   proto/evrp/v1/sdk/services/session.proto \
-  proto/evrp/v1/server/types/evrp.proto \
   proto/evrp/v1/server/service/evrp.proto
 ```
 
@@ -74,4 +72,4 @@ protoc -I proto \
 
 **Device**：`package evrp.device.v1`。  
 **Session / SDK 共用类型**：`package evrp.sdk.v1`（`evrp/v1/sdk`：`types/common.proto`（`StatusCode`）、`types/session.proto`、`services/session.proto`）。  
-**主机 HostControl**：`package evrp.server.v1`（`evrp/v1/server/types/evrp.proto` + `service/evrp.proto`）；动态选项载荷为 **`google.protobuf.Struct`**（语义上等价于 `map<string, google.protobuf.Value>`）。
+**主机 EvrpService**：`package evrp.server.v1`（`service/evrp.proto`：`Record`/`Replay` 请求 **`google.protobuf.Struct`**，应答 **`evrp.sdk.v1.StatusCode`**）。

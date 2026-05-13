@@ -150,7 +150,6 @@ set(DEVICE_SERVICE_PROTO "${PROTO_ROOT}/evrp/v1/device/service/service.proto")
 set(SDK_COMMON_TYPES_PROTO "${PROTO_ROOT}/evrp/v1/sdk/types/common.proto")
 set(SDK_SESSION_TYPES_PROTO "${PROTO_ROOT}/evrp/v1/sdk/types/session.proto")
 set(SDK_SESSION_SERVICES_PROTO "${PROTO_ROOT}/evrp/v1/sdk/services/session.proto")
-set(SERVER_EVRP_TYPES_PROTO "${PROTO_ROOT}/evrp/v1/server/types/evrp.proto")
 set(SERVER_EVRP_SERVICE_PROTO "${PROTO_ROOT}/evrp/v1/server/service/evrp.proto")
 
 find_program(GRPC_CPP_PLUGIN_PROGRAM NAMES grpc_cpp_plugin REQUIRED
@@ -178,15 +177,12 @@ set(SDK_SESSION_SERVICES_PB_CC "${GEN_DIR}/evrp/v1/sdk/services/session.pb.cc")
 set(SDK_SESSION_SERVICES_PB_H "${GEN_DIR}/evrp/v1/sdk/services/session.pb.h")
 set(SDK_SESSION_SERVICES_GRPC_CC "${GEN_DIR}/evrp/v1/sdk/services/session.grpc.pb.cc")
 set(SDK_SESSION_SERVICES_GRPC_H "${GEN_DIR}/evrp/v1/sdk/services/session.grpc.pb.h")
-set(SERVER_EVRP_TYPES_PB_CC "${GEN_DIR}/evrp/v1/server/types/evrp.pb.cc")
-set(SERVER_EVRP_TYPES_PB_H "${GEN_DIR}/evrp/v1/server/types/evrp.pb.h")
 set(SERVER_EVRP_SERVICE_PB_CC "${GEN_DIR}/evrp/v1/server/service/evrp.pb.cc")
 set(SERVER_EVRP_SERVICE_PB_H "${GEN_DIR}/evrp/v1/server/service/evrp.pb.h")
 set(SERVER_EVRP_SERVICE_GRPC_CC "${GEN_DIR}/evrp/v1/server/service/evrp.grpc.pb.cc")
 set(SERVER_EVRP_SERVICE_GRPC_H "${GEN_DIR}/evrp/v1/server/service/evrp.grpc.pb.h")
 
-set(EVRP_SERVER_PROTO_SOURCES ${SERVER_EVRP_TYPES_PB_CC}
-                              ${SERVER_EVRP_SERVICE_PB_CC}
+set(EVRP_SERVER_PROTO_SOURCES ${SERVER_EVRP_SERVICE_PB_CC}
                               ${SERVER_EVRP_SERVICE_GRPC_CC})
 
 set(EVRP_DEVICE_PROTO_SOURCES
@@ -206,12 +202,10 @@ add_custom_command(
          ${SDK_SESSION_TYPES_PB_CC} ${SDK_SESSION_TYPES_PB_H}
          ${SDK_SESSION_SERVICES_PB_CC} ${SDK_SESSION_SERVICES_PB_H}
          ${SDK_SESSION_SERVICES_GRPC_CC} ${SDK_SESSION_SERVICES_GRPC_H}
-         ${SERVER_EVRP_TYPES_PB_CC} ${SERVER_EVRP_TYPES_PB_H}
          ${SERVER_EVRP_SERVICE_PB_CC} ${SERVER_EVRP_SERVICE_PB_H}
          ${SERVER_EVRP_SERVICE_GRPC_CC} ${SERVER_EVRP_SERVICE_GRPC_H}
   COMMAND ${CMAKE_COMMAND} -E make_directory "${GEN_DIR}/evrp/v1/device/service"
   COMMAND ${CMAKE_COMMAND} -E make_directory "${GEN_DIR}/evrp/v1/device/types"
-  COMMAND ${CMAKE_COMMAND} -E make_directory "${GEN_DIR}/evrp/v1/server/types"
   COMMAND ${CMAKE_COMMAND} -E make_directory "${GEN_DIR}/evrp/v1/server/service"
   COMMAND ${CMAKE_COMMAND} -E make_directory "${GEN_DIR}/evrp/v1/sdk/types"
   COMMAND ${CMAKE_COMMAND} -E make_directory "${GEN_DIR}/evrp/v1/sdk/services"
@@ -221,11 +215,11 @@ add_custom_command(
     ${DEVICE_V1_TYPES_PROTOS} ${DEVICE_INPUTLISTEN_PROTO} ${DEVICE_PLAYBACK_PROTO}
     ${DEVICE_SERVICE_PROTO} ${SDK_COMMON_TYPES_PROTO} ${SDK_SESSION_TYPES_PROTO}
     ${SDK_SESSION_SERVICES_PROTO}
-    ${SERVER_EVRP_TYPES_PROTO} ${SERVER_EVRP_SERVICE_PROTO}
+    ${SERVER_EVRP_SERVICE_PROTO}
   DEPENDS ${DEVICE_V1_TYPES_PROTOS} ${DEVICE_INPUTLISTEN_PROTO}
           ${DEVICE_PLAYBACK_PROTO} ${DEVICE_SERVICE_PROTO} ${SDK_COMMON_TYPES_PROTO}
           ${SDK_SESSION_TYPES_PROTO}
-          ${SDK_SESSION_SERVICES_PROTO} ${SERVER_EVRP_TYPES_PROTO}
+          ${SDK_SESSION_SERVICES_PROTO}
           ${SERVER_EVRP_SERVICE_PROTO}
   COMMENT "Generating protobuf/gRPC (evrp/v1/device + evrp/v1/sdk + evrp/v1/server)"
   VERBATIM)
