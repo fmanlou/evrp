@@ -217,6 +217,10 @@ add_custom_command(
   COMMENT "Generating protobuf/gRPC (evrp/v1/device + evrp/v1/sdk + evrp/v1/server)"
   VERBATIM)
 
+target_include_directories(evrp_sdk PUBLIC "${GEN_DIR}")
+add_custom_target(evrp_protobuf_types DEPENDS ${DEVICE_V1_TYPES_GEN})
+add_dependencies(evrp_sdk evrp_protobuf_types)
+
 add_library(
   evrp_device STATIC
   ${EVRP_DEVICE_PROTO_SOURCES}
@@ -225,7 +229,6 @@ add_library(
   evrp/sdk/sessioncheck.cpp
   evrp/sdk/iocontextpostedbase.cpp
   evrp/sdk/syncdispatchqueue.cpp
-  evrp/device/internal/tofromproto.cpp
   evrp/device/impl/server/localinputlistener.cpp
   evrp/device/impl/server/posted/postedinputlistener.cpp
   evrp/device/impl/server/posted/postedcursorposition.cpp

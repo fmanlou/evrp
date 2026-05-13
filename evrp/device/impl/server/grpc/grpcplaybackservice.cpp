@@ -2,7 +2,7 @@
 
 #include <google/protobuf/empty.pb.h>
 
-#include "evrp/device/internal/tofromproto.h"
+#include "evrp/sdk/tofromproto.h"
 #include "evrp/sdk/sessioncheck.h"
 #include "evrp/sdk/sessionregistry.h"
 #include "evrp/sdk/ioc.h"

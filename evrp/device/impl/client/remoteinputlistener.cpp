@@ -4,7 +4,7 @@
 
 #include "evrp/sdk/sessionmetadata.h"
 #include "evrp/sdk/fmt/fmt.h"
-#include "evrp/device/internal/tofromproto.h"
+#include "evrp/sdk/tofromproto.h"
 #include "evrp/sdk/logger.h"
 
 namespace evrp::device::client {
