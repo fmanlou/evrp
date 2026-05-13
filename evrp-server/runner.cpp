@@ -3,7 +3,7 @@
 #include <memory>
 
 #include "evrp-server/argparser.h"
-#include "evrp/client/api/evrp.h"
+#include "evrp/server/api/evrp.h"
 #include "evrp/sdk/logger.h"
 #include "evrp/sdk/setting/memorysetting.h"
 
@@ -37,8 +37,8 @@ int Runner::run() {
       printUsage(prog_.c_str());
       return 1;
     }
-    return evrp::client::replay(settings_);
+    return evrp::server::replay(settings_);
   }
 
-  return evrp::client::record(settings_);
+  return evrp::server::record(settings_);
 }

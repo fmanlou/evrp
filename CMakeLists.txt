@@ -81,7 +81,7 @@ find_package(fmt CONFIG REQUIRED PATHS "${EVRP_LIBRARY_DIR}/fmt"
 enable_testing()
 
 set(EVRP_SDK_DIR "${EVRP_ROOT}/evrp/sdk")
-set(EVRP_CLIENT_DIR "${EVRP_ROOT}/evrp/client")
+set(EVRP_SERVER_DIR "${EVRP_ROOT}/evrp/server")
 
 option(EVRP_USE_X11_CURSOR "Enable X11 cursor position backend" ON)
 set(EVRP_SDK_CURSOR_SRCS evrp/sdk/cursor/impl/cursorpos.cpp)
@@ -243,21 +243,21 @@ target_include_directories(evrp_argparser PUBLIC "${EVRP_ROOT}")
 target_link_libraries(evrp_argparser PUBLIC evrp_device evrp_sdk gflags::gflags)
 
 add_library(
-  evrp_client STATIC
-  evrp/client/impl/evrp.cpp
-  evrp/client/impl/record.cpp
-  evrp/client/impl/playback.cpp)
-target_include_directories(evrp_client PUBLIC "${EVRP_ROOT}" ${EVRP_CLIENT_DIR}
+  evrp_server STATIC
+  evrp/server/impl/evrp.cpp
+  evrp/server/impl/record.cpp
+  evrp/server/impl/playback.cpp)
+target_include_directories(evrp_server PUBLIC "${EVRP_ROOT}" ${EVRP_SERVER_DIR}
                                               ${EVRP_SDK_DIR})
 target_link_libraries(
-  evrp_client PUBLIC evrp_device evrp_sdk gflags::gflags evrp_argparser)
+  evrp_server PUBLIC evrp_device evrp_sdk gflags::gflags evrp_argparser)
 
 add_subdirectory(evrp-server)
 
 add_executable(evrp_tests tests/inputdevice_test.cpp tests/argparser_test.cpp
                                   tests/listenaddress_test.cpp
                                   tests/overlaysetting_test.cpp)
-target_link_libraries(evrp_tests PRIVATE evrp_client evrp_sdk GTest::gtest_main)
+target_link_libraries(evrp_tests PRIVATE evrp_server evrp_sdk GTest::gtest_main)
 include(GoogleTest)
 gtest_discover_tests(evrp_tests)
 

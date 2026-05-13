@@ -1,11 +1,11 @@
-#include "evrp/client/api/evrp.h"
+#include "evrp/server/api/evrp.h"
 
 #include <memory>
 #include <optional>
 #include <string>
 
-#include "evrp/client/impl/playback.h"
-#include "evrp/client/impl/record.h"
+#include "evrp/server/impl/playback.h"
+#include "evrp/server/impl/record.h"
 #include "evrp/device/api/client.h"
 #include "evrp/sdk/filesystem/enhancedfilesystem.h"
 #include "evrp/sdk/filesystem/filesystem.h"
@@ -60,7 +60,7 @@ std::optional<ConnectedClient> connectDevice(
 
 }  // namespace
 
-namespace evrp::client {
+namespace evrp::server {
 
 int record(std::shared_ptr<ISetting> settings) {
   auto connected = connectDevice(std::move(settings));
@@ -90,4 +90,4 @@ int replay(std::shared_ptr<ISetting> settings) {
   return Playback(std::move(c.settings), c.ioc).run();
 }
 
-}  // namespace evrp::client
+}  // namespace evrp::server
