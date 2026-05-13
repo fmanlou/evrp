@@ -1,5 +1,7 @@
 #include "evrp/client/runner.h"
 
+#include <memory>
+
 #include "evrp/client/argparser.h"
 #include "evrp/client/playback.h"
 #include "evrp/client/record.h"
@@ -9,15 +11,13 @@
 #include "evrp/sdk/ioc.h"
 #include "evrp/sdk/logger.h"
 
-#include <memory>
-
-Runner::Runner(MemorySetting options) : options_(std::move(options)) {
-  prog_ = options_.get<std::string>("program", "evrp");
-  recording_ = options_.get<bool>("recording", false);
-  playback_ = options_.get<bool>("playback", false);
-  device_ = options_.get<std::string>("device", {});
-  playbackPath_ = options_.get<std::string>("playbackPath", {});
-  logLevel_ = options_.get("logLevel", logging::LogLevel::Info);
+Runner::Runner(MemorySetting settings) : settings_(std::move(settings)) {
+  prog_ = settings_.get<std::string>("program", "evrp");
+  recording_ = settings_.get<bool>("recording", false);
+  playback_ = settings_.get<bool>("playback", false);
+  device_ = settings_.get<std::string>("device", {});
+  playbackPath_ = settings_.get<std::string>("playbackPath", {});
+  logLevel_ = settings_.get("logLevel", logging::LogLevel::Info);
 }
 
 int Runner::run() {
@@ -36,7 +36,7 @@ int Runner::run() {
   }
 
   std::unique_ptr<evrp::device::api::IClient> deviceClient =
-      evrp::device::api::makeClient(device_, options_);
+      evrp::device::api::makeClient(device_, settings_);
   if (!deviceClient) {
     logError(
         "Could not connect to evrp-device{} (session handshake failed). "
@@ -46,7 +46,7 @@ int Runner::run() {
         device_.empty() ? std::string("") : (" at " + device_));
     return 1;
   }
-  options_.insert("device", deviceClient->serverAddress());
+  settings_.insert("device", deviceClient->serverAddress());
 
   evrp::Ioc ioc;
   ioc.emplace(deviceClient->playback());
@@ -62,8 +62,8 @@ int Runner::run() {
       printUsage(prog_.c_str());
       return 1;
     }
-    return Playback(std::move(options_), ioc).run();
+    return Playback(std::move(settings_), ioc).run();
   }
 
-  return Record(std::move(options_), ioc).run();
+  return Record(std::move(settings_), ioc).run();
 }

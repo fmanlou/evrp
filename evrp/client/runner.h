@@ -2,17 +2,17 @@
 
 #include <string>
 
-#include "evrp/sdk/setting/memorysetting.h"
 #include "evrp/sdk/logger.h"
+#include "evrp/sdk/setting/memorysetting.h"
 
 class Runner {
  public:
-  explicit Runner(MemorySetting options);
+  explicit Runner(MemorySetting settings);
 
   int run();
 
  private:
-  MemorySetting options_;
+  MemorySetting settings_;
   std::string prog_;
   bool recording_{false};
   bool playback_{false};
