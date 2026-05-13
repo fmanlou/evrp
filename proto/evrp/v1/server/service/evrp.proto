@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package evrp.server.v1;
+
+import "evrp/v1/server/types/evrp.proto";
+
+service HostControl {
+  rpc Record(RecordRequest) returns (RunResponse);
+  rpc Replay(ReplayRequest) returns (RunResponse);
+}

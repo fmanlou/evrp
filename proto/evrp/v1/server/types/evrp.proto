@@ -19,8 +19,3 @@ message RunResponse {
   int32 exit_code = 1;
   string message = 2;
 }
-
-service HostControl {
-  rpc Record(RecordRequest) returns (RunResponse);
-  rpc Replay(ReplayRequest) returns (RunResponse);
-}

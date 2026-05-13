@@ -7,7 +7,7 @@
 #include "evrp/sdk/tofromstring.h"
 #include "evrp/sdk/setting/memorysetting.h"
 #include "evrp/sdk/tofromproto.h"
-#include "evrp/v1/server/hostcontrol.grpc.pb.h"
+#include "evrp/v1/server/service/evrp.grpc.pb.h"
 
 #include "evrp/server/api/evrp.h"
 #include "evrp/server/impl/server/hostcontrolgrpcservice.h"

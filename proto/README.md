@@ -43,9 +43,10 @@ Unary 输入监听（**`device_client` 远程实现**走本服务）。
 - `evrp/v1/device/service/{inputlisten,playback,service}.proto` — 各 gRPC `service` 定义
 - `evrp/v1/sdk/types/session.proto` — Session 消息（`ConnectResponse`）
 - `evrp/v1/sdk/services/session.proto` — `SessionService` gRPC
-- `evrp/v1/server/hostcontrol.proto` — 主机侧 `HostControl`（`Record` / `Replay`）；请求里 `settings` 为 `google.protobuf.Struct`（与 `ISetting::snapshot()` 键约定一致），由 `evrp::sdk::fromProto`（写入 `std::map<std::string, std::any>`）/ `toProto` 与快照互转
+- `evrp/v1/server/types/evrp.proto` — `HostControl` 请求/应答消息（`RecordRequest` / `ReplayRequest` / `RunResponse`）
+- `evrp/v1/server/service/evrp.proto` — 主机侧 gRPC `HostControl`（`Record` / `Replay`）；请求里 `settings` 为 `google.protobuf.Struct`（与 `ISetting::snapshot()` 键约定一致），由 `evrp::sdk::fromProto`（写入 `std::map<std::string, std::any>`）/ `toProto` 与快照互转
 
-（每个 `service/*.proto` 只 `import` 与之同名的 `types/<name>.proto`；后者按需再 `import` `types/common.proto`。）
+（device 侧每个 `service/*.proto` 只 `import` 与之同名的 `types/<name>.proto`；server 侧 `service/evrp.proto` 对应 `types/evrp.proto`。）
 
 ## 生成 C++ 代码（示例）
 
@@ -63,11 +64,12 @@ protoc -I proto \
   proto/evrp/v1/device/service/service.proto \
   proto/evrp/v1/sdk/types/session.proto \
   proto/evrp/v1/sdk/services/session.proto \
-  proto/evrp/v1/server/hostcontrol.proto
+  proto/evrp/v1/server/types/evrp.proto \
+  proto/evrp/v1/server/service/evrp.proto
 ```
 
 ## 版本
 
 **Device**：`package evrp.device.v1`。  
 **Session**：`package evrp.sdk.v1`（`evrp/v1/sdk`：`types/session.proto`、`services/session.proto`）。  
-**主机 HostControl**：`package evrp.server.v1`（`evrp/v1/server/hostcontrol.proto`）；动态选项载荷为 **`google.protobuf.Struct`**（语义上等价于 `map<string, google.protobuf.Value>`）。
+**主机 HostControl**：`package evrp.server.v1`（`evrp/v1/server/types/evrp.proto` + `service/evrp.proto`）；动态选项载荷为 **`google.protobuf.Struct`**（语义上等价于 `map<string, google.protobuf.Value>`）。
