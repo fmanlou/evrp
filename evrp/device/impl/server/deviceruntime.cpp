@@ -1,7 +1,7 @@
 #include "evrp/device/impl/server/deviceruntime.h"
 
 #include "evrp/device/api/cursorposition.h"
-#include "evrp/device/api/inputdevicekindsprovider.h"
+#include "evrp/device/api/devicekindsprovider.h"
 #include "evrp/device/api/inputlistener.h"
 #include "evrp/device/api/playback.h"
 #include "evrp/sdk/ioc.h"
@@ -37,8 +37,8 @@ void DeviceRuntime::registerWith(Ioc& ioc) {
       static_cast<api::IInputListener*>(&inputListener_));
   ioc.emplace<api::ICursorPosition>(
       static_cast<api::ICursorPosition*>(&postedCursor_));
-  ioc.emplace<api::IInputDeviceKindsProvider>(
-      static_cast<api::IInputDeviceKindsProvider*>(&postedDeviceKinds_));
+  ioc.emplace<api::IDeviceKindsProvider>(
+      static_cast<api::IDeviceKindsProvider*>(&postedDeviceKinds_));
   ioc.emplace<api::IPlayback>(
       static_cast<api::IPlayback*>(&postedPlayback_));
 }

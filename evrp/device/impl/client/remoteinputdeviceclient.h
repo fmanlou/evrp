@@ -1,17 +1,17 @@
 #pragma once
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include <grpcpp/grpcpp.h>
 
-#include "evrp/device/api/inputdeviceclient.h"
+#include "evrp/device/api/types.h"
 #include "evrp/v1/device/service/service.grpc.pb.h"
-
-#include <string>
 
 namespace evrp::device::client {
 
-class RemoteInputDeviceClient final : public api::IInputDeviceClient {
+class RemoteInputDeviceClient final {
  public:
   RemoteInputDeviceClient(std::shared_ptr<grpc::Channel> channel,
                           std::string deviceSessionId);
@@ -19,11 +19,11 @@ class RemoteInputDeviceClient final : public api::IInputDeviceClient {
   RemoteInputDeviceClient(const RemoteInputDeviceClient&) = delete;
   RemoteInputDeviceClient& operator=(const RemoteInputDeviceClient&) = delete;
 
-  bool getCapabilities(std::vector<api::DeviceKind>* out) override;
+  bool getCapabilities(std::vector<api::DeviceKind>* out);
 
-  bool getCursorPositionAvailability(bool* available) override;
+  bool getCursorPositionAvailability(bool* available);
 
-  bool readCursorPosition(int* outX, int* outY) override;
+  bool readCursorPosition(int* outX, int* outY);
 
  private:
   std::shared_ptr<grpc::Channel> channel_;

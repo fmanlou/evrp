@@ -95,6 +95,7 @@ add_library(
   evrp/sdk/listenaddress.cpp
   evrp/sdk/setting/memorysetting.cpp
   evrp/sdk/setting/overlaysetting.cpp
+  evrp/sdk/tofromproto.cpp
   evrp/sdk/evdev.cpp
   evrp/sdk/filesystem/impl/enhancedfilesystem.cpp
   evrp/sdk/filesystem/impl/filesystem.cpp
@@ -118,7 +119,8 @@ if(EVRP_USE_X11_CURSOR)
   target_compile_definitions(evrp_sdk PUBLIC EVRP_USE_X11_CURSOR)
   target_link_libraries(evrp_sdk PUBLIC X11::X11)
 endif()
-target_link_libraries(evrp_sdk PUBLIC log::log lua gRPC::grpc++ fmt::fmt)
+target_link_libraries(evrp_sdk PUBLIC log::log lua protobuf::libprotobuf
+                                      gRPC::grpc++ fmt::fmt)
 
 set(PROTO_ROOT "${EVRP_ROOT}/proto")
 set(GEN_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
@@ -146,7 +148,7 @@ set(DEVICE_PLAYBACK_PROTO "${PROTO_ROOT}/evrp/v1/device/service/playback.proto")
 set(DEVICE_SERVICE_PROTO "${PROTO_ROOT}/evrp/v1/device/service/service.proto")
 set(SDK_SESSION_TYPES_PROTO "${PROTO_ROOT}/evrp/v1/sdk/types/session.proto")
 set(SDK_SESSION_SERVICES_PROTO "${PROTO_ROOT}/evrp/v1/sdk/services/session.proto")
-set(SERVER_HOST_CONTROL_PROTO "${PROTO_ROOT}/evrp/v1/server/host_control.proto")
+set(SERVER_HOST_CONTROL_PROTO "${PROTO_ROOT}/evrp/v1/server/hostcontrol.proto")
 
 find_program(GRPC_CPP_PLUGIN_PROGRAM NAMES grpc_cpp_plugin REQUIRED
              HINTS "${EVRP_LIBRARY_DIR}/grpc/bin" "${EVRP_LIBRARY_DIR}/bin")
@@ -171,10 +173,10 @@ set(SDK_SESSION_SERVICES_PB_CC "${GEN_DIR}/evrp/v1/sdk/services/session.pb.cc")
 set(SDK_SESSION_SERVICES_PB_H "${GEN_DIR}/evrp/v1/sdk/services/session.pb.h")
 set(SDK_SESSION_SERVICES_GRPC_CC "${GEN_DIR}/evrp/v1/sdk/services/session.grpc.pb.cc")
 set(SDK_SESSION_SERVICES_GRPC_H "${GEN_DIR}/evrp/v1/sdk/services/session.grpc.pb.h")
-set(SERVER_HOST_CONTROL_PB_CC "${GEN_DIR}/evrp/v1/server/host_control.pb.cc")
-set(SERVER_HOST_CONTROL_PB_H "${GEN_DIR}/evrp/v1/server/host_control.pb.h")
-set(SERVER_HOST_CONTROL_GRPC_CC "${GEN_DIR}/evrp/v1/server/host_control.grpc.pb.cc")
-set(SERVER_HOST_CONTROL_GRPC_H "${GEN_DIR}/evrp/v1/server/host_control.grpc.pb.h")
+set(SERVER_HOST_CONTROL_PB_CC "${GEN_DIR}/evrp/v1/server/hostcontrol.pb.cc")
+set(SERVER_HOST_CONTROL_PB_H "${GEN_DIR}/evrp/v1/server/hostcontrol.pb.h")
+set(SERVER_HOST_CONTROL_GRPC_CC "${GEN_DIR}/evrp/v1/server/hostcontrol.grpc.pb.cc")
+set(SERVER_HOST_CONTROL_GRPC_H "${GEN_DIR}/evrp/v1/server/hostcontrol.grpc.pb.h")
 
 set(EVRP_SERVER_PROTO_SOURCES ${SERVER_HOST_CONTROL_PB_CC}
                               ${SERVER_HOST_CONTROL_GRPC_CC})
@@ -242,7 +244,9 @@ add_library(
   evrp/device/impl/client/remoteplayback.cpp
   evrp/device/impl/client/client.cpp
   evrp/device/internal/discovery/impl/devicediscovery.cpp
-  evrp/device/impl/client/remoteinputdeviceclient.cpp)
+  evrp/device/impl/client/remoteinputdeviceclient.cpp
+  evrp/device/impl/client/remotedevicekindsprovider.cpp
+  evrp/device/impl/client/remotecursorposition.cpp)
 target_include_directories(
   evrp_device PUBLIC "${EVRP_ROOT}" ${EVRP_SDK_DIR} "${GEN_DIR}")
 target_compile_features(evrp_device PUBLIC cxx_std_20)
@@ -260,7 +264,7 @@ add_library(
   evrp/server/impl/server/evrp.cpp
   evrp/server/impl/server/record.cpp
   evrp/server/impl/server/playback.cpp
-  evrp/server/impl/server/host_control_grpc_service.cpp)
+  evrp/server/impl/server/hostcontrolgrpcservice.cpp)
 target_include_directories(evrp_server PUBLIC "${EVRP_ROOT}" ${EVRP_SERVER_DIR}
                                               ${EVRP_SDK_DIR} "${GEN_DIR}")
 target_link_libraries(
@@ -270,7 +274,8 @@ add_subdirectory(evrp-server)
 
 add_executable(evrp_tests tests/inputdevice_test.cpp tests/argparser_test.cpp
                                   tests/listenaddress_test.cpp
-                                  tests/overlaysetting_test.cpp)
+                                  tests/overlaysetting_test.cpp
+                                  tests/tofromproto_test.cpp)
 target_link_libraries(evrp_tests PRIVATE evrp_server evrp_sdk GTest::gtest_main)
 include(GoogleTest)
 gtest_discover_tests(evrp_tests)

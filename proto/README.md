@@ -43,7 +43,7 @@ Unary 输入监听（**`device_client` 远程实现**走本服务）。
 - `evrp/v1/device/service/{inputlisten,playback,service}.proto` — 各 gRPC `service` 定义
 - `evrp/v1/sdk/types/session.proto` — Session 消息（`ConnectResponse`）
 - `evrp/v1/sdk/services/session.proto` — `SessionService` gRPC
-- `evrp/v1/server/host_control.proto` — 主机侧 `HostControl`（`Record` / `Replay` unary RPC）
+- `evrp/v1/server/hostcontrol.proto` — 主机侧 `HostControl`（`Record` / `Replay`）；请求里 `settings` 为 `google.protobuf.Struct`（与 `ISetting::snapshot()` 键约定一致），由 `evrp::sdk::fromProto`（写入 `std::map<std::string, std::any>`）/ `toProto` 与快照互转
 
 （每个 `service/*.proto` 只 `import` 与之同名的 `types/<name>.proto`；后者按需再 `import` `types/common.proto`。）
 
@@ -63,11 +63,11 @@ protoc -I proto \
   proto/evrp/v1/device/service/service.proto \
   proto/evrp/v1/sdk/types/session.proto \
   proto/evrp/v1/sdk/services/session.proto \
-  proto/evrp/v1/server/host_control.proto
+  proto/evrp/v1/server/hostcontrol.proto
 ```
 
 ## 版本
 
 **Device**：`package evrp.device.v1`。  
 **Session**：`package evrp.sdk.v1`（`evrp/v1/sdk`：`types/session.proto`、`services/session.proto`）。  
-**主机 HostControl**：`package evrp.server.v1`（`evrp/v1/server/host_control.proto`）。
+**主机 HostControl**：`package evrp.server.v1`（`evrp/v1/server/hostcontrol.proto`）；动态选项载荷为 **`google.protobuf.Struct`**（语义上等价于 `map<string, google.protobuf.Value>`）。

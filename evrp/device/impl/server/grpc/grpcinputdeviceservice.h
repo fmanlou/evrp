@@ -3,7 +3,7 @@
 #include <grpcpp/grpcpp.h>
 
 #include "evrp/device/api/cursorposition.h"
-#include "evrp/device/api/inputdevicekindsprovider.h"
+#include "evrp/device/api/devicekindsprovider.h"
 #include "evrp/v1/device/service/service.grpc.pb.h"
 
 namespace evrp {
@@ -41,7 +41,7 @@ class GrpcInputDeviceService final
 
  private:
   api::ICursorPosition* cursorPosition_;
-  api::IInputDeviceKindsProvider* deviceKindsProvider_;
+  api::IDeviceKindsProvider* deviceKindsProvider_;
   evrp::session::SessionRegistry& sessions_;
 };
 

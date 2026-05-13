@@ -22,6 +22,7 @@
 
 #include "evrp/device/internal/discovery/devicediscovery.h"
 #include "evrp/device/internal/discovery/devicediscoverysettings.h"
+#include "evrp/device/api/devicekindsprovider.h"
 #include "evrp/sdk/logger.h"
 #include "evrp/sdk/setting/memorysetting.h"
 
@@ -360,8 +361,9 @@ IntegrationHarness::connectDirectClient(int timeout_ms) {
 
 bool IntegrationHarness::waitUntilGetCapabilitiesOk(
     evrp::device::api::IClient& client, int total_timeout_ms) {
-  evrp::device::api::IInputDeviceClient* const device = client.inputDevice();
-  if (!device) {
+  evrp::device::api::IDeviceKindsProvider* const provider =
+      client.deviceKindsProvider();
+  if (!provider) {
     return false;
   }
   const auto overall =
@@ -369,7 +371,7 @@ bool IntegrationHarness::waitUntilGetCapabilitiesOk(
       std::chrono::milliseconds(total_timeout_ms);
   while (std::chrono::steady_clock::now() < overall) {
     std::vector<evrp::device::api::DeviceKind> kinds;
-    if (device->getCapabilities(&kinds)) {
+    if (provider->queryKinds(&kinds)) {
       return true;
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(40));
@@ -382,12 +384,13 @@ bool IntegrationHarness::fetchCapabilities(
     evrp::device::api::IClient& client,
     std::vector<evrp::device::api::DeviceKind>* kinds_out) {
   kinds_out->clear();
-  evrp::device::api::IInputDeviceClient* const device = client.inputDevice();
-  if (!device) {
-    logError("GetCapabilities failed (no input device client)");
+  evrp::device::api::IDeviceKindsProvider* const provider =
+      client.deviceKindsProvider();
+  if (!provider) {
+    logError("GetCapabilities failed (no device kinds provider)");
     return false;
   }
-  if (!device->getCapabilities(kinds_out)) {
+  if (!provider->queryKinds(kinds_out)) {
     logError("GetCapabilities failed");
     return false;
   }

@@ -7,10 +7,10 @@ add_executable(
   evrp_device_integration_test
   integrationtest/main.cpp
   integrationtest/harness.cpp
-  integrationtest/case_connect.cpp
-  integrationtest/case_inputlisten.cpp
-  integrationtest/case_playback.cpp
-  integrationtest/case_discovery.cpp)
+  integrationtest/caseconnect.cpp
+  integrationtest/caseinputlisten.cpp
+  integrationtest/caseplayback.cpp
+  integrationtest/casediscovery.cpp)
 target_include_directories(evrp_device_integration_test
                            PRIVATE "${CMAKE_SOURCE_DIR}")
 target_link_libraries(evrp_device_integration_test PRIVATE evrp_device gflags::gflags

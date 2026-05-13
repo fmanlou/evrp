@@ -4,7 +4,7 @@
 #include "evrp/sdk/logger.h"
 
 #include "harness.h"
-#include "integration_gflags_declare.h"
+#include "integrationgflagsdeclare.h"
 
 int main(int argc, char** argv) {
   logging::LogService logSvc("evrp_device_integration_test");

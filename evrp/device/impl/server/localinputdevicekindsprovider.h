@@ -2,12 +2,12 @@
 
 #include <vector>
 
-#include "evrp/device/api/inputdevicekindsprovider.h"
+#include "evrp/device/api/devicekindsprovider.h"
 
 namespace evrp::device::server {
 
 class LocalInputDeviceKindsProvider final
-    : public api::IInputDeviceKindsProvider {
+    : public api::IDeviceKindsProvider {
  public:
   LocalInputDeviceKindsProvider() = default;
 

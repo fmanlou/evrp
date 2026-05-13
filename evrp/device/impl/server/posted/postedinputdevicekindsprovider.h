@@ -2,18 +2,18 @@
 
 #include <vector>
 
-#include "evrp/device/api/inputdevicekindsprovider.h"
+#include "evrp/device/api/devicekindsprovider.h"
 #include "evrp/sdk/iocontextpostedbase.h"
 
 namespace evrp::device::server {
 
 class PostedInputDeviceKindsProvider final
-    : public api::IInputDeviceKindsProvider,
+    : public api::IDeviceKindsProvider,
       private IoContextPostedBase {
  public:
   using IoContextPostedBase::shutdown;
 
-  PostedInputDeviceKindsProvider(api::IInputDeviceKindsProvider& inner,
+  PostedInputDeviceKindsProvider(api::IDeviceKindsProvider& inner,
                                  asio::io_context& ioContext);
   ~PostedInputDeviceKindsProvider() override;
 
@@ -24,7 +24,7 @@ class PostedInputDeviceKindsProvider final
   std::vector<api::DeviceKind> kinds() override;
 
  private:
-  api::IInputDeviceKindsProvider& inner_;
+  api::IDeviceKindsProvider& inner_;
 };
 
 }

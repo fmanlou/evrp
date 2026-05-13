@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
-#include "device_integration_fixture.h"
-#include "integration_gflags_declare.h"
+#include "deviceintegrationfixture.h"
+#include "integrationgflagsdeclare.h"
 
 TEST_F(DeviceIntegration, UdpDiscovery) {
   const auto& e = IntegrationHarness::env();

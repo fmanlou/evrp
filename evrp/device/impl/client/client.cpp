@@ -5,7 +5,9 @@
 #include <chrono>
 
 #include "evrp/device/internal/discovery/devicediscovery.h"
+#include "evrp/device/impl/client/remotedevicekindsprovider.h"
 #include "evrp/device/impl/client/remoteinputdeviceclient.h"
+#include "evrp/device/impl/client/remotecursorposition.h"
 #include "evrp/device/impl/client/remoteinputlistener.h"
 #include "evrp/device/impl/client/remoteplayback.h"
 #include "evrp/sdk/sessionclient.h"
@@ -59,7 +61,14 @@ class ClientImpl final : public IClient {
 
   IInputListener* inputListener() const final { return listener_.get(); }
   IPlayback* playback() const final { return playback_.get(); }
-  IInputDeviceClient* inputDevice() const final { return inputDevice_.get(); }
+
+  IDeviceKindsProvider* deviceKindsProvider() const final {
+    return deviceKinds_.get();
+  }
+
+  ICursorPosition* cursorPosition() const final {
+    return cursorPosition_.get();
+  }
 
   const std::string& serverAddress() const final { return serverAddress_; }
 
@@ -80,7 +89,9 @@ class ClientImpl final : public IClient {
   std::string serverAddress_;
   std::unique_ptr<IInputListener> listener_;
   std::unique_ptr<IPlayback> playback_;
-  std::unique_ptr<IInputDeviceClient> inputDevice_;
+  std::unique_ptr<client::RemoteInputDeviceClient> inputDevice_;
+  std::unique_ptr<IDeviceKindsProvider> deviceKinds_;
+  std::unique_ptr<ICursorPosition> cursorPosition_;
 
   explicit ClientImpl(std::shared_ptr<grpc::Channel> channel,
                       std::string sessionId,
@@ -94,7 +105,11 @@ class ClientImpl final : public IClient {
             std::make_unique<client::RemotePlayback>(channel_, sessionId_)),
         inputDevice_(
             std::make_unique<client::RemoteInputDeviceClient>(channel_,
-                                                              sessionId_)) {}
+                                                              sessionId_)),
+        deviceKinds_(std::make_unique<client::RemoteDeviceKindsProvider>(
+            inputDevice_.get())),
+        cursorPosition_(std::make_unique<client::RemoteCursorPosition>(
+            inputDevice_.get())) {}
 };
 
 }  // namespace

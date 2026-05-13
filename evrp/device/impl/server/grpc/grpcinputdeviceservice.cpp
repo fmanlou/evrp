@@ -11,7 +11,7 @@ namespace evrp::device::server {
 GrpcInputDeviceService::GrpcInputDeviceService(
     const evrp::Ioc& ioc, evrp::session::SessionRegistry& sessions)
     : cursorPosition_(ioc.get<api::ICursorPosition>()),
-      deviceKindsProvider_(ioc.get<api::IInputDeviceKindsProvider>()),
+      deviceKindsProvider_(ioc.get<api::IDeviceKindsProvider>()),
       sessions_(sessions) {}
 
 grpc::Status GrpcInputDeviceService::GetCursorPositionAvailability(
@@ -63,7 +63,7 @@ grpc::Status GrpcInputDeviceService::GetCapabilities(
   }
   if (!deviceKindsProvider_) {
     logError(
-        "evrp-device: GetCapabilities: IInputDeviceKindsProvider is null "
+        "evrp-device: GetCapabilities: IDeviceKindsProvider is null "
         "(IOC misconfiguration; not the same as \"no input hardware\")");
     return grpc::Status(grpc::StatusCode::FAILED_PRECONDITION,
                         "device kinds provider not configured");
