@@ -8,16 +8,16 @@ class Service;
 
 namespace evrp::server {
 
-class GrpcEvrpService {
+class Server {
  public:
-  GrpcEvrpService();
-  ~GrpcEvrpService();
+  Server();
+  ~Server();
 
-  GrpcEvrpService(GrpcEvrpService&&) noexcept;
-  GrpcEvrpService& operator=(GrpcEvrpService&&) noexcept;
+  Server(Server&&) noexcept;
+  Server& operator=(Server&&) noexcept;
 
-  GrpcEvrpService(const GrpcEvrpService&) = delete;
-  GrpcEvrpService& operator=(const GrpcEvrpService&) = delete;
+  Server(const Server&) = delete;
+  Server& operator=(const Server&) = delete;
 
   grpc::Service* grpc_service();
 

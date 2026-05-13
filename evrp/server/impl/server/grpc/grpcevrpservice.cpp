@@ -90,23 +90,22 @@ class EvrpServiceImpl final
 
 }  // namespace
 
-struct evrp::server::GrpcEvrpService::Impl {
+struct evrp::server::Server::Impl {
   std::unique_ptr<evrp::v1::server::EvrpService::Service> service;
 
   Impl() : service(std::make_unique<EvrpServiceImpl>()) {}
 };
 
-evrp::server::GrpcEvrpService::GrpcEvrpService()
+evrp::server::Server::Server()
     : impl_(std::make_unique<Impl>()) {}
 
-evrp::server::GrpcEvrpService::~GrpcEvrpService() = default;
+evrp::server::Server::~Server() = default;
 
-evrp::server::GrpcEvrpService::GrpcEvrpService(
-    GrpcEvrpService&&) noexcept = default;
+evrp::server::Server::Server(Server&&) noexcept = default;
 
-evrp::server::GrpcEvrpService& evrp::server::GrpcEvrpService::operator=(
-    GrpcEvrpService&&) noexcept = default;
+evrp::server::Server& evrp::server::Server::operator=(
+    Server&&) noexcept = default;
 
-grpc::Service* evrp::server::GrpcEvrpService::grpc_service() {
+grpc::Service* evrp::server::Server::grpc_service() {
   return impl_->service.get();
 }
