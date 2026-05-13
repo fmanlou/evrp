@@ -4,7 +4,7 @@
 
 #include "evrp/device/api/cursorposition.h"
 #include "evrp/device/api/inputdevicekindsprovider.h"
-#include "evrp/device/v1/service/service.grpc.pb.h"
+#include "evrp/v1/device/service/service.grpc.pb.h"
 
 namespace evrp {
 class Ioc;

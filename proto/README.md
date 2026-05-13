@@ -38,9 +38,12 @@ Unary 输入监听（**`device_client` 远程实现**走本服务）。
 
 ## 布局
 
-- `evrp/device/v1/types/common.proto` — 跨服务类型（`DeviceKind`、`InputEvent`）
-- `evrp/device/v1/types/{inputlisten,playback,service}.proto` — 与同名 `service/*.proto` 一一对应的消息
-- `evrp/device/v1/service/{inputlisten,playback,service}.proto` — 各 gRPC `service` 定义
+- `evrp/v1/device/types/common.proto` — 跨服务类型（`DeviceKind`、`InputEvent`）
+- `evrp/v1/device/types/{inputlisten,playback,service}.proto` — 与同名 `service/*.proto` 一一对应的消息
+- `evrp/v1/device/service/{inputlisten,playback,service}.proto` — 各 gRPC `service` 定义
+- `evrp/v1/sdk/types/session.proto` — Session 消息（`ConnectResponse`）
+- `evrp/v1/sdk/services/session.proto` — `SessionService` gRPC
+- `evrp/v1/server/host_control.proto` — 主机侧 `HostControl`（`Record` / `Replay` unary RPC）
 
 （每个 `service/*.proto` 只 `import` 与之同名的 `types/<name>.proto`；后者按需再 `import` `types/common.proto`。）
 
@@ -51,15 +54,20 @@ protoc -I proto \
   --cpp_out=generated/cpp \
   --grpc_out=generated/cpp \
   --plugin=protoc-gen-grpc="$(which grpc_cpp_plugin)" \
-  proto/evrp/device/v1/types/common.proto \
-  proto/evrp/device/v1/types/inputlisten.proto \
-  proto/evrp/device/v1/types/playback.proto \
-  proto/evrp/device/v1/types/service.proto \
-  proto/evrp/device/v1/service/inputlisten.proto \
-  proto/evrp/device/v1/service/playback.proto \
-  proto/evrp/device/v1/service/service.proto
+  proto/evrp/v1/device/types/common.proto \
+  proto/evrp/v1/device/types/inputlisten.proto \
+  proto/evrp/v1/device/types/playback.proto \
+  proto/evrp/v1/device/types/service.proto \
+  proto/evrp/v1/device/service/inputlisten.proto \
+  proto/evrp/v1/device/service/playback.proto \
+  proto/evrp/v1/device/service/service.proto \
+  proto/evrp/v1/sdk/types/session.proto \
+  proto/evrp/v1/sdk/services/session.proto \
+  proto/evrp/v1/server/host_control.proto
 ```
 
 ## 版本
 
-**v1**（`package evrp.device.v1`）。
+**Device**：`package evrp.device.v1`。  
+**Session**：`package evrp.sdk.v1`（`evrp/v1/sdk`：`types/session.proto`、`services/session.proto`）。  
+**主机 HostControl**：`package evrp.server.v1`（`evrp/v1/server/host_control.proto`）。

@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package evrp.device.v1;
 
-import "evrp/device/v1/types/common.proto";
+import "evrp/v1/device/types/common.proto";
 
 message GetCursorPositionAvailabilityRequest {}
 

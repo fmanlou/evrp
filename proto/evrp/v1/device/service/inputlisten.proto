@@ -3,7 +3,7 @@ syntax = "proto3";
 package evrp.device.v1;
 
 import "google/protobuf/empty.proto";
-import "evrp/device/v1/types/inputlisten.proto";
+import "evrp/v1/device/types/inputlisten.proto";
 
 service InputListenService {
   rpc StartRecording(StartRecordingRequest) returns (google.protobuf.Empty);

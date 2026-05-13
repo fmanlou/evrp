@@ -8,7 +8,7 @@
 #include <grpcpp/grpcpp.h>
 
 #include "evrp/sdk/sessionmetadata.h"
-#include "evrp/sdk/v1/services/session.grpc.pb.h"
+#include "evrp/v1/sdk/services/session.grpc.pb.h"
 
 namespace evrp::sdk {
 

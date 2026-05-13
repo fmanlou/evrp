@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "evrp/device/api/playback.h"
-#include "evrp/device/v1/service/playback.grpc.pb.h"
+#include "evrp/v1/device/service/playback.grpc.pb.h"
 
 #include <string>
 

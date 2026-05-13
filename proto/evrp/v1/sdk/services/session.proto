@@ -3,7 +3,7 @@ syntax = "proto3";
 package evrp.sdk.v1;
 
 import "google/protobuf/empty.proto";
-import "evrp/sdk/v1/types/session.proto";
+import "evrp/v1/sdk/types/session.proto";
 
 service SessionService {
   rpc Connect(google.protobuf.Empty) returns (ConnectResponse);

@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "evrp/device/api/inputlistener.h"
-#include "evrp/device/v1/service/inputlisten.grpc.pb.h"
+#include "evrp/v1/device/service/inputlisten.grpc.pb.h"
 
 #include <string>
 

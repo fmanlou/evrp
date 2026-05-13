@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package evrp.server.v1;
+
+message HostSessionSettings {
+  string device = 1;
+  string log_level = 2;
+  string keyboard_ctrl_c_filter = 3;
+  int32 discovery_port = 4;
+  string discovery_link_mode = 5;
+}
+
+message RecordRequest {
+  HostSessionSettings settings = 1;
+  string output_path = 2;
+  repeated string kinds = 3;
+}
+
+message ReplayRequest {
+  HostSessionSettings settings = 1;
+  string playback_path = 2;
+}
+
+message RunResponse {
+  int32 exit_code = 1;
+  string message = 2;
+}
+
+service HostControl {
+  rpc Record(RecordRequest) returns (RunResponse);
+  rpc Replay(ReplayRequest) returns (RunResponse);
+}

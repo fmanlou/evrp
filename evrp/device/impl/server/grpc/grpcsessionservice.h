@@ -3,7 +3,7 @@
 #include <grpcpp/grpcpp.h>
 
 #include "evrp/sdk/sessionregistry.h"
-#include "evrp/sdk/v1/services/session.grpc.pb.h"
+#include "evrp/v1/sdk/services/session.grpc.pb.h"
 
 namespace evrp::device::server {
 

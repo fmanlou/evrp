@@ -123,53 +123,61 @@ target_link_libraries(evrp_sdk PUBLIC log::log lua gRPC::grpc++ fmt::fmt)
 set(PROTO_ROOT "${EVRP_ROOT}/proto")
 set(GEN_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
 set(DEVICE_V1_TYPES_PROTOS
-  "${PROTO_ROOT}/evrp/device/v1/types/common.proto"
-  "${PROTO_ROOT}/evrp/device/v1/types/inputlisten.proto"
-  "${PROTO_ROOT}/evrp/device/v1/types/playback.proto"
-  "${PROTO_ROOT}/evrp/device/v1/types/service.proto")
+  "${PROTO_ROOT}/evrp/v1/device/types/common.proto"
+  "${PROTO_ROOT}/evrp/v1/device/types/inputlisten.proto"
+  "${PROTO_ROOT}/evrp/v1/device/types/playback.proto"
+  "${PROTO_ROOT}/evrp/v1/device/types/service.proto")
 set(DEVICE_V1_TYPES_GEN
-  "${GEN_DIR}/evrp/device/v1/types/common.pb.cc"
-  "${GEN_DIR}/evrp/device/v1/types/common.pb.h"
-  "${GEN_DIR}/evrp/device/v1/types/inputlisten.pb.cc"
-  "${GEN_DIR}/evrp/device/v1/types/inputlisten.pb.h"
-  "${GEN_DIR}/evrp/device/v1/types/playback.pb.cc"
-  "${GEN_DIR}/evrp/device/v1/types/playback.pb.h"
-  "${GEN_DIR}/evrp/device/v1/types/service.pb.cc"
-  "${GEN_DIR}/evrp/device/v1/types/service.pb.h")
+  "${GEN_DIR}/evrp/v1/device/types/common.pb.cc"
+  "${GEN_DIR}/evrp/v1/device/types/common.pb.h"
+  "${GEN_DIR}/evrp/v1/device/types/inputlisten.pb.cc"
+  "${GEN_DIR}/evrp/v1/device/types/inputlisten.pb.h"
+  "${GEN_DIR}/evrp/v1/device/types/playback.pb.cc"
+  "${GEN_DIR}/evrp/v1/device/types/playback.pb.h"
+  "${GEN_DIR}/evrp/v1/device/types/service.pb.cc"
+  "${GEN_DIR}/evrp/v1/device/types/service.pb.h")
 set(DEVICE_V1_TYPES_PB_CC
-  "${GEN_DIR}/evrp/device/v1/types/common.pb.cc"
-  "${GEN_DIR}/evrp/device/v1/types/inputlisten.pb.cc"
-  "${GEN_DIR}/evrp/device/v1/types/playback.pb.cc"
-  "${GEN_DIR}/evrp/device/v1/types/service.pb.cc")
-set(DEVICE_INPUTLISTEN_PROTO "${PROTO_ROOT}/evrp/device/v1/service/inputlisten.proto")
-set(DEVICE_PLAYBACK_PROTO "${PROTO_ROOT}/evrp/device/v1/service/playback.proto")
-set(DEVICE_SERVICE_PROTO "${PROTO_ROOT}/evrp/device/v1/service/service.proto")
-set(SDK_SESSION_TYPES_PROTO "${PROTO_ROOT}/evrp/sdk/v1/types/session.proto")
-set(SDK_SESSION_SERVICES_PROTO "${PROTO_ROOT}/evrp/sdk/v1/services/session.proto")
+  "${GEN_DIR}/evrp/v1/device/types/common.pb.cc"
+  "${GEN_DIR}/evrp/v1/device/types/inputlisten.pb.cc"
+  "${GEN_DIR}/evrp/v1/device/types/playback.pb.cc"
+  "${GEN_DIR}/evrp/v1/device/types/service.pb.cc")
+set(DEVICE_INPUTLISTEN_PROTO "${PROTO_ROOT}/evrp/v1/device/service/inputlisten.proto")
+set(DEVICE_PLAYBACK_PROTO "${PROTO_ROOT}/evrp/v1/device/service/playback.proto")
+set(DEVICE_SERVICE_PROTO "${PROTO_ROOT}/evrp/v1/device/service/service.proto")
+set(SDK_SESSION_TYPES_PROTO "${PROTO_ROOT}/evrp/v1/sdk/types/session.proto")
+set(SDK_SESSION_SERVICES_PROTO "${PROTO_ROOT}/evrp/v1/sdk/services/session.proto")
+set(SERVER_HOST_CONTROL_PROTO "${PROTO_ROOT}/evrp/v1/server/host_control.proto")
 
 find_program(GRPC_CPP_PLUGIN_PROGRAM NAMES grpc_cpp_plugin REQUIRED
              HINTS "${EVRP_LIBRARY_DIR}/grpc/bin" "${EVRP_LIBRARY_DIR}/bin")
 find_program(PROTOC_PROGRAM NAMES protoc REQUIRED
              HINTS "${EVRP_LIBRARY_DIR}/protobuf/bin" "${EVRP_LIBRARY_DIR}/bin")
 
-set(DEVICE_INPUTLISTEN_PB_CC "${GEN_DIR}/evrp/device/v1/service/inputlisten.pb.cc")
-set(DEVICE_INPUTLISTEN_PB_H "${GEN_DIR}/evrp/device/v1/service/inputlisten.pb.h")
-set(DEVICE_INPUTLISTEN_GRPC_CC "${GEN_DIR}/evrp/device/v1/service/inputlisten.grpc.pb.cc")
-set(DEVICE_INPUTLISTEN_GRPC_H "${GEN_DIR}/evrp/device/v1/service/inputlisten.grpc.pb.h")
-set(DEVICE_PLAYBACK_PB_CC "${GEN_DIR}/evrp/device/v1/service/playback.pb.cc")
-set(DEVICE_PLAYBACK_PB_H "${GEN_DIR}/evrp/device/v1/service/playback.pb.h")
-set(DEVICE_PLAYBACK_GRPC_CC "${GEN_DIR}/evrp/device/v1/service/playback.grpc.pb.cc")
-set(DEVICE_PLAYBACK_GRPC_H "${GEN_DIR}/evrp/device/v1/service/playback.grpc.pb.h")
-set(DEVICE_SERVICE_PB_CC "${GEN_DIR}/evrp/device/v1/service/service.pb.cc")
-set(DEVICE_SERVICE_PB_H "${GEN_DIR}/evrp/device/v1/service/service.pb.h")
-set(DEVICE_SERVICE_GRPC_CC "${GEN_DIR}/evrp/device/v1/service/service.grpc.pb.cc")
-set(DEVICE_SERVICE_GRPC_H "${GEN_DIR}/evrp/device/v1/service/service.grpc.pb.h")
-set(SDK_SESSION_TYPES_PB_CC "${GEN_DIR}/evrp/sdk/v1/types/session.pb.cc")
-set(SDK_SESSION_TYPES_PB_H "${GEN_DIR}/evrp/sdk/v1/types/session.pb.h")
-set(SDK_SESSION_SERVICES_PB_CC "${GEN_DIR}/evrp/sdk/v1/services/session.pb.cc")
-set(SDK_SESSION_SERVICES_PB_H "${GEN_DIR}/evrp/sdk/v1/services/session.pb.h")
-set(SDK_SESSION_SERVICES_GRPC_CC "${GEN_DIR}/evrp/sdk/v1/services/session.grpc.pb.cc")
-set(SDK_SESSION_SERVICES_GRPC_H "${GEN_DIR}/evrp/sdk/v1/services/session.grpc.pb.h")
+set(DEVICE_INPUTLISTEN_PB_CC "${GEN_DIR}/evrp/v1/device/service/inputlisten.pb.cc")
+set(DEVICE_INPUTLISTEN_PB_H "${GEN_DIR}/evrp/v1/device/service/inputlisten.pb.h")
+set(DEVICE_INPUTLISTEN_GRPC_CC "${GEN_DIR}/evrp/v1/device/service/inputlisten.grpc.pb.cc")
+set(DEVICE_INPUTLISTEN_GRPC_H "${GEN_DIR}/evrp/v1/device/service/inputlisten.grpc.pb.h")
+set(DEVICE_PLAYBACK_PB_CC "${GEN_DIR}/evrp/v1/device/service/playback.pb.cc")
+set(DEVICE_PLAYBACK_PB_H "${GEN_DIR}/evrp/v1/device/service/playback.pb.h")
+set(DEVICE_PLAYBACK_GRPC_CC "${GEN_DIR}/evrp/v1/device/service/playback.grpc.pb.cc")
+set(DEVICE_PLAYBACK_GRPC_H "${GEN_DIR}/evrp/v1/device/service/playback.grpc.pb.h")
+set(DEVICE_SERVICE_PB_CC "${GEN_DIR}/evrp/v1/device/service/service.pb.cc")
+set(DEVICE_SERVICE_PB_H "${GEN_DIR}/evrp/v1/device/service/service.pb.h")
+set(DEVICE_SERVICE_GRPC_CC "${GEN_DIR}/evrp/v1/device/service/service.grpc.pb.cc")
+set(DEVICE_SERVICE_GRPC_H "${GEN_DIR}/evrp/v1/device/service/service.grpc.pb.h")
+set(SDK_SESSION_TYPES_PB_CC "${GEN_DIR}/evrp/v1/sdk/types/session.pb.cc")
+set(SDK_SESSION_TYPES_PB_H "${GEN_DIR}/evrp/v1/sdk/types/session.pb.h")
+set(SDK_SESSION_SERVICES_PB_CC "${GEN_DIR}/evrp/v1/sdk/services/session.pb.cc")
+set(SDK_SESSION_SERVICES_PB_H "${GEN_DIR}/evrp/v1/sdk/services/session.pb.h")
+set(SDK_SESSION_SERVICES_GRPC_CC "${GEN_DIR}/evrp/v1/sdk/services/session.grpc.pb.cc")
+set(SDK_SESSION_SERVICES_GRPC_H "${GEN_DIR}/evrp/v1/sdk/services/session.grpc.pb.h")
+set(SERVER_HOST_CONTROL_PB_CC "${GEN_DIR}/evrp/v1/server/host_control.pb.cc")
+set(SERVER_HOST_CONTROL_PB_H "${GEN_DIR}/evrp/v1/server/host_control.pb.h")
+set(SERVER_HOST_CONTROL_GRPC_CC "${GEN_DIR}/evrp/v1/server/host_control.grpc.pb.cc")
+set(SERVER_HOST_CONTROL_GRPC_H "${GEN_DIR}/evrp/v1/server/host_control.grpc.pb.h")
+
+set(EVRP_SERVER_PROTO_SOURCES ${SERVER_HOST_CONTROL_PB_CC}
+                              ${SERVER_HOST_CONTROL_GRPC_CC})
 
 set(EVRP_DEVICE_PROTO_SOURCES
   ${DEVICE_V1_TYPES_PB_CC} ${DEVICE_INPUTLISTEN_PB_CC} ${DEVICE_INPUTLISTEN_GRPC_CC}
@@ -187,19 +195,23 @@ add_custom_command(
          ${SDK_SESSION_TYPES_PB_CC} ${SDK_SESSION_TYPES_PB_H}
          ${SDK_SESSION_SERVICES_PB_CC} ${SDK_SESSION_SERVICES_PB_H}
          ${SDK_SESSION_SERVICES_GRPC_CC} ${SDK_SESSION_SERVICES_GRPC_H}
-  COMMAND ${CMAKE_COMMAND} -E make_directory "${GEN_DIR}/evrp/device/v1/service"
-  COMMAND ${CMAKE_COMMAND} -E make_directory "${GEN_DIR}/evrp/device/v1/types"
-  COMMAND ${CMAKE_COMMAND} -E make_directory "${GEN_DIR}/evrp/sdk/v1/types"
-  COMMAND ${CMAKE_COMMAND} -E make_directory "${GEN_DIR}/evrp/sdk/v1/services"
+         ${SERVER_HOST_CONTROL_PB_CC} ${SERVER_HOST_CONTROL_PB_H}
+         ${SERVER_HOST_CONTROL_GRPC_CC} ${SERVER_HOST_CONTROL_GRPC_H}
+  COMMAND ${CMAKE_COMMAND} -E make_directory "${GEN_DIR}/evrp/v1/device/service"
+  COMMAND ${CMAKE_COMMAND} -E make_directory "${GEN_DIR}/evrp/v1/device/types"
+  COMMAND ${CMAKE_COMMAND} -E make_directory "${GEN_DIR}/evrp/v1/server"
+  COMMAND ${CMAKE_COMMAND} -E make_directory "${GEN_DIR}/evrp/v1/sdk/types"
+  COMMAND ${CMAKE_COMMAND} -E make_directory "${GEN_DIR}/evrp/v1/sdk/services"
   COMMAND
     ${PROTOC_PROGRAM} --cpp_out=${GEN_DIR} --grpc_out=${GEN_DIR}
     --plugin=protoc-gen-grpc=${GRPC_CPP_PLUGIN_PROGRAM} -I${PROTO_ROOT}
     ${DEVICE_V1_TYPES_PROTOS} ${DEVICE_INPUTLISTEN_PROTO} ${DEVICE_PLAYBACK_PROTO}
     ${DEVICE_SERVICE_PROTO} ${SDK_SESSION_TYPES_PROTO} ${SDK_SESSION_SERVICES_PROTO}
+    ${SERVER_HOST_CONTROL_PROTO}
   DEPENDS ${DEVICE_V1_TYPES_PROTOS} ${DEVICE_INPUTLISTEN_PROTO}
           ${DEVICE_PLAYBACK_PROTO} ${DEVICE_SERVICE_PROTO} ${SDK_SESSION_TYPES_PROTO}
-          ${SDK_SESSION_SERVICES_PROTO}
-  COMMENT "Generating protobuf/gRPC (device v1 + session)"
+          ${SDK_SESSION_SERVICES_PROTO} ${SERVER_HOST_CONTROL_PROTO}
+  COMMENT "Generating protobuf/gRPC (evrp/v1/device + evrp/v1/sdk + evrp/v1/server)"
   VERBATIM)
 
 add_library(
@@ -244,11 +256,13 @@ target_link_libraries(evrp_argparser PUBLIC evrp_device evrp_sdk gflags::gflags)
 
 add_library(
   evrp_server STATIC
+  ${EVRP_SERVER_PROTO_SOURCES}
   evrp/server/impl/server/evrp.cpp
   evrp/server/impl/server/record.cpp
-  evrp/server/impl/server/playback.cpp)
+  evrp/server/impl/server/playback.cpp
+  evrp/server/impl/server/host_control_grpc_service.cpp)
 target_include_directories(evrp_server PUBLIC "${EVRP_ROOT}" ${EVRP_SERVER_DIR}
-                                              ${EVRP_SDK_DIR})
+                                              ${EVRP_SDK_DIR} "${GEN_DIR}")
 target_link_libraries(
   evrp_server PUBLIC evrp_device evrp_sdk gflags::gflags evrp_argparser)
 

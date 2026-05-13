@@ -5,7 +5,7 @@
 #include <grpcpp/grpcpp.h>
 
 #include "evrp/device/api/inputdeviceclient.h"
-#include "evrp/device/v1/service/service.grpc.pb.h"
+#include "evrp/v1/device/service/service.grpc.pb.h"
 
 #include <string>
 

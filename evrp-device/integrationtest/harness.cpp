@@ -75,11 +75,10 @@ DEFINE_string(
 
 namespace {
 
-MemorySetting harnessDiscoverySettingsSnapshot() {
-  MemorySetting s;
-  s.insert(evrp::sdk::kDeviceDiscoverySettingPort, FLAGS_discovery_port);
-  s.insert(evrp::sdk::kDeviceDiscoverySettingLinkMode, FLAGS_discovery_link_mode);
-  return s;
+void harnessDiscoverySettingsSnapshot(MemorySetting& out) {
+  out.insert(evrp::sdk::kDeviceDiscoverySettingPort, FLAGS_discovery_port);
+  out.insert(evrp::sdk::kDeviceDiscoverySettingLinkMode,
+              FLAGS_discovery_link_mode);
 }
 
 int pickFreeLoopbackPort() {
@@ -346,8 +345,10 @@ IntegrationHarness::connectDirectClient(int timeout_ms) {
       std::chrono::steady_clock::now() +
       std::chrono::milliseconds(timeout_ms);
   while (std::chrono::steady_clock::now() < connectDeadline) {
-    auto client = evrp::device::api::makeClient(env_.target,
-                                                harnessDiscoverySettingsSnapshot());
+    MemorySetting discovery_settings;
+    harnessDiscoverySettingsSnapshot(discovery_settings);
+    auto client =
+        evrp::device::api::makeClient(env_.target, discovery_settings);
     if (client) {
       return client;
     }
@@ -571,8 +572,10 @@ bool IntegrationHarness::runUdpDiscoveryTest() {
         std::chrono::steady_clock::now() +
         std::chrono::milliseconds(FLAGS_rpc_wait_ms);
     while (std::chrono::steady_clock::now() < connectDeadline) {
-      viaDiscovery = evrp::device::api::makeClient(
-          "", harnessDiscoverySettingsSnapshot());
+      MemorySetting discovery_settings;
+      harnessDiscoverySettingsSnapshot(discovery_settings);
+      viaDiscovery =
+          evrp::device::api::makeClient("", discovery_settings);
       if (viaDiscovery) {
         break;
       }
