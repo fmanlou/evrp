@@ -27,7 +27,7 @@ bool RemoteInputDeviceClient::getCapabilities(
     return false;
   }
   for (int i = 0; i < resp.supported_kinds_size(); ++i) {
-    out->push_back(api::fromProto(resp.supported_kinds(i)));
+    out->push_back(evrp::sdk::fromProto(resp.supported_kinds(i)));
   }
   return true;
 }

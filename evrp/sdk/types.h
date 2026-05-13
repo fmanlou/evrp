@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <string>
 
-namespace evrp::device::api {
+namespace evrp::sdk {
 
 enum class DeviceKind {
   kUnspecified = 0,
@@ -22,9 +22,17 @@ struct InputEvent {
   int32_t value = 0;
 };
 
-struct OperationResult {
+struct StatusCode {
   int32_t code = 0;
   std::string message;
 };
 
-}
+}  // namespace evrp::sdk
+
+namespace evrp::device::api {
+
+using DeviceKind = evrp::sdk::DeviceKind;
+using InputEvent = evrp::sdk::InputEvent;
+using StatusCode = evrp::sdk::StatusCode;
+
+}  // namespace evrp::device::api

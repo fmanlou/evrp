@@ -40,13 +40,13 @@ bool deviceUploadAndPlay(evrp::device::api::IPlayback *remote,
   if (events.empty()) {
     return true;
   }
-  evrp::device::api::OperationResult uploadResult;
+  evrp::device::api::StatusCode uploadResult;
   if (!remote->upload(events, &uploadResult) || uploadResult.code != 0) {
     logError("Upload to evrp-device failed (code={}): {}", uploadResult.code,
              uploadResult.message);
     return false;
   }
-  evrp::device::api::OperationResult playResult;
+  evrp::device::api::StatusCode playResult;
   if (!remote->playback(&playResult) || playResult.code != 0) {
     logError("Playback failed (code={}): {}", playResult.code, playResult.message);
     return false;

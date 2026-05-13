@@ -28,21 +28,21 @@ TEST(ArgParser, UseUdpDeviceDiscoveryWhenDeviceUnset) {
 }
 
 TEST(ArgParser, ParseKindAcceptsKnownKinds) {
-  EXPECT_EQ(api::toKind("touchpad"), api::DeviceKind::kTouchpad);
-  EXPECT_EQ(api::toKind("touchscreen"), api::DeviceKind::kTouchscreen);
-  EXPECT_EQ(api::toKind("mouse"), api::DeviceKind::kMouse);
-  EXPECT_EQ(api::toKind("keyboard"), api::DeviceKind::kKeyboard);
+  EXPECT_EQ(evrp::sdk::toKind("touchpad"), api::DeviceKind::kTouchpad);
+  EXPECT_EQ(evrp::sdk::toKind("touchscreen"), api::DeviceKind::kTouchscreen);
+  EXPECT_EQ(evrp::sdk::toKind("mouse"), api::DeviceKind::kMouse);
+  EXPECT_EQ(evrp::sdk::toKind("keyboard"), api::DeviceKind::kKeyboard);
 
   api::DeviceKind k = api::DeviceKind::kUnspecified;
-  api::toKind("mouse", &k);
+  evrp::sdk::toKind("mouse", &k);
   EXPECT_EQ(k, api::DeviceKind::kMouse);
 }
 
 TEST(ArgParser, ParseKindRejectsUnknownKind) {
-  EXPECT_EQ(api::toKind("joystick"), api::DeviceKind::kUnspecified);
+  EXPECT_EQ(evrp::sdk::toKind("joystick"), api::DeviceKind::kUnspecified);
 
   api::DeviceKind k = api::DeviceKind::kKeyboard;
-  api::toKind("joystick", &k);
+  evrp::sdk::toKind("joystick", &k);
   EXPECT_EQ(k, api::DeviceKind::kUnspecified);
 }
 

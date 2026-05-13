@@ -470,7 +470,7 @@ bool IntegrationHarness::runInputListenTest(
 
   for (size_t ki = 0; ki < kinds.size(); ++ki) {
     const evrp::device::api::DeviceKind kind = kinds[ki];
-    const std::string kindLabel = evrp::device::api::toString(kind);
+    const std::string kindLabel = evrp::sdk::toString(kind);
     if (ki > 0 && FLAGS_listen_between_kinds_ms > 0) {
       std::this_thread::sleep_for(
           std::chrono::milliseconds(FLAGS_listen_between_kinds_ms));
@@ -554,14 +554,14 @@ bool IntegrationHarness::runPlaybackTest(
     logError("Playback: no playback client");
     return false;
   }
-  evrp::device::api::OperationResult up;
+  evrp::device::api::StatusCode up;
   if (!playback->upload(events, &up)) {
     logError("Playback: Upload failed code={} msg={}", up.code, up.message);
     return false;
   }
   logInfo("Playback: Upload ok ({} events)", events.size());
 
-  evrp::device::api::OperationResult play;
+  evrp::device::api::StatusCode play;
   const bool ok = playback->playback(&play, nullptr);
   if (!ok) {
     logError(

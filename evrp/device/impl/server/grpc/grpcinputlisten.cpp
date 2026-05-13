@@ -95,7 +95,7 @@ grpc::Status GrpcInputListenService::StartRecording(
         "could not clear previous recording session; retry StopRecording");
   }
   std::vector<api::DeviceKind> kinds;
-  api::fromProto(request->kinds(), &kinds);
+  evrp::sdk::fromProto(request->kinds(), &kinds);
   if (!listener_->startListening(kinds)) {
     return grpc::Status(
         grpc::StatusCode::FAILED_PRECONDITION,
@@ -194,7 +194,7 @@ grpc::Status GrpcInputListenService::ReadInputEvents(
   }
   std::vector<api::InputEvent> batch = listener_->readInputEvents();
   for (const api::InputEvent& e : batch) {
-    api::toProto(e, response->add_events());
+    evrp::sdk::toProto(e, response->add_events());
   }
   return grpc::Status::OK;
 }

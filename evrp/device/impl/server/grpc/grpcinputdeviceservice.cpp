@@ -69,7 +69,7 @@ grpc::Status GrpcInputDeviceService::GetCapabilities(
                         "device kinds provider not configured");
   }
   for (api::DeviceKind k : deviceKindsProvider_->kinds()) {
-    response->add_supported_kinds(api::toProto(k));
+    response->add_supported_kinds(evrp::sdk::toProto(k));
   }
   return grpc::Status::OK;
 }

@@ -46,7 +46,7 @@ std::string LocalInputListener::listenDevicesSummary() const {
     if (!list.empty()) {
       list += ", ";
     }
-    list += api::toString(d.kind);
+    list += evrp::sdk::toString(d.kind);
     list += "=";
     list += d.path;
   }
@@ -89,7 +89,7 @@ bool LocalInputListener::startListening(
     if (k == api::DeviceKind::kUnspecified) {
       continue;
     }
-    const std::string kindLabel = api::toString(k);
+    const std::string kindLabel = evrp::sdk::toString(k);
     const std::vector<std::string> paths = findAllDevicePaths(k);
     if (paths.empty()) {
       logWarn(

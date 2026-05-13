@@ -169,7 +169,7 @@ static std::vector<evrp::device::api::DeviceKind> kindsFromKindFlag() {
     if (left < right) {
       const std::string token = raw.substr(left, right - left);
       evrp::device::api::DeviceKind k{};
-      evrp::device::api::toKind(token, &k);
+      evrp::sdk::toKind(token, &k);
       if (k != evrp::device::api::DeviceKind::kUnspecified) {
         kinds.push_back(k);
       }

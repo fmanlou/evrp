@@ -77,12 +77,12 @@ bool PlaybackEventCollector::uploadAndPlay(api::IPlayback* playback) {
   if (events_.empty()) {
     return true;
   }
-  api::OperationResult up;
+  api::StatusCode up;
   if (!playback->upload(events_, &up) || up.code != 0) {
     logError("Playback buffer: upload failed (code={}): {}", up.code, up.message);
     return false;
   }
-  api::OperationResult play;
+  api::StatusCode play;
   if (!playback->playback(&play) || play.code != 0) {
     logError("Playback buffer: playback failed (code={}): {}", play.code,
              play.message);

@@ -20,9 +20,9 @@ class PostedPlayback final : public api::IPlayback,
   PostedPlayback& operator=(const PostedPlayback&) = delete;
 
   bool upload(const std::vector<api::InputEvent>& events,
-              api::OperationResult* resultOut) override;
+              api::StatusCode* resultOut) override;
 
-  bool playback(api::OperationResult* resultOut,
+  bool playback(api::StatusCode* resultOut,
                 evrp::CountingSemaphore* progressNotify) override;
 
   int playbackIndex() const override;

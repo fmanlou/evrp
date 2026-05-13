@@ -1,6 +1,6 @@
 #include "evrp/sdk/tofromstring.h"
 
-namespace evrp::device::api {
+namespace evrp::sdk {
 
 DeviceKind toKind(const std::string& label) {
   if (label == "keyboard") return DeviceKind::kKeyboard;
@@ -33,4 +33,4 @@ std::string toString(DeviceKind kind) {
   }
 }
 
-}  // namespace evrp::device::api
+}  // namespace evrp::sdk

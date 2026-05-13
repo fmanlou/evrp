@@ -163,7 +163,7 @@ std::string formatEventLine(evrp::device::api::DeviceKind device,
     delta_sec -= 1;
     deltaUsec += 1000000LL;
   }
-  oss << "[" << evrp::device::api::toString(device) << "] " << delta_sec
+  oss << "[" << evrp::sdk::toString(device) << "] " << delta_sec
       << ".";
   oss.width(6);
   oss.fill('0');

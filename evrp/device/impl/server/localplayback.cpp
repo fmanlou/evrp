@@ -10,7 +10,7 @@
 namespace evrp::device::server {
 
 bool LocalPlayback::upload(const std::vector<api::InputEvent>& events,
-                           api::OperationResult* resultOut) {
+                           api::StatusCode* resultOut) {
   std::lock_guard<std::mutex> lock(mu_);
   cached_ = events;
   playing_ = false;
@@ -28,7 +28,7 @@ bool LocalPlayback::isPlayback() const {
 }
 
 bool LocalPlayback::playback(
-    api::OperationResult* resultOut,
+    api::StatusCode* resultOut,
     evrp::CountingSemaphore* progressNotify) {
   std::vector<api::InputEvent> batch;
   {

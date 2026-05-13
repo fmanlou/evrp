@@ -17,11 +17,11 @@ RemotePlayback::RemotePlayback(std::shared_ptr<grpc::Channel> channel,
 RemotePlayback::~RemotePlayback() = default;
 
 bool RemotePlayback::upload(const std::vector<api::InputEvent>& events,
-                            api::OperationResult* resultOut) {
+                            api::StatusCode* resultOut) {
   std::lock_guard<std::mutex> lock(callMu_);
 
   v1::UploadRecordingRequest req;
-  api::toProto(events, req.mutable_events());
+  evrp::sdk::toProto(events, req.mutable_events());
 
   grpc::ClientContext ctx;
   evrp::session::addSessionMetadata(&ctx, deviceSessionId_);
@@ -47,7 +47,7 @@ bool RemotePlayback::isPlayback() const {
   return playing_;
 }
 
-bool RemotePlayback::playback(api::OperationResult* resultOut,
+bool RemotePlayback::playback(api::StatusCode* resultOut,
                               evrp::CountingSemaphore* progressNotify) {
   std::lock_guard<std::mutex> lock(callMu_);
 

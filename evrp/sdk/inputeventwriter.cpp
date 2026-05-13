@@ -35,7 +35,7 @@ int InputEventWriter::getFd(api::DeviceKind device) {
   const std::vector<std::string> paths = findAllDevicePaths(device);
   if (paths.empty()) {
     logWarn("No {} device found, skipping events.",
-            api::toString(device));
+            evrp::sdk::toString(device));
     kindToFd_[device] = -1;
     return -1;
   }
@@ -43,7 +43,7 @@ int InputEventWriter::getFd(api::DeviceKind device) {
     int fd = fs_->openFd(devPath, O_RDWR, 0);
     if (fd >= 0) {
       kindToFd_[device] = fd;
-      logInfo("Playing back {} to {}", api::toString(device), devPath);
+      logInfo("Playing back {} to {}", evrp::sdk::toString(device), devPath);
       return fd;
     }
     std::perror(devPath.c_str());
@@ -52,7 +52,7 @@ int InputEventWriter::getFd(api::DeviceKind device) {
       "Failed to open any of {} {} device path(s) for write (try: sudo or "
       "input group)",
       paths.size(),
-      api::toString(device));
+      evrp::sdk::toString(device));
   kindToFd_[device] = -1;
   return -1;
 }

@@ -23,7 +23,7 @@ bool RemoteInputListener::startListening(
   }
 
   v1::StartRecordingRequest req;
-  api::toProto(kinds, req.mutable_kinds());
+  evrp::sdk::toProto(kinds, req.mutable_kinds());
   if (req.kinds_size() == 0) {
     return false;
   }
@@ -58,7 +58,7 @@ std::vector<api::InputEvent> RemoteInputListener::readInputEvents() {
     return {};
   }
 
-  return api::fromProto(resp.events());
+  return evrp::sdk::fromProto(resp.events());
 }
 
 bool RemoteInputListener::waitForInputEvent(int timeoutMs) {

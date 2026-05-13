@@ -29,14 +29,14 @@ grpc::Status GrpcPlaybackService::Upload(
     return grpc::Status(grpc::StatusCode::FAILED_PRECONDITION,
                         "playback not configured");
   }
-  api::OperationResult result;
-  std::vector<api::InputEvent> events = api::fromProto(request->events());
+  api::StatusCode result;
+  std::vector<api::InputEvent> events = evrp::sdk::fromProto(request->events());
   if (!playback_->upload(events, &result)) {
     return grpc::Status(
         grpc::StatusCode::INTERNAL,
         result.message.empty() ? "upload failed" : result.message);
   }
-  api::toProto(result, response);
+  evrp::sdk::toProto(result, response);
   return grpc::Status::OK;
 }
 
@@ -54,7 +54,7 @@ grpc::Status GrpcPlaybackService::Playback(
     playbackProgressFinished_ = false;
   }
 
-  api::OperationResult result;
+  api::StatusCode result;
   const bool ok = playback_->playback(&result, &playbackProgressSem_);
 
   markPlaybackStreamFinished();
@@ -65,7 +65,7 @@ grpc::Status GrpcPlaybackService::Playback(
         grpc::StatusCode::FAILED_PRECONDITION,
         result.message.empty() ? "playback failed" : result.message);
   }
-  api::toProto(result, response);
+  evrp::sdk::toProto(result, response);
   return grpc::Status::OK;
 }
 
