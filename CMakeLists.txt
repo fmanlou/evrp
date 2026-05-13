@@ -238,7 +238,7 @@ target_link_libraries(
   evrp_device PUBLIC evrp_sdk protobuf::libprotobuf gRPC::grpc++ asio::asio
   PRIVATE gflags::gflags)
 
-add_library(evrp_argparser STATIC evrp-client/argparser.cpp)
+add_library(evrp_argparser STATIC evrp-server/argparser.cpp)
 target_include_directories(evrp_argparser PUBLIC "${EVRP_ROOT}")
 target_link_libraries(evrp_argparser PUBLIC evrp_device evrp_sdk gflags::gflags)
 
@@ -252,7 +252,7 @@ target_include_directories(evrp_client PUBLIC "${EVRP_ROOT}" ${EVRP_CLIENT_DIR}
 target_link_libraries(
   evrp_client PUBLIC evrp_device evrp_sdk gflags::gflags evrp_argparser)
 
-add_subdirectory(evrp-client)
+add_subdirectory(evrp-server)
 
 add_executable(evrp_tests tests/inputdevice_test.cpp tests/argparser_test.cpp
                                   tests/listenaddress_test.cpp
