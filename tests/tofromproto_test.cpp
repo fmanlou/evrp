@@ -1,4 +1,4 @@
-#include "evrp/device/api/types.h"
+#include "evrp/sdk/types.h"
 #include "evrp/sdk/logger.h"
 #include "evrp/sdk/setting/memorysetting.h"
 #include "evrp/sdk/tofromproto.h"

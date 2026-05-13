@@ -1,33 +1,8 @@
-#pragma once
-
-#include <cstdint>
-#include <string>
+#include "evrp/sdk/tofromstring.h"
 
 namespace evrp::device::api {
 
-enum class DeviceKind {
-  kUnspecified = 0,
-  kTouchpad = 1,
-  kTouchscreen = 2,
-  kMouse = 3,
-  kKeyboard = 4,
-};
-
-struct InputEvent {
-  DeviceKind device = DeviceKind::kUnspecified;
-  int64_t timeSec = 0;
-  int64_t timeUsec = 0;
-  uint32_t type = 0;
-  uint32_t code = 0;
-  int32_t value = 0;
-};
-
-struct OperationResult {
-  int32_t code = 0;
-  std::string message;
-};
-
-inline DeviceKind toKind(const std::string& label) {
+DeviceKind toKind(const std::string& label) {
   if (label == "keyboard") return DeviceKind::kKeyboard;
   if (label == "mouse") return DeviceKind::kMouse;
   if (label == "touchpad") return DeviceKind::kTouchpad;
@@ -35,14 +10,14 @@ inline DeviceKind toKind(const std::string& label) {
   return DeviceKind::kUnspecified;
 }
 
-inline void toKind(const std::string& label, DeviceKind* outKind) {
+void toKind(const std::string& label, DeviceKind* outKind) {
   if (!outKind) {
     return;
   }
   *outKind = toKind(label);
 }
 
-inline std::string toString(DeviceKind kind) {
+std::string toString(DeviceKind kind) {
   switch (kind) {
     case DeviceKind::kKeyboard:
       return "keyboard";
@@ -58,4 +33,4 @@ inline std::string toString(DeviceKind kind) {
   }
 }
 
-}
+}  // namespace evrp::device::api

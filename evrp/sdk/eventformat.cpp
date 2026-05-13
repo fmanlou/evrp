@@ -7,6 +7,8 @@
 
 #include "evrp/sdk/keyboard/keyboarddevice.h"
 
+#include "evrp/sdk/tofromstring.h"
+
 std::string parseEventLabel(const std::string &line) {
   std::size_t lb = line.find('[');
   if (lb == std::string::npos) return "";

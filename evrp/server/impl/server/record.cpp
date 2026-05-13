@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "evrp/device/api/inputlistener.h"
-#include "evrp/device/api/types.h"
+#include "evrp/sdk/types.h"
 #include "evrp/sdk/eventformat.h"
 #include "evrp/sdk/filesystem/enhancedfilesystem.h"
 #include "evrp/sdk/scopeguard.h"

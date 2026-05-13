@@ -4,7 +4,7 @@
 #include <linux/input.h>
 
 #include "evrp/sdk/cursor/cursorpos.h"
-#include "evrp/device/api/types.h"
+#include "evrp/sdk/types.h"
 #include "evrp/sdk/iraweventwriter.h"
 
 MouseEventWriter::MouseEventWriter(IRawEventWriter *writer,

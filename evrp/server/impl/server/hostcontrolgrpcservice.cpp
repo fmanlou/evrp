@@ -4,7 +4,7 @@
 #include <utility>
 #include <vector>
 
-#include "evrp/device/api/types.h"
+#include "evrp/sdk/tofromstring.h"
 #include "evrp/sdk/setting/memorysetting.h"
 #include "evrp/sdk/tofromproto.h"
 #include "evrp/v1/server/hostcontrol.grpc.pb.h"

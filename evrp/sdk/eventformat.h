@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "evrp/device/api/types.h"
+#include "evrp/sdk/types.h"
 #include "evrp/sdk/evdev.h"
 
 std::string parseEventLabel(const std::string &line);

@@ -23,6 +23,7 @@
 #include "evrp/device/internal/discovery/devicediscovery.h"
 #include "evrp/device/internal/discovery/devicediscoverysettings.h"
 #include "evrp/device/api/devicekindsprovider.h"
+#include "evrp/sdk/tofromstring.h"
 #include "evrp/device/impl/client/remotedevicekindsprovider.h"
 #include "evrp/sdk/logger.h"
 #include "evrp/sdk/setting/memorysetting.h"

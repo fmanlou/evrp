@@ -3,7 +3,7 @@
 #include <chrono>
 #include <vector>
 
-#include "evrp/device/api/types.h"
+#include "evrp/sdk/types.h"
 #include "evrp/sdk/iraweventwriter.h"
 
 namespace evrp::device::api {

@@ -4,7 +4,7 @@
 
 #include <string>
 
-#include "evrp/device/api/types.h"
+#include "evrp/sdk/tofromstring.h"
 #include "evrp/sdk/evdev.h"
 #include "evrp/sdk/inputdevice.h"
 #include "evrp/sdk/logger.h"

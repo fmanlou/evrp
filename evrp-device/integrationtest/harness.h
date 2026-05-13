@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "evrp/device/api/client.h"
-#include "evrp/device/api/types.h"
+#include "evrp/sdk/types.h"
 
 struct IntegrationEnv {
   std::string target;

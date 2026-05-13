@@ -9,6 +9,7 @@
 #include <cstdio>
 
 #include "evrp/sdk/eventformat.h"
+#include "evrp/sdk/tofromstring.h"
 #include "evrp/sdk/filesystem/enhancedfilesystem.h"
 #include "evrp/sdk/inputdevice.h"
 #include "evrp/sdk/keyboard/keyboardeventwriter.h"

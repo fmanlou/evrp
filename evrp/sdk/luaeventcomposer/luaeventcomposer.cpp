@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <sstream>
 
+#include "evrp/sdk/tofromstring.h"
 #include "evrp/sdk/eventformat.h"
 #include "evrp/sdk/luaeventcomposer/luabindings.h"
 #include "evrp/sdk/playbackeventcollector.h"

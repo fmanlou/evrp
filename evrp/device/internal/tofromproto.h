@@ -5,7 +5,7 @@
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/repeated_ptr_field.h>
 
-#include "evrp/device/api/types.h"
+#include "evrp/sdk/types.h"
 #include "evrp/v1/device/types/common.pb.h"
 #include "evrp/v1/device/types/playback.pb.h"
 

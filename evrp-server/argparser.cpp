@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "evrp/device/api/types.h"
+#include "evrp/sdk/tofromstring.h"
 #include "evrp/sdk/logger.h"
 #include "evrp/device/internal/discovery/devicediscoverysettings.h"
 

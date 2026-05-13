@@ -7,7 +7,7 @@
 #include <typeinfo>
 #include <vector>
 
-#include "evrp/device/api/types.h"
+#include "evrp/sdk/tofromstring.h"
 #include "evrp/sdk/logger.h"
 
 #include <google/protobuf/struct.pb.h>

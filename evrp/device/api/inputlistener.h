@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "evrp/device/api/types.h"
+#include "evrp/sdk/types.h"
 
 namespace evrp::device::api {
 

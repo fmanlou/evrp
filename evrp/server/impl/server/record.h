@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "evrp/device/api/types.h"
+#include "evrp/sdk/types.h"
 #include "evrp/sdk/ioc.h"
 #include "evrp/sdk/keyboard/keyboarddevice.h"
 #include "evrp/sdk/logger.h"

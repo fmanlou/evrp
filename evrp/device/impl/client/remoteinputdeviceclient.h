@@ -6,7 +6,7 @@
 
 #include <grpcpp/grpcpp.h>
 
-#include "evrp/device/api/types.h"
+#include "evrp/sdk/types.h"
 #include "evrp/v1/device/service/service.grpc.pb.h"
 
 namespace evrp::device::client {

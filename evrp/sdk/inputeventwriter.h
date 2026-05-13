@@ -2,7 +2,7 @@
 
 #include <map>
 
-#include "evrp/device/api/types.h"
+#include "evrp/sdk/types.h"
 #include "evrp/sdk/iraweventwriter.h"
 #include "evrp/sdk/keyboard/keyboardeventwriter.h"
 #include "evrp/sdk/mouse/mouseeventwriter.h"

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "evrp/device/api/types.h"
+#include "evrp/sdk/types.h"
 
 class IRawEventWriter {
  public:

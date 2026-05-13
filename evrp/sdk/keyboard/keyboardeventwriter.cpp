@@ -3,7 +3,7 @@
 #include <linux/input-event-codes.h>
 #include <linux/input.h>
 
-#include "evrp/device/api/types.h"
+#include "evrp/sdk/types.h"
 #include "evrp/sdk/iraweventwriter.h"
 
 KeyboardEventWriter::KeyboardEventWriter(IRawEventWriter *writer)

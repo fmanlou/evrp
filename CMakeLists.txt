@@ -95,6 +95,7 @@ add_library(
   evrp/sdk/listenaddress.cpp
   evrp/sdk/setting/memorysetting.cpp
   evrp/sdk/setting/overlaysetting.cpp
+  evrp/sdk/tofromstring.cpp
   evrp/sdk/tofromproto.cpp
   evrp/sdk/evdev.cpp
   evrp/sdk/filesystem/impl/enhancedfilesystem.cpp
