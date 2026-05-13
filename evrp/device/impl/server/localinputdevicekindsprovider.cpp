@@ -44,7 +44,7 @@ std::string formatKindList(const std::vector<api::DeviceKind>& kinds) {
     if (i > 0) {
       s += ", ";
     }
-    s += api::deviceKindLabel(kinds[i]);
+    s += api::toString(kinds[i]);
   }
   return s;
 }

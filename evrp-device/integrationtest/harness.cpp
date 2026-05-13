@@ -446,7 +446,7 @@ bool IntegrationHarness::runInputListenTest(
 
   for (size_t ki = 0; ki < kinds.size(); ++ki) {
     const evrp::device::api::DeviceKind kind = kinds[ki];
-    const std::string kindLabel = evrp::device::api::deviceKindLabel(kind);
+    const std::string kindLabel = evrp::device::api::toString(kind);
     if (ki > 0 && FLAGS_listen_between_kinds_ms > 0) {
       std::this_thread::sleep_for(
           std::chrono::milliseconds(FLAGS_listen_between_kinds_ms));

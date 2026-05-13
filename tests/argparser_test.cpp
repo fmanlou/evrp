@@ -28,21 +28,21 @@ TEST(ArgParser, UseUdpDeviceDiscoveryWhenDeviceUnset) {
 }
 
 TEST(ArgParser, ParseKindAcceptsKnownKinds) {
-  EXPECT_EQ(toKind("touchpad"), api::DeviceKind::kTouchpad);
-  EXPECT_EQ(toKind("touchscreen"), api::DeviceKind::kTouchscreen);
-  EXPECT_EQ(toKind("mouse"), api::DeviceKind::kMouse);
-  EXPECT_EQ(toKind("keyboard"), api::DeviceKind::kKeyboard);
+  EXPECT_EQ(api::toKind("touchpad"), api::DeviceKind::kTouchpad);
+  EXPECT_EQ(api::toKind("touchscreen"), api::DeviceKind::kTouchscreen);
+  EXPECT_EQ(api::toKind("mouse"), api::DeviceKind::kMouse);
+  EXPECT_EQ(api::toKind("keyboard"), api::DeviceKind::kKeyboard);
 
   api::DeviceKind k = api::DeviceKind::kUnspecified;
-  toKind("mouse", &k);
+  api::toKind("mouse", &k);
   EXPECT_EQ(k, api::DeviceKind::kMouse);
 }
 
 TEST(ArgParser, ParseKindRejectsUnknownKind) {
-  EXPECT_EQ(toKind("joystick"), api::DeviceKind::kUnspecified);
+  EXPECT_EQ(api::toKind("joystick"), api::DeviceKind::kUnspecified);
 
   api::DeviceKind k = api::DeviceKind::kKeyboard;
-  toKind("joystick", &k);
+  api::toKind("joystick", &k);
   EXPECT_EQ(k, api::DeviceKind::kUnspecified);
 }
 

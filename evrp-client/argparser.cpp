@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "evrp/device/api/types.h"
 #include "evrp/sdk/logger.h"
 #include "evrp/device/internal/discovery/devicediscoverysettings.h"
 
@@ -137,17 +138,6 @@ void printUsage(const char* prog) {
       << "  --help: show gflags help.\n";
 }
 
-evrp::device::api::DeviceKind toKind(const std::string& s) {
-  return evrp::device::api::deviceKindFromLabel(s);
-}
-
-void toKind(const std::string& s, evrp::device::api::DeviceKind* outKind) {
-  if (!outKind) {
-    return;
-  }
-  *outKind = evrp::device::api::deviceKindFromLabel(s);
-}
-
 static std::vector<evrp::device::api::DeviceKind> kindsFromKindFlag() {
   std::vector<evrp::device::api::DeviceKind> kinds;
   const std::string& raw = FLAGS_kind;
@@ -179,7 +169,7 @@ static std::vector<evrp::device::api::DeviceKind> kindsFromKindFlag() {
     if (left < right) {
       const std::string token = raw.substr(left, right - left);
       evrp::device::api::DeviceKind k{};
-      toKind(token, &k);
+      evrp::device::api::toKind(token, &k);
       if (k != evrp::device::api::DeviceKind::kUnspecified) {
         kinds.push_back(k);
       }

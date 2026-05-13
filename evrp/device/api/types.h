@@ -27,7 +27,7 @@ struct OperationResult {
   std::string message;
 };
 
-inline DeviceKind deviceKindFromLabel(const std::string& label) {
+inline DeviceKind toKind(const std::string& label) {
   if (label == "keyboard") return DeviceKind::kKeyboard;
   if (label == "mouse") return DeviceKind::kMouse;
   if (label == "touchpad") return DeviceKind::kTouchpad;
@@ -35,7 +35,14 @@ inline DeviceKind deviceKindFromLabel(const std::string& label) {
   return DeviceKind::kUnspecified;
 }
 
-inline std::string deviceKindLabel(DeviceKind kind) {
+inline void toKind(const std::string& label, DeviceKind* outKind) {
+  if (!outKind) {
+    return;
+  }
+  *outKind = toKind(label);
+}
+
+inline std::string toString(DeviceKind kind) {
   switch (kind) {
     case DeviceKind::kKeyboard:
       return "keyboard";

@@ -56,7 +56,7 @@ bool textLooksLikeRecordingFormat(const std::string& text) {
     if (label == "trailing" && parseTrailingLine(line, &tmp)) {
       return true;
     }
-    api::DeviceKind dev = api::deviceKindFromLabel(label);
+    api::DeviceKind dev = api::toKind(label);
     if (dev != api::DeviceKind::kUnspecified &&
         parseEventLine(line, &dus, &t, &c, &v)) {
       return true;
@@ -158,7 +158,7 @@ int LuaEventComposer::toEvents(const std::string& text,
       continue;
     }
 
-    api::DeviceKind device = api::deviceKindFromLabel(label);
+    api::DeviceKind device = api::toKind(label);
     long long deltaUs = 0;
     unsigned short type = 0, code = 0;
     int value = 0;
