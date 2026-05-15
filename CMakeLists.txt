@@ -273,6 +273,7 @@ add_library(
   evrp_server STATIC
   ${EVRP_SERVER_PROTO_SOURCES}
   evrp/server/impl/server/localevrp.cpp
+  evrp/server/impl/server/posted/postedevrp.cpp
   evrp/server/impl/server/record.cpp
   evrp/server/impl/server/playback.cpp
   evrp/server/impl/server/grpc/grpcevrpservice.cpp

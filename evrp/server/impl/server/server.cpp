@@ -16,10 +16,22 @@ namespace evrp::server {
 Server::Server(const ISetting& settings)
     : listenAddress_(settings.get<std::string>(
           evrp::sdk::kDeviceServerListenAddress, {})),
+      ioContext_(),
+      workGuard_(asio::make_work_guard(ioContext_.get_executor())),
       localEvrp_(),
-      evrpService_(std::make_unique<GrpcEvrpService>(&localEvrp_)) {}
+      postedEvrp_(localEvrp_, ioContext_),
+      worker_([this]() { ioContext_.run(); }),
+      evrpService_(std::make_unique<GrpcEvrpService>(&postedEvrp_)) {}
 
-Server::~Server() = default;
+Server::~Server() {
+  evrpService_.reset();
+  postedEvrp_.shutdown();
+  workGuard_.reset();
+  ioContext_.stop();
+  if (worker_.joinable()) {
+    worker_.join();
+  }
+}
 
 int Server::run() {
   if (listenAddress_.empty()) {
