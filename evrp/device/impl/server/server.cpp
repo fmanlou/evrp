@@ -19,7 +19,7 @@ Server::Server(const ISetting& deviceSettings) {
   postedCursor_ = std::make_unique<evrp::device::server::PostedCursorPosition>(
       *cursorPosition_, ioContext_);
   deviceKindsProvider_ =
-      std::make_unique<evrp::device::server::LocalInputDeviceKindsProvider>();
+      std::make_unique<evrp::device::server::LocalDeviceKindsProvider>();
   postedDeviceKinds_ =
       std::make_unique<evrp::device::server::PostedInputDeviceKindsProvider>(
           *deviceKindsProvider_, ioContext_);

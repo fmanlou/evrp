@@ -6,10 +6,9 @@
 
 namespace evrp::device::server {
 
-class LocalInputDeviceKindsProvider final
-    : public api::IDeviceKindsProvider {
+class LocalDeviceKindsProvider final : public api::IDeviceKindsProvider {
  public:
-  LocalInputDeviceKindsProvider() = default;
+  LocalDeviceKindsProvider() = default;
 
   std::vector<evrp::sdk::DeviceKind> kinds() override;
 };

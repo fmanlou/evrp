@@ -9,7 +9,7 @@
 #include "evrp/device/api/server.h"
 #include "evrp/device/impl/server/grpcserver.h"
 #include "evrp/device/impl/server/localcursorposition.h"
-#include "evrp/device/impl/server/localinputdevicekindsprovider.h"
+#include "evrp/device/impl/server/localdevicekindsprovider.h"
 #include "evrp/device/impl/server/localinputlistener.h"
 #include "evrp/device/impl/server/localplayback.h"
 #include "evrp/device/impl/server/posted/postedcursorposition.h"
@@ -42,7 +42,7 @@ class Server final : public IServer {
   std::unique_ptr<evrp::device::server::PostedInputListener> inputListener_;
   std::unique_ptr<evrp::device::server::LocalCursorPosition> cursorPosition_;
   std::unique_ptr<evrp::device::server::PostedCursorPosition> postedCursor_;
-  std::unique_ptr<evrp::device::server::LocalInputDeviceKindsProvider>
+  std::unique_ptr<evrp::device::server::LocalDeviceKindsProvider>
       deviceKindsProvider_;
   std::unique_ptr<evrp::device::server::PostedInputDeviceKindsProvider>
       postedDeviceKinds_;

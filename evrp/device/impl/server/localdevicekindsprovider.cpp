@@ -1,4 +1,4 @@
-#include "evrp/device/impl/server/localinputdevicekindsprovider.h"
+#include "evrp/device/impl/server/localdevicekindsprovider.h"
 
 #include <sys/stat.h>
 
@@ -49,9 +49,9 @@ std::string formatKindList(const std::vector<evrp::sdk::DeviceKind>& kinds) {
   return s;
 }
 
-}  
+}
 
-std::vector<evrp::sdk::DeviceKind> LocalInputDeviceKindsProvider::kinds() {
+std::vector<evrp::sdk::DeviceKind> LocalDeviceKindsProvider::kinds() {
   static const evrp::sdk::DeviceKind k_order[] = {
       evrp::sdk::DeviceKind::kTouchpad,
       evrp::sdk::DeviceKind::kTouchscreen,
