@@ -10,15 +10,15 @@
 #include <grpcpp/grpcpp.h>
 #include <grpcpp/health_check_service_interface.h>
 
-#include "evrp/sdk/sessionregistry.h"
 #include "evrp/device/internal/discovery/devicediscoverysettings.h"
 #include "evrp/device/internal/discovery/discoveryresponder.h"
-#include "evrp/device/impl/server/grpc/grpcsessionservice.h"
 #include "evrp/device/impl/server/grpc/grpcinputdeviceservice.h"
 #include "evrp/device/impl/server/grpc/grpcinputlisten.h"
 #include "evrp/device/impl/server/grpc/grpcplaybackservice.h"
+#include "evrp/device/impl/server/grpc/grpcsessionservice.h"
 #include "evrp/sdk/listenaddress.h"
 #include "evrp/sdk/logger.h"
+#include "evrp/sdk/sessionregistry.h"
 #include "evrp/sdk/setting/isetting.h"
 #include "evrp/sdk/setting/memorysetting.h"
 #include "evrp/sdk/setting/overlaysetting.h"
@@ -29,34 +29,38 @@ namespace evrp::device::api {
 
 namespace {
 
-class ServerImpl final : public IServer {
+class GrpcServer final {
  public:
-  ServerImpl(std::string listen_address,
+  GrpcServer(std::string listenAddress,
              const evrp::Ioc& ioc,
-             const ISetting& device_settings)
-      : listen_address_(std::move(listen_address)),
+             const ISetting& deviceSettings)
+      : listenAddress_(std::move(listenAddress)),
         ioc_(ioc),
-        device_settings_(device_settings),
+        deviceSettings_(deviceSettings),
         discoveryTop_(),
-        discoveryOverlay_(&discoveryTop_, {&device_settings_}),
+        discoveryOverlay_(&discoveryTop_, {&deviceSettings_}),
         discoveryResponder_(
             evrp::device::server::createDiscoveryResponder(discoveryOverlay_)) {}
 
-  int run() override {
-    std::uint16_t grpc_port = 0;
-    if (evrp::sdk::parseListenPort(listen_address_, &grpc_port)) {
+  int run() {
+    std::uint16_t grpcPort = 0;
+    if (evrp::sdk::parseListenPort(listenAddress_, &grpcPort)) {
       discoveryTop_.insert(evrp::sdk::kDeviceDiscoverySettingGrpcListenPort,
-                          static_cast<int>(grpc_port));
+                           static_cast<int>(grpcPort));
       discoveryResponder_->start();
     } else {
-      logError("evrp-device: could not parse gRPC listen port from {}", listen_address_);
+      logError("evrp-device: could not parse gRPC listen port from {}",
+               listenAddress_);
     }
 
     evrp::session::SessionRegistry sessionRegistry(FLAGS_session_lease_ms);
-    server::GrpcSessionService session_service(sessionRegistry);
-    server::GrpcInputListenService listen_service(ioc_, sessionRegistry);
-    server::GrpcInputDeviceService device_service(ioc_, sessionRegistry);
-    server::GrpcPlaybackService playback_service(ioc_, sessionRegistry);
+    evrp::device::server::GrpcSessionService sessionService(sessionRegistry);
+    evrp::device::server::GrpcInputListenService listenService(ioc_,
+                                                               sessionRegistry);
+    evrp::device::server::GrpcInputDeviceService deviceService(ioc_,
+                                                               sessionRegistry);
+    evrp::device::server::GrpcPlaybackService playbackService(ioc_,
+                                                              sessionRegistry);
 
     std::thread([&sessionRegistry]() {
       for (;;) {
@@ -68,34 +72,47 @@ class ServerImpl final : public IServer {
     grpc::EnableDefaultHealthCheckService(true);
 
     grpc::ServerBuilder builder;
-    builder.AddListeningPort(listen_address_, grpc::InsecureServerCredentials());
+    builder.AddListeningPort(listenAddress_, grpc::InsecureServerCredentials());
     builder.AddChannelArgument(GRPC_ARG_KEEPALIVE_TIME_MS, 30000);
     builder.AddChannelArgument(GRPC_ARG_KEEPALIVE_TIMEOUT_MS, 10000);
     builder.AddChannelArgument(GRPC_ARG_KEEPALIVE_PERMIT_WITHOUT_CALLS, 1);
     builder.AddChannelArgument(
         GRPC_ARG_HTTP2_MIN_RECV_PING_INTERVAL_WITHOUT_DATA_MS, 10000);
-    builder.RegisterService(&session_service);
-    builder.RegisterService(&listen_service);
-    builder.RegisterService(&device_service);
-    builder.RegisterService(&playback_service);
-    std::unique_ptr<grpc::Server> server(builder.BuildAndStart());
-    if (!server) {
-      logError("evrp-device: failed to listen on {}", listen_address_);
+    builder.RegisterService(&sessionService);
+    builder.RegisterService(&listenService);
+    builder.RegisterService(&deviceService);
+    builder.RegisterService(&playbackService);
+    std::unique_ptr<grpc::Server> grpcServer(builder.BuildAndStart());
+    if (!grpcServer) {
+      logError("evrp-device: failed to listen on {}", listenAddress_);
       return 1;
     }
 
-    logInfo("evrp-device listening on {}", listen_address_);
-    server->Wait();
+    logInfo("evrp-device listening on {}", listenAddress_);
+    grpcServer->Wait();
     return 0;
   }
 
  private:
-  std::string listen_address_;
+  std::string listenAddress_;
   const evrp::Ioc& ioc_;
-  const ISetting& device_settings_;
+  const ISetting& deviceSettings_;
   MemorySetting discoveryTop_;
   OverlaySetting discoveryOverlay_;
   std::unique_ptr<evrp::device::server::IDiscoveryResponder> discoveryResponder_;
+};
+
+class Server final : public IServer {
+ public:
+  Server(std::string listenAddress,
+         const evrp::Ioc& ioc,
+         const ISetting& deviceSettings)
+      : grpcServer_(std::move(listenAddress), ioc, deviceSettings) {}
+
+  int run() override { return grpcServer_.run(); }
+
+ private:
+  GrpcServer grpcServer_;
 };
 
 }  // namespace
@@ -103,7 +120,7 @@ class ServerImpl final : public IServer {
 std::unique_ptr<IServer> makeServer(const std::string& listen_address,
                                     const evrp::Ioc& ioc,
                                     const ISetting& device_settings) {
-  return std::make_unique<ServerImpl>(listen_address, ioc, device_settings);
+  return std::make_unique<Server>(listen_address, ioc, device_settings);
 }
 
 }  // namespace evrp::device::api

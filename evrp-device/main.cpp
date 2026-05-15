@@ -19,21 +19,21 @@ DECLARE_int32(discovery_port);
 DECLARE_string(discovery_link_mode);
 
 int main(int argc, char** argv) {
-  logging::LogService logSvc("evrp-device");
-  logService = &logSvc;
+  logging::LogService deviceLogService("evrp-device");
+  logService = &deviceLogService;
 
   gflags::SetUsageMessage("evrp-device");
   gflags::ParseCommandLineFlags(&argc, &argv, true);
   logService->setLevel(logLevelFromString(FLAGS_log_level));
 
-  MemorySetting device_settings;
-  device_settings.insert(evrp::sdk::kDeviceDiscoverySettingPort,
-                         FLAGS_discovery_port);
-  device_settings.insert(evrp::sdk::kDeviceDiscoverySettingLinkMode,
-                         FLAGS_discovery_link_mode);
+  MemorySetting deviceSettings;
+  deviceSettings.insert(evrp::sdk::kDeviceDiscoverySettingPort,
+                        FLAGS_discovery_port);
+  deviceSettings.insert(evrp::sdk::kDeviceDiscoverySettingLinkMode,
+                        FLAGS_discovery_link_mode);
 
-  evrp::device::server::DeviceRuntime device;
+  evrp::device::server::DeviceRuntime deviceRuntime;
   evrp::Ioc ioc;
-  device.registerWith(ioc);
-  return evrp::device::api::makeServer(FLAGS_listen, ioc, device_settings)->run();
+  deviceRuntime.registerWith(ioc);
+  return evrp::device::api::makeServer(FLAGS_listen, ioc, deviceSettings)->run();
 }
