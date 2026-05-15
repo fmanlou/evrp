@@ -16,7 +16,8 @@ namespace evrp::server {
 Server::Server(const ISetting& settings)
     : listenAddress_(settings.get<std::string>(
           evrp::sdk::kDeviceServerListenAddress, {})),
-      evrpService_(std::make_unique<GrpcEvrpService>()) {}
+      localEvrp_(),
+      evrpService_(std::make_unique<GrpcEvrpService>(&localEvrp_)) {}
 
 Server::~Server() = default;
 

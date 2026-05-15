@@ -10,11 +10,9 @@
 
 #include "evrp/sdk/setting/memorysetting.h"
 #include "evrp/sdk/tofromproto.h"
-#include "evrp/server/impl/server/localevrp.h"
+#include "evrp/server/api/evrp.h"
 
 namespace {
-
-evrp::server::LocalEvrp kLocalEvrp;
 
 using evrp::sdk::DeviceKind;
 
@@ -28,6 +26,8 @@ void mergeIntoMemorySetting(MemorySetting& settings,
 }  // namespace
 
 namespace evrp::server {
+
+GrpcEvrpService::GrpcEvrpService(Evrp* evrp) : evrp_(evrp) {}
 
 grpc::Status GrpcEvrpService::Record(
     grpc::ServerContext*,
@@ -49,7 +49,7 @@ grpc::Status GrpcEvrpService::Record(
   }
   settings->insert("kinds", std::move(kinds));
 
-  const int code = kLocalEvrp.record(settings);
+  const int code = evrp_->record(settings);
   response->set_code(code);
   if (code != 0) {
     response->set_message("record failed");
@@ -78,7 +78,7 @@ grpc::Status GrpcEvrpService::Replay(
                         "playbackPath is required");
   }
 
-  const int code = kLocalEvrp.replay(settings);
+  const int code = evrp_->replay(settings);
   response->set_code(code);
   if (code != 0) {
     response->set_message("replay failed");

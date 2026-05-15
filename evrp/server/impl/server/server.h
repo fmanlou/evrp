@@ -4,6 +4,7 @@
 #include <string>
 
 #include "evrp/server/api/server.h"
+#include "evrp/server/impl/server/localevrp.h"
 #include "evrp/v1/server/service/evrp.grpc.pb.h"
 
 class ISetting;
@@ -22,6 +23,7 @@ class Server final : public IServer {
 
  private:
   std::string listenAddress_;
+  LocalEvrp localEvrp_;
   std::unique_ptr<evrp::v1::server::EvrpService::Service> evrpService_;
 };
 
