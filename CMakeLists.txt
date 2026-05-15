@@ -245,6 +245,7 @@ add_library(
   evrp/device/impl/server/localplayback.cpp
   evrp/device/impl/server/localcursorposition.cpp
   evrp/device/impl/server/localinputdevicekindsprovider.cpp
+  evrp/device/impl/server/grpcserver.cpp
   evrp/device/impl/server/server.cpp
   evrp/device/internal/discovery/impl/discoveryresponder.cpp
   evrp/device/impl/server/grpc/grpcsessionservice.cpp
