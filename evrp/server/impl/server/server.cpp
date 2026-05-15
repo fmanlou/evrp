@@ -9,12 +9,16 @@
 #include "evrp/device/internal/discovery/devicediscoverysettings.h"
 #include "evrp/sdk/logger.h"
 #include "evrp/sdk/setting/isetting.h"
+#include "evrp/server/impl/server/grpc/grpcevrpservice.h"
 
 namespace evrp::server {
 
 Server::Server(const ISetting& settings)
     : listenAddress_(settings.get<std::string>(
-          evrp::sdk::kDeviceServerListenAddress, {})) {}
+          evrp::sdk::kDeviceServerListenAddress, {})),
+      evrpService_(std::make_unique<GrpcEvrpService>()) {}
+
+Server::~Server() = default;
 
 int Server::run() {
   if (listenAddress_.empty()) {
@@ -32,7 +36,7 @@ int Server::run() {
   builder.AddChannelArgument(GRPC_ARG_KEEPALIVE_PERMIT_WITHOUT_CALLS, 1);
   builder.AddChannelArgument(
       GRPC_ARG_HTTP2_MIN_RECV_PING_INTERVAL_WITHOUT_DATA_MS, 10000);
-  builder.RegisterService(evrpGrpc_.grpc_service());
+  builder.RegisterService(evrpService_.get());
   std::unique_ptr<grpc::Server> grpcServer(builder.BuildAndStart());
   if (!grpcServer) {
     logError("evrp-server: failed to listen on {}", listenAddress_);

@@ -275,7 +275,6 @@ add_library(
   evrp/server/impl/server/localevrp.cpp
   evrp/server/impl/server/record.cpp
   evrp/server/impl/server/playback.cpp
-  evrp/server/impl/server/grpcevrpservices.cpp
   evrp/server/impl/server/grpc/grpcevrpservice.cpp
   evrp/server/impl/server/server.cpp
   evrp/server/impl/client/client.cpp
