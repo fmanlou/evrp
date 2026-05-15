@@ -7,5 +7,6 @@ inline constexpr char kDeviceDiscoverySettingPort[] = "discovery_port";
 inline constexpr char kDeviceDiscoverySettingLinkMode[] = "discovery_link_mode";
 inline constexpr char kDeviceDiscoverySettingGrpcListenPort[] =
     "discovery_grpc_listen_port";
+inline constexpr char kDeviceServerListenAddress[] = "listen";
 
 }

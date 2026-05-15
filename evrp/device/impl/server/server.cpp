@@ -33,10 +33,9 @@ namespace {
 
 class GrpcServer {
  public:
-  GrpcServer(std::string listenAddress,
-             const evrp::Ioc& ioc,
-             const ISetting& deviceSettings)
-      : listenAddress_(std::move(listenAddress)),
+  GrpcServer(const evrp::Ioc& ioc, const ISetting& deviceSettings)
+      : listenAddress_(deviceSettings.get<std::string>(
+            evrp::sdk::kDeviceServerListenAddress, {})),
         ioc_(ioc),
         deviceSettings_(deviceSettings),
         discoveryTop_(),
@@ -106,10 +105,10 @@ class GrpcServer {
 
 class Server final : public IServer {
  public:
-  explicit Server(std::string listenAddress, const ISetting& deviceSettings)
+  explicit Server(const ISetting& deviceSettings)
       : ioc_(),
         deviceRuntime_(),
-        grpcServer_(std::move(listenAddress), ioc_, deviceSettings) {
+        grpcServer_(ioc_, deviceSettings) {
     deviceRuntime_.registerWith(ioc_);
   }
 
@@ -123,9 +122,8 @@ class Server final : public IServer {
 
 }  // namespace
 
-std::unique_ptr<IServer> makeServer(const std::string& listen_address,
-                                    const ISetting& device_settings) {
-  return std::make_unique<Server>(listen_address, device_settings);
+std::unique_ptr<IServer> makeServer(const ISetting& device_settings) {
+  return std::make_unique<Server>(device_settings);
 }
 
 }  // namespace evrp::device::api

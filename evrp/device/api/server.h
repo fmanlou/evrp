@@ -1,7 +1,6 @@
 #pragma once
 
 #include <memory>
-#include <string>
 
 class ISetting;
 
@@ -13,7 +12,6 @@ class IServer {
   virtual int run() = 0;
 };
 
-std::unique_ptr<IServer> makeServer(const std::string& listen_address,
-                                    const ISetting& device_settings);
+std::unique_ptr<IServer> makeServer(const ISetting& device_settings);
 
 }

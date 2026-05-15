@@ -24,11 +24,13 @@ int main(int argc, char** argv) {
   gflags::ParseCommandLineFlags(&argc, &argv, true);
   logService->setLevel(logLevelFromString(FLAGS_log_level));
 
-  MemorySetting deviceSettings;
-  deviceSettings.insert(evrp::sdk::kDeviceDiscoverySettingPort,
-                        FLAGS_discovery_port);
-  deviceSettings.insert(evrp::sdk::kDeviceDiscoverySettingLinkMode,
-                        FLAGS_discovery_link_mode);
+  MemorySetting settings;
+  settings.insert(evrp::sdk::kDeviceDiscoverySettingPort,
+                   FLAGS_discovery_port);
+  settings.insert(evrp::sdk::kDeviceDiscoverySettingLinkMode,
+                   FLAGS_discovery_link_mode);
+  settings.insert(evrp::sdk::kDeviceServerListenAddress,
+                   std::string(FLAGS_listen));
 
-  return evrp::device::api::makeServer(FLAGS_listen, deviceSettings)->run();
+  return evrp::device::api::makeServer(settings)->run();
 }
