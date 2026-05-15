@@ -43,6 +43,14 @@ DEFINE_string(
     "evrp-device gRPC host:port. If empty, use UDP discovery (--discovery_port, "
     "--discovery_link_mode). Same-machine targets are tried first.");
 DEFINE_string(
+    host, "",
+    "evrp-server EvrpService address HOST:PORT (evrp-client only). Required "
+    "when using evrp-client for remote Record/Replay.");
+DEFINE_string(
+    listen, "",
+    "evrp-server: EvrpService gRPC listen address HOST:PORT (required; e.g. "
+    "0.0.0.0:50052).");
+DEFINE_string(
     keyboard_ctrl_c_filter, "ending",
     "Recording keyboard: off (no filter), full (drop whole Ctrl+C chord), "
     "ending (drop KEY_C release and Ctrl release after Ctrl+C press). Default: "
@@ -59,6 +67,8 @@ void resetArgFlags() {
   FLAGS_wait_leading = true;
   FLAGS_wait_trailing = true;
   FLAGS_device = "";
+  FLAGS_host = "";
+  FLAGS_listen = "";
   FLAGS_keyboard_ctrl_c_filter = "ending";
 }
 
@@ -105,34 +115,33 @@ void normalizeLegacyArgs(std::vector<std::string>* args) {
 }  // namespace
 
 void printUsage(const char* prog) {
+  (void)prog;
   std::cout
-      << "Usage: " << prog
-      << " --record|-r [--output=FILE|-o FILE|-r OUTPUT] "
-         "[--kind=TYPES] [--log_level=LEVEL|--log-level=LEVEL] ...\n"
-      << "       " << prog
-      << " --playback=FILE|-p FILE [--log_level=LEVEL|--log-level=LEVEL]\n"
-      << "  --record / -r: start recording. The token after -r (if present and "
-         "not another flag) is the output file (--output equivalence). Device "
-         "kinds "
-         "are set only via --kind=... .\n"
+      << "evrp-server (RPC host): evrp-server --listen=HOST:PORT "
+         "[--log_level=LEVEL]\n"
+      << "evrp-client (record/playback): evrp-client --host=HOST:PORT "
+         "--record|-r ... | --playback=FILE ...\n"
+      << "  --listen=HOST:PORT: required on evrp-server; EvrpService gRPC bind "
+         "address.\n"
+      << "  --record / -r: recording (evrp-client). The token after -r (if "
+         "present and not another flag) is the output path (--output "
+         "equivalence). Device kinds via --kind=... .\n"
       << "  --kind=comma,separated,...: recording device kinds "
          "(touchpad|touchscreen|mouse|keyboard). "
          "Omit to record all four.\n"
-      << "  --playback=FILE / -p FILE: playback events or run Lua script "
-         "(.lua). "
-         "Non-event lines in event files are executed as Lua.\n"
-      << "  --output=FILE / -o FILE: write recording to FILE (default: "
-         "stdout).\n"
+      << "  --playback=FILE / -p FILE: playback (evrp-client); events or Lua "
+         "(.lua).\n"
+      << "  --output=FILE / -o FILE: write recording to FILE (default: stdout).\n"
       << "  --log_level=LEVEL / --log-level=LEVEL: error|warn|info|debug|trace "
          "(default: info).\n"
       << "  --wait_leading / --nowait_leading (or --wait-leading=yes|no): "
-         "during "
-         "playback, execute [leading] wait (default: wait).\n"
+         "playback leading wait (default: wait).\n"
       << "  --wait_trailing / --nowait_trailing (or --wait-trailing=yes|no): "
-         "during "
-         "playback, execute [trailing] wait (default: wait).\n"
+         "playback trailing wait (default: wait).\n"
       << "  --device=HOST:PORT: evrp-device gRPC; omit for UDP discovery "
          "(--discovery_port / --discovery_link_mode).\n"
+      << "  --host=HOST:PORT: evrp-server Record/Replay address (required for "
+         "evrp-client).\n"
       << "  --keyboard_ctrl_c_filter=off|full|ending: recording keyboard Ctrl+C "
          "filter (default: ending).\n"
       << "  --help: show gflags help.\n";
@@ -238,4 +247,8 @@ void parseArgvInto(ISetting& options, int argc, char* argv[]) {
   options.insert(evrp::sdk::kDeviceDiscoverySettingPort, FLAGS_discovery_port);
   options.insert(evrp::sdk::kDeviceDiscoverySettingLinkMode,
                  FLAGS_discovery_link_mode);
+  if (!FLAGS_listen.empty()) {
+    options.insert(evrp::sdk::kDeviceServerListenAddress,
+                   std::string(FLAGS_listen));
+  }
 }

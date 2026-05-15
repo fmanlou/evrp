@@ -7,6 +7,10 @@
 #include "evrp/sdk/setting/isetting.h"
 #include "evrp/sdk/setting/memorysetting.h"
 
+namespace evrp::server {
+class Evrp;
+}
+
 struct RunnerSetting {
   explicit RunnerSetting(const ISetting& settings);
 
@@ -19,11 +23,12 @@ struct RunnerSetting {
 
 class Runner {
  public:
-  explicit Runner(std::shared_ptr<MemorySetting> settings);
+  Runner(std::shared_ptr<MemorySetting> settings, evrp::server::Evrp* evrp);
 
   int run();
 
  private:
   std::shared_ptr<MemorySetting> settings_;
   RunnerSetting runnerSetting_;
+  evrp::server::Evrp* evrp_;
 };

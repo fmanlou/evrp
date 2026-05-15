@@ -286,6 +286,7 @@ target_link_libraries(
   evrp_server PUBLIC evrp_device evrp_sdk gflags::gflags evrp_argparser)
 
 add_subdirectory(evrp-server)
+add_subdirectory(evrp-client)
 
 add_executable(evrp_tests tests/inputdevice_test.cpp tests/argparser_test.cpp
                                   tests/listenaddress_test.cpp

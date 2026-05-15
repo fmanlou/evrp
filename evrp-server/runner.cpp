@@ -4,7 +4,6 @@
 
 #include "evrp-server/argparser.h"
 #include "evrp/server/api/evrp.h"
-#include "evrp/server/impl/server/localevrp.h"
 #include "evrp/sdk/logger.h"
 #include "evrp/sdk/setting/memorysetting.h"
 
@@ -16,8 +15,10 @@ RunnerSetting::RunnerSetting(const ISetting& settings) {
   logLevel = settings.get("logLevel", logging::LogLevel::Info);
 }
 
-Runner::Runner(std::shared_ptr<MemorySetting> settings)
-    : settings_(std::move(settings)), runnerSetting_(*settings_) {}
+Runner::Runner(std::shared_ptr<MemorySetting> settings, evrp::server::Evrp* evrp)
+    : settings_(std::move(settings)),
+      runnerSetting_(*settings_),
+      evrp_(evrp) {}
 
 int Runner::run() {
   logService->setLevel(runnerSetting_.logLevel);
@@ -35,7 +36,10 @@ int Runner::run() {
     return 1;
   }
 
-  evrp::server::LocalEvrp evrp;
+  if (!evrp_) {
+    logError("Runner: Evrp backend is null.");
+    return 1;
+  }
 
   if (runnerSetting_.playback) {
     if (runnerSetting_.playbackPath.empty()) {
@@ -43,8 +47,8 @@ int Runner::run() {
       printUsage(runnerSetting_.program.c_str());
       return 1;
     }
-    return evrp.replay(settings_);
+    return evrp_->replay(settings_);
   }
 
-  return evrp.record(settings_);
+  return evrp_->record(settings_);
 }

@@ -1,0 +1,12 @@
+add_executable(evrp-client main.cpp "${CMAKE_SOURCE_DIR}/evrp-server/runner.cpp")
+target_include_directories(evrp-client PRIVATE "${CMAKE_SOURCE_DIR}")
+target_link_libraries(evrp-client PRIVATE evrp_server)
+if(UNIX AND NOT APPLE)
+  target_link_options(evrp-client PRIVATE "-Wl,--start-group")
+endif()
+target_link_libraries(evrp-client PRIVATE evrp_device evrp_sdk)
+if(UNIX AND NOT APPLE)
+  target_link_options(evrp-client PRIVATE "-Wl,--end-group")
+endif()
+set_target_properties(evrp-client PROPERTIES RUNTIME_OUTPUT_DIRECTORY
+                                             "${CMAKE_CURRENT_BINARY_DIR}")
