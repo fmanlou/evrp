@@ -241,7 +241,6 @@ add_library(
   evrp/device/impl/server/posted/postedcursorposition.cpp
   evrp/device/impl/server/posted/postedinputdevicekindsprovider.cpp
   evrp/device/impl/server/posted/postedplayback.cpp
-  evrp/device/impl/server/deviceruntime.cpp
   evrp/device/impl/server/localplayback.cpp
   evrp/device/impl/server/localcursorposition.cpp
   evrp/device/impl/server/localinputdevicekindsprovider.cpp
