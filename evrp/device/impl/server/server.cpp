@@ -12,7 +12,9 @@
 
 #include "evrp/device/internal/discovery/devicediscoverysettings.h"
 #include "evrp/device/internal/discovery/discoveryresponder.h"
+#include "evrp/device/impl/server/deviceruntime.h"
 #include "evrp/device/impl/server/grpc/grpcinputdeviceservice.h"
+#include "evrp/sdk/ioc.h"
 #include "evrp/device/impl/server/grpc/grpcinputlisten.h"
 #include "evrp/device/impl/server/grpc/grpcplaybackservice.h"
 #include "evrp/device/impl/server/grpc/grpcsessionservice.h"
@@ -29,7 +31,7 @@ namespace evrp::device::api {
 
 namespace {
 
-class GrpcServer final {
+class GrpcServer {
  public:
   GrpcServer(std::string listenAddress,
              const evrp::Ioc& ioc,
@@ -104,23 +106,26 @@ class GrpcServer final {
 
 class Server final : public IServer {
  public:
-  Server(std::string listenAddress,
-         const evrp::Ioc& ioc,
-         const ISetting& deviceSettings)
-      : grpcServer_(std::move(listenAddress), ioc, deviceSettings) {}
+  explicit Server(std::string listenAddress, const ISetting& deviceSettings)
+      : ioc_(),
+        deviceRuntime_(),
+        grpcServer_(std::move(listenAddress), ioc_, deviceSettings) {
+    deviceRuntime_.registerWith(ioc_);
+  }
 
   int run() override { return grpcServer_.run(); }
 
  private:
+  evrp::Ioc ioc_;
+  evrp::device::server::DeviceRuntime deviceRuntime_;
   GrpcServer grpcServer_;
 };
 
 }  // namespace
 
 std::unique_ptr<IServer> makeServer(const std::string& listen_address,
-                                    const evrp::Ioc& ioc,
                                     const ISetting& device_settings) {
-  return std::make_unique<Server>(listen_address, ioc, device_settings);
+  return std::make_unique<Server>(listen_address, device_settings);
 }
 
 }  // namespace evrp::device::api

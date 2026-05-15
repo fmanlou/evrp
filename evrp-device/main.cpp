@@ -3,9 +3,7 @@
 #include <string>
 
 #include "evrp/device/api/server.h"
-#include "evrp/device/impl/server/deviceruntime.h"
 #include "evrp/device/internal/discovery/devicediscoverysettings.h"
-#include "evrp/sdk/ioc.h"
 #include "evrp/sdk/logger.h"
 #include "evrp/sdk/setting/memorysetting.h"
 
@@ -32,8 +30,5 @@ int main(int argc, char** argv) {
   deviceSettings.insert(evrp::sdk::kDeviceDiscoverySettingLinkMode,
                         FLAGS_discovery_link_mode);
 
-  evrp::device::server::DeviceRuntime deviceRuntime;
-  evrp::Ioc ioc;
-  deviceRuntime.registerWith(ioc);
-  return evrp::device::api::makeServer(FLAGS_listen, ioc, deviceSettings)->run();
+  return evrp::device::api::makeServer(FLAGS_listen, deviceSettings)->run();
 }
