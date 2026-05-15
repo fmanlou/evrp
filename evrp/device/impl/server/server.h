@@ -40,14 +40,16 @@ class Server final : public IServer {
   asio::io_context ioContext_;
   std::optional<asio::executor_work_guard<asio::io_context::executor_type>>
       workGuard_;
-  evrp::device::server::LocalInputListener localListener_;
-  evrp::device::server::PostedInputListener inputListener_;
-  evrp::device::server::LocalCursorPosition cursorPosition_;
-  evrp::device::server::PostedCursorPosition postedCursor_;
-  evrp::device::server::LocalInputDeviceKindsProvider deviceKindsProvider_;
-  evrp::device::server::PostedInputDeviceKindsProvider postedDeviceKinds_;
-  evrp::device::server::LocalPlayback playback_;
-  evrp::device::server::PostedPlayback postedPlayback_;
+  std::unique_ptr<evrp::device::server::LocalInputListener> localListener_;
+  std::unique_ptr<evrp::device::server::PostedInputListener> inputListener_;
+  std::unique_ptr<evrp::device::server::LocalCursorPosition> cursorPosition_;
+  std::unique_ptr<evrp::device::server::PostedCursorPosition> postedCursor_;
+  std::unique_ptr<evrp::device::server::LocalInputDeviceKindsProvider>
+      deviceKindsProvider_;
+  std::unique_ptr<evrp::device::server::PostedInputDeviceKindsProvider>
+      postedDeviceKinds_;
+  std::unique_ptr<evrp::device::server::LocalPlayback> playback_;
+  std::unique_ptr<evrp::device::server::PostedPlayback> postedPlayback_;
   std::thread worker_;
 
   std::unique_ptr<evrp::device::server::GrpcServer> grpcServer_;

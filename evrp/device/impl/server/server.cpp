@@ -14,32 +14,38 @@ Server::Server(const ISetting& deviceSettings)
     : ioc_(),
       ioContext_(),
       workGuard_(asio::make_work_guard(ioContext_.get_executor())),
-      localListener_(),
-      inputListener_(localListener_, ioContext_),
-      cursorPosition_(),
-      postedCursor_(cursorPosition_, ioContext_),
-      deviceKindsProvider_(),
-      postedDeviceKinds_(deviceKindsProvider_, ioContext_),
-      playback_(),
-      postedPlayback_(playback_, ioContext_),
+      localListener_(std::make_unique<evrp::device::server::LocalInputListener>()),
+      inputListener_(std::make_unique<evrp::device::server::PostedInputListener>(
+          *localListener_, ioContext_)),
+      cursorPosition_(std::make_unique<evrp::device::server::LocalCursorPosition>()),
+      postedCursor_(std::make_unique<evrp::device::server::PostedCursorPosition>(
+          *cursorPosition_, ioContext_)),
+      deviceKindsProvider_(
+          std::make_unique<evrp::device::server::LocalInputDeviceKindsProvider>()),
+      postedDeviceKinds_(
+          std::make_unique<evrp::device::server::PostedInputDeviceKindsProvider>(
+              *deviceKindsProvider_, ioContext_)),
+      playback_(std::make_unique<evrp::device::server::LocalPlayback>()),
+      postedPlayback_(std::make_unique<evrp::device::server::PostedPlayback>(
+          *playback_, ioContext_)),
       worker_([this]() { ioContext_.run(); }),
       grpcServer_(std::make_unique<evrp::device::server::GrpcServer>(
           ioc_, deviceSettings)) {
   ioc_.emplace<IInputListener>(
-      static_cast<IInputListener*>(&inputListener_));
+      static_cast<IInputListener*>(inputListener_.get()));
   ioc_.emplace<ICursorPosition>(
-      static_cast<ICursorPosition*>(&postedCursor_));
+      static_cast<ICursorPosition*>(postedCursor_.get()));
   ioc_.emplace<IDeviceKindsProvider>(
-      static_cast<IDeviceKindsProvider*>(&postedDeviceKinds_));
-  ioc_.emplace<IPlayback>(static_cast<IPlayback*>(&postedPlayback_));
+      static_cast<IDeviceKindsProvider*>(postedDeviceKinds_.get()));
+  ioc_.emplace<IPlayback>(static_cast<IPlayback*>(postedPlayback_.get()));
 }
 
 Server::~Server() {
   grpcServer_.reset();
-  inputListener_.shutdown();
-  postedCursor_.shutdown();
-  postedDeviceKinds_.shutdown();
-  postedPlayback_.shutdown();
+  inputListener_->shutdown();
+  postedCursor_->shutdown();
+  postedDeviceKinds_->shutdown();
+  postedPlayback_->shutdown();
   workGuard_.reset();
   ioContext_.stop();
   if (worker_.joinable()) {
