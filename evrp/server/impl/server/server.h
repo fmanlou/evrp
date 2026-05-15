@@ -1,26 +1,24 @@
 #pragma once
 
-#include <memory>
+#include <string>
 
-#include "evrp/v1/server/service/evrp.grpc.pb.h"
+#include "evrp/server/api/server.h"
+#include "evrp/server/impl/server/grpcevrpservices.h"
+
+class ISetting;
 
 namespace evrp::server {
 
-class Server {
+class Server final : public IServer {
  public:
-  Server();
-  ~Server();
+  explicit Server(const ISetting& settings);
+  ~Server() = default;
 
-  Server(Server&&) noexcept;
-  Server& operator=(Server&&) noexcept;
-
-  Server(const Server&) = delete;
-  Server& operator=(const Server&) = delete;
-
-  grpc::Service* grpc_service();
+  int run() override;
 
  private:
-  std::unique_ptr<evrp::v1::server::EvrpService::Service> service_;
+  std::string listenAddress_;
+  GrpcEvrpServices evrpGrpc_;
 };
 
 }  // namespace evrp::server
