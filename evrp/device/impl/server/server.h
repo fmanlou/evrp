@@ -22,8 +22,6 @@ class ISetting;
 
 namespace evrp::device::api {
 
-namespace detail {
-
 class Server final : public IServer {
  public:
   explicit Server(const ISetting& deviceSettings);
@@ -54,7 +52,5 @@ class Server final : public IServer {
 
   std::unique_ptr<evrp::device::server::GrpcServer> grpcServer_;
 };
-
-}  // namespace detail
 
 }  // namespace evrp::device::api
