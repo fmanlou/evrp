@@ -1,7 +1,7 @@
 add_executable(evrp-device main.cpp)
 target_link_libraries(evrp-device PRIVATE evrp_device gRPC::grpc++ gflags::gflags)
 set_target_properties(evrp-device PROPERTIES RUNTIME_OUTPUT_DIRECTORY
-                                            "${CMAKE_BINARY_DIR}")
+                                            "${CMAKE_BINARY_DIR}/bin")
 
 add_executable(
   evrp_device_integration_test
@@ -18,7 +18,7 @@ target_link_libraries(evrp_device_integration_test PRIVATE evrp_device gflags::g
 add_dependencies(evrp_device_integration_test evrp-device)
 
 set_target_properties(evrp_device_integration_test
-                      PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
+                      PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
 gtest_discover_tests(
   evrp_device_integration_test

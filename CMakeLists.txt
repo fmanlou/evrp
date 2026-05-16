@@ -293,6 +293,8 @@ add_executable(evrp_tests tests/inputdevice_test.cpp tests/argparser_test.cpp
                                   tests/overlaysetting_test.cpp
                                   tests/tofromproto_test.cpp)
 target_link_libraries(evrp_tests PRIVATE evrp_server evrp_sdk GTest::gtest_main)
+set_target_properties(evrp_tests PROPERTIES RUNTIME_OUTPUT_DIRECTORY
+                                            "${CMAKE_BINARY_DIR}/bin")
 include(GoogleTest)
 gtest_discover_tests(evrp_tests)
 

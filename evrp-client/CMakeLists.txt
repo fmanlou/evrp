@@ -9,4 +9,4 @@ if(UNIX AND NOT APPLE)
   target_link_options(evrp-client PRIVATE "-Wl,--end-group")
 endif()
 set_target_properties(evrp-client PROPERTIES RUNTIME_OUTPUT_DIRECTORY
-                                             "${CMAKE_CURRENT_BINARY_DIR}")
+                                             "${CMAKE_BINARY_DIR}/bin")
