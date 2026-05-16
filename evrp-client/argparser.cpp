@@ -45,7 +45,8 @@ DEFINE_string(
     "--discovery_link_mode). Same-machine targets are tried first.");
 DEFINE_string(
     host, "",
-    "evrp-server EvrpService address HOST:PORT. Required for evrp-client.");
+    "evrp-server EvrpService address HOST:PORT or unix:/PATH. If empty, "
+    "defaults to unix:/tmp/evrp.server.sock.");
 DEFINE_string(
     keyboard_ctrl_c_filter, "ending",
     "Recording keyboard: off (no filter), full (drop whole Ctrl+C chord), "
@@ -156,7 +157,7 @@ std::vector<evrp::sdk::DeviceKind> kindsFromKindFlag() {
 void printUsage(const char* prog) {
   (void)prog;
   std::cout
-      << "evrp-client (record/replay via RPC): evrp-client --host=HOST:PORT "
+      << "evrp-client (record/replay via RPC): evrp-client [--host=ADDR] "
          "--record|-r ... | --playback=FILE ...\n"
       << "  --record / -r: recording. The token after -r (if present and not "
          "another flag) is the output path (--output equivalence). Device kinds "
@@ -174,7 +175,8 @@ void printUsage(const char* prog) {
          "playback trailing wait (default: wait).\n"
       << "  --device=HOST:PORT: evrp-device gRPC; omit for UDP discovery "
          "(--discovery_port / --discovery_link_mode).\n"
-      << "  --host=HOST:PORT: evrp-server EvrpService address (required).\n"
+      << "  --host=ADDR: evrp-server EvrpService (HOST:PORT or unix:/PATH; "
+         "default: unix:/tmp/evrp.server.sock).\n"
       << "  --keyboard_ctrl_c_filter=off|full|ending: recording keyboard Ctrl+C "
          "filter (default: ending).\n"
       << "Server bind options are only for evrp-server; see evrp-server "

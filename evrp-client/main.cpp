@@ -1,10 +1,17 @@
 #include <memory>
+#include <string>
 
 #include "evrp-client/argparser.h"
 #include "evrp-client/runner.h"
 #include "evrp/sdk/logger.h"
 #include "evrp/sdk/setting/memorysetting.h"
 #include "evrp/server/api/client.h"
+
+namespace {
+
+constexpr char kDefaultEvrpServerUnixSocketPath[] = "/tmp/evrp.server.sock";
+
+}  // namespace
 
 int main(int argc, char* argv[]) {
   logging::LogService logSvc("evrp-client");
@@ -13,12 +20,7 @@ int main(int argc, char* argv[]) {
   parseArgvInto(*storage, argc, argv);
 
   if (FLAGS_host.empty()) {
-    logService->setLevel(storage->get("logLevel", logging::LogLevel::Info));
-    logError(
-        "evrp-client: --host=HOST:PORT is required (address of evrp-server "
-        "EvrpService).");
-    printUsage(storage->get<std::string>("program", "evrp-client").c_str());
-    return 1;
+    FLAGS_host = std::string("unix:") + kDefaultEvrpServerUnixSocketPath;
   }
 
   std::unique_ptr<evrp::server::Client> client =
