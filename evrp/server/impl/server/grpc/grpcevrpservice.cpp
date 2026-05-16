@@ -11,6 +11,7 @@
 
 #include "evrp/sdk/setting/memorysetting.h"
 #include "evrp/sdk/tofromproto.h"
+#include "evrp/sdk/sessioncheck.h"
 #include "evrp/server/api/evrp.h"
 #include "evrp/server/impl/server/grpc/grpcsettingkey.h"
 
@@ -29,12 +30,22 @@ void mergeIntoMemorySetting(MemorySetting& settings,
 
 namespace evrp::server {
 
-GrpcEvrpService::GrpcEvrpService(Evrp* evrp) : evrp_(evrp) {}
+GrpcEvrpService::GrpcEvrpService(Evrp* evrp,
+                                  evrp::session::SessionRegistry& clientSessions)
+    : evrp_(evrp), clientSessions_(clientSessions) {}
+
+grpc::Status GrpcEvrpService::requireEvrpClientSession(
+    grpc::ServerContext* context) {
+  return evrp::session::requireBusinessSession(context, clientSessions_);
+}
 
 grpc::Status GrpcEvrpService::Record(
     grpc::ServerContext* context,
     const google::protobuf::Struct* request,
     evrp::v1::sdk::StatusCode* response) {
+  if (grpc::Status st = requireEvrpClientSession(context); !st.ok()) {
+    return st;
+  }
   auto settings = std::make_shared<MemorySetting>();
   std::map<std::string, std::any> protoFields;
   evrp::sdk::fromProto(protoFields, *request);
@@ -51,6 +62,10 @@ grpc::Status GrpcEvrpService::Record(
   }
   settings->insert("kinds", std::move(kinds));
 
+  if (context != nullptr) {
+    settings->insert(kUnaryRpcServerContextSettingKey, context);
+  }
+
   const int code = evrp_->record(settings);
   response->set_code(code);
   if (code != 0) {
@@ -63,6 +78,9 @@ grpc::Status GrpcEvrpService::Replay(
     grpc::ServerContext* context,
     const google::protobuf::Struct* request,
     evrp::v1::sdk::StatusCode* response) {
+  if (grpc::Status st = requireEvrpClientSession(context); !st.ok()) {
+    return st;
+  }
   auto settings = std::make_shared<MemorySetting>();
   std::map<std::string, std::any> protoFields;
   evrp::sdk::fromProto(protoFields, *request);
@@ -93,25 +111,34 @@ grpc::Status GrpcEvrpService::Replay(
 }
 
 grpc::Status GrpcEvrpService::IsRecording(
-    grpc::ServerContext*,
+    grpc::ServerContext* context,
     const google::protobuf::Empty*,
     evrp::v1::server::BoolPayload* response) {
+  if (grpc::Status st = requireEvrpClientSession(context); !st.ok()) {
+    return st;
+  }
   response->set_value(evrp_->isRecording());
   return grpc::Status::OK;
 }
 
 grpc::Status GrpcEvrpService::IsReplaying(
-    grpc::ServerContext*,
+    grpc::ServerContext* context,
     const google::protobuf::Empty*,
     evrp::v1::server::BoolPayload* response) {
+  if (grpc::Status st = requireEvrpClientSession(context); !st.ok()) {
+    return st;
+  }
   response->set_value(evrp_->isReplaying());
   return grpc::Status::OK;
 }
 
 grpc::Status GrpcEvrpService::StopRecording(
-    grpc::ServerContext*,
+    grpc::ServerContext* context,
     const google::protobuf::Empty*,
     evrp::v1::sdk::StatusCode* response) {
+  if (grpc::Status st = requireEvrpClientSession(context); !st.ok()) {
+    return st;
+  }
   const bool ok = evrp_->stopRecording();
   response->set_code(ok ? 0 : 1);
   if (!ok) {
@@ -121,9 +148,12 @@ grpc::Status GrpcEvrpService::StopRecording(
 }
 
 grpc::Status GrpcEvrpService::StopReplay(
-    grpc::ServerContext*,
+    grpc::ServerContext* context,
     const google::protobuf::Empty*,
     evrp::v1::sdk::StatusCode* response) {
+  if (grpc::Status st = requireEvrpClientSession(context); !st.ok()) {
+    return st;
+  }
   const bool ok = evrp_->stopReplay();
   response->set_code(ok ? 0 : 1);
   if (!ok) {

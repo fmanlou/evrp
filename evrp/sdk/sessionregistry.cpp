@@ -28,7 +28,9 @@ std::string randomSessionId() {
 
 }  // namespace
 
-SessionRegistry::SessionRegistry(int leaseTimeoutMs) {
+SessionRegistry::SessionRegistry(int leaseTimeoutMs,
+                                 std::string sessionLogRole)
+    : sessionLogRole_(std::move(sessionLogRole)) {
   int ms = leaseTimeoutMs > 0 ? leaseTimeoutMs : FLAGS_session_lease_ms;
   if (ms <= 0) {
     ms = 3000;
@@ -96,9 +98,8 @@ grpc::Status SessionRegistry::disconnect(std::string_view sessionId,
     return grpc::Status(grpc::StatusCode::PERMISSION_DENIED,
                         "session peer mismatch");
   }
-  logInfo("evrp: business session offline peer={} session={}",
-          it->second.peer,
-          sessionId);
+  logInfo("evrp: {} session offline peer={} session={}", sessionLogRole_,
+          it->second.peer, sessionId);
   sessions_.erase(it);
   return grpc::Status::OK;
 }
@@ -142,9 +143,8 @@ void SessionRegistry::sweepExpiredForLogging() {
   for (auto it = sessions_.begin(); it != sessions_.end();) {
     if (now - it->second.lastHeartbeat >
         std::chrono::milliseconds(leaseTimeoutMs_)) {
-      logWarn("evrp: business session timed out peer={} session={}",
-              it->second.peer,
-              it->first);
+      logWarn("evrp: {} session timed out peer={} session={}", sessionLogRole_,
+              it->second.peer, it->first);
       it = sessions_.erase(it);
     } else {
       ++it;

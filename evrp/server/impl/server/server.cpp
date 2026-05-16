@@ -9,6 +9,8 @@
 
 #include <memory>
 #include <string>
+#include <thread>
+#include <chrono>
 
 #include <unistd.h>
 
@@ -24,10 +26,13 @@ Server::Server(const ISetting& settings)
           evrp::sdk::kDeviceServerListenAddress, {})),
       ioContext_(),
       workGuard_(asio::make_work_guard(ioContext_.get_executor())),
+      clientSessionRegistry_(0, std::string("evrp-client")),
+      clientSessionService_(clientSessionRegistry_),
       localEvrp_(),
       postedEvrp_(localEvrp_, ioContext_),
       worker_([this]() { ioContext_.run(); }),
-      evrpService_(std::make_unique<GrpcEvrpService>(&postedEvrp_)) {}
+      evrpService_(std::make_unique<GrpcEvrpService>(&postedEvrp_,
+                                                      clientSessionRegistry_)) {}
 
 Server::~Server() {
   evrpService_.reset();
@@ -64,6 +69,15 @@ int Server::run() {
   builder.AddChannelArgument(GRPC_ARG_KEEPALIVE_PERMIT_WITHOUT_CALLS, 1);
   builder.AddChannelArgument(
       GRPC_ARG_HTTP2_MIN_RECV_PING_INTERVAL_WITHOUT_DATA_MS, 10000);
+
+  std::thread([&registry = clientSessionRegistry_]() {
+    for (;;) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(500));
+      registry.sweepExpiredForLogging();
+    }
+  }).detach();
+
+  builder.RegisterService(&clientSessionService_);
   builder.RegisterService(evrpService_.get());
   std::unique_ptr<grpc::Server> grpcServer(builder.BuildAndStart());
   if (!grpcServer) {

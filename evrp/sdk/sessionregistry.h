@@ -12,7 +12,8 @@ namespace evrp::session {
 
 class SessionRegistry {
  public:
-  explicit SessionRegistry(int leaseTimeoutMs);
+  explicit SessionRegistry(int leaseTimeoutMs,
+                           std::string sessionLogRole = "business");
 
   SessionRegistry(const SessionRegistry&) = delete;
   SessionRegistry& operator=(const SessionRegistry&) = delete;
@@ -34,6 +35,7 @@ class SessionRegistry {
   };
 
   int leaseTimeoutMs_;
+  std::string sessionLogRole_;
   std::mutex mutex_;
   std::unordered_map<std::string, Record> sessions_;
 };

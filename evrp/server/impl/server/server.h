@@ -9,6 +9,8 @@
 #include "evrp/server/api/server.h"
 #include "evrp/server/impl/server/localevrp.h"
 #include "evrp/server/impl/server/posted/postedevrp.h"
+#include "evrp/sdk/sessionregistry.h"
+#include "evrp/device/impl/server/grpc/grpcsessionservice.h"
 #include "evrp/v1/server/service/evrp.grpc.pb.h"
 
 class ISetting;
@@ -30,6 +32,8 @@ class Server final : public IServer {
   asio::io_context ioContext_;
   std::optional<asio::executor_work_guard<asio::io_context::executor_type>>
       workGuard_;
+  evrp::session::SessionRegistry clientSessionRegistry_;
+  evrp::device::server::GrpcSessionService clientSessionService_;
   LocalEvrp localEvrp_;
   PostedEvrp postedEvrp_;
   std::thread worker_;

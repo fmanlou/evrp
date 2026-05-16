@@ -6,6 +6,10 @@
 
 #include "evrp/v1/server/service/evrp.grpc.pb.h"
 
+namespace evrp::session {
+class SessionRegistry;
+}
+
 namespace evrp::server {
 
 class Evrp;
@@ -13,7 +17,7 @@ class Evrp;
 class GrpcEvrpService final
     : public evrp::v1::server::EvrpService::Service {
  public:
-  explicit GrpcEvrpService(Evrp* evrp);
+  GrpcEvrpService(Evrp* evrp, evrp::session::SessionRegistry& clientSessions);
 
   grpc::Status Record(grpc::ServerContext* context,
                       const google::protobuf::Struct* request,
@@ -40,7 +44,10 @@ class GrpcEvrpService final
                           evrp::v1::sdk::StatusCode* response) override;
 
  private:
+  grpc::Status requireEvrpClientSession(grpc::ServerContext* context);
+
   Evrp* evrp_;
+  evrp::session::SessionRegistry& clientSessions_;
 };
 
 }  // namespace evrp::server

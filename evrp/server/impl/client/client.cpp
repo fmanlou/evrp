@@ -56,11 +56,25 @@ ResolvedChannel resolveHostGrpcChannel() {
   return {std::move(ch), device};
 }
 
+std::unique_ptr<RemoteEvrp> connectRemoteEvrp(
+    std::shared_ptr<grpc::Channel> channel) {
+  evrp::sdk::SessionInfo info;
+  if (!evrp::sdk::sessionConnect(channel, &info) ||
+      info.sessionId.empty()) {
+    logError(
+        "evrp-server: SessionService.Connect failed (is evrp-server running "
+        "and compatible?)");
+    return nullptr;
+  }
+  return std::make_unique<RemoteEvrp>(
+      std::move(channel), std::move(info.sessionId), info.leaseTimeoutMs);
+}
+
 class ClientImpl final : public Client {
  public:
-  ClientImpl(std::shared_ptr<grpc::Channel> channel, std::string server_address)
+  ClientImpl(std::string server_address, std::unique_ptr<RemoteEvrp> evrp)
       : server_address_(std::move(server_address)),
-        evrp_(std::make_unique<RemoteEvrp>(std::move(channel))) {}
+        evrp_(std::move(evrp)) {}
 
   Evrp* evrp() const override { return evrp_.get(); }
 
@@ -83,7 +97,11 @@ std::unique_ptr<Evrp> makeEvrp(std::shared_ptr<grpc::Channel> channel) {
   if (!channel) {
     return nullptr;
   }
-  return std::make_unique<RemoteEvrp>(std::move(channel));
+  std::unique_ptr<RemoteEvrp> remote = connectRemoteEvrp(std::move(channel));
+  if (!remote) {
+    return nullptr;
+  }
+  return std::unique_ptr<Evrp>(remote.release());
 }
 
 std::unique_ptr<Evrp> createClient() {
@@ -91,7 +109,7 @@ std::unique_ptr<Evrp> createClient() {
   if (!r.channel) {
     return nullptr;
   }
-  return std::make_unique<RemoteEvrp>(std::move(r.channel));
+  return makeEvrp(std::move(r.channel));
 }
 
 std::unique_ptr<Client> makeClient() {
@@ -99,8 +117,12 @@ std::unique_ptr<Client> makeClient() {
   if (!r.channel) {
     return nullptr;
   }
-  return std::make_unique<ClientImpl>(std::move(r.channel),
-                                      std::move(r.server_address));
+  std::unique_ptr<RemoteEvrp> evrp = connectRemoteEvrp(std::move(r.channel));
+  if (!evrp) {
+    return nullptr;
+  }
+  return std::make_unique<ClientImpl>(std::move(r.server_address),
+                                        std::move(evrp));
 }
 
 std::unique_ptr<Client> makeClient(std::string evrp_service_address) {
@@ -112,7 +134,12 @@ std::unique_ptr<Client> makeClient(std::string evrp_service_address) {
   if (!ch) {
     return nullptr;
   }
-  return std::make_unique<ClientImpl>(std::move(ch), evrp_service_address);
+  std::unique_ptr<RemoteEvrp> evrp = connectRemoteEvrp(std::move(ch));
+  if (!evrp) {
+    return nullptr;
+  }
+  return std::make_unique<ClientImpl>(std::move(evrp_service_address),
+                                        std::move(evrp));
 }
 
 }  // namespace evrp::server
