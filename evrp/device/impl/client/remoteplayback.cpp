@@ -2,6 +2,8 @@
 
 #include <google/protobuf/empty.pb.h>
 
+#include <mutex>
+
 #include "evrp/sdk/tofromproto.h"
 #include "evrp/sdk/scopeguard.h"
 #include "evrp/sdk/sessionmetadata.h"
@@ -19,6 +21,13 @@ RemotePlayback::~RemotePlayback() = default;
 bool RemotePlayback::upload(const std::vector<evrp::sdk::InputEvent>& events,
                             evrp::sdk::StatusCode* resultOut) {
   std::lock_guard<std::mutex> lock(callMu_);
+  if (playing_) {
+    if (resultOut) {
+      resultOut->code = static_cast<int32_t>(grpc::StatusCode::FAILED_PRECONDITION);
+      resultOut->message = "upload while playback active";
+    }
+    return false;
+  }
 
   evrp::v1::device::UploadRecordingRequest req;
   evrp::sdk::toProto(events, req.mutable_events());
@@ -49,7 +58,7 @@ bool RemotePlayback::isPlayback() const {
 
 bool RemotePlayback::playback(evrp::sdk::StatusCode* resultOut,
                               evrp::CountingSemaphore* progressNotify) {
-  std::lock_guard<std::mutex> lock(callMu_);
+  std::unique_lock<std::mutex> lock(callMu_);
 
   playing_ = true;
   evrp::sdk::ScopeGuard clearPlaying{[this]() { playing_ = false; }};
@@ -82,7 +91,9 @@ bool RemotePlayback::playback(evrp::sdk::StatusCode* resultOut,
   evrp::session::addSessionMetadata(&playback_ctx, deviceSessionId_);
   evrp::v1::device::PlaybackRecordingRequest play_req;
   evrp::v1::sdk::StatusCode pb_result;
+  lock.unlock();
   grpc::Status st = stub_->Playback(&playback_ctx, play_req, &pb_result);
+  lock.lock();
 
   if (progress_thread.joinable()) {
     progress_thread.join();

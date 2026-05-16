@@ -15,11 +15,11 @@ class GrpcEvrpService final
  public:
   explicit GrpcEvrpService(Evrp* evrp);
 
-  grpc::Status Record(grpc::ServerContext*,
+  grpc::Status Record(grpc::ServerContext* context,
                       const google::protobuf::Struct* request,
                       evrp::v1::sdk::StatusCode* response) override;
 
-  grpc::Status Replay(grpc::ServerContext*,
+  grpc::Status Replay(grpc::ServerContext* context,
                       const google::protobuf::Struct* request,
                       evrp::v1::sdk::StatusCode* response) override;
 

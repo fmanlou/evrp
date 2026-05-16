@@ -129,7 +129,8 @@ int Record::run() {
            externalCancel_->load(std::memory_order_acquire);
   };
 
-  while (!sigint.stopRequested() && !externalStopRequested() && writeOk) {
+  while (!sigint.stopRequested() && !externalStopRequested() &&
+         !(cancelWhen_ && cancelWhen_()) && writeOk) {
     if (!listener_->waitForInputEvent(kWaitMs)) {
       continue;
     }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <atomic>
+#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
@@ -27,6 +28,10 @@ class Record {
 
   void setExternalCancelFlag(std::atomic<bool>* flag) { externalCancel_ = flag; }
 
+  void setCancelPredicate(std::function<bool()> fn) {
+    cancelWhen_ = std::move(fn);
+  }
+
   int run();
 
  private:
@@ -40,4 +45,5 @@ class Record {
       KeyboardCtrlCFilterMode::kEndingOnly};
   keyboard_filter_state keyboardFilterState_{};
   std::atomic<bool>* externalCancel_{nullptr};
+  std::function<bool()> cancelWhen_{};
 };

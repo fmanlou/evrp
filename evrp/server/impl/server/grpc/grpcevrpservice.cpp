@@ -12,6 +12,7 @@
 #include "evrp/sdk/setting/memorysetting.h"
 #include "evrp/sdk/tofromproto.h"
 #include "evrp/server/api/evrp.h"
+#include "evrp/server/impl/server/grpc/grpcsettingkey.h"
 
 namespace {
 
@@ -31,7 +32,7 @@ namespace evrp::server {
 GrpcEvrpService::GrpcEvrpService(Evrp* evrp) : evrp_(evrp) {}
 
 grpc::Status GrpcEvrpService::Record(
-    grpc::ServerContext*,
+    grpc::ServerContext* context,
     const google::protobuf::Struct* request,
     evrp::v1::sdk::StatusCode* response) {
   auto settings = std::make_shared<MemorySetting>();
@@ -59,7 +60,7 @@ grpc::Status GrpcEvrpService::Record(
 }
 
 grpc::Status GrpcEvrpService::Replay(
-    grpc::ServerContext*,
+    grpc::ServerContext* context,
     const google::protobuf::Struct* request,
     evrp::v1::sdk::StatusCode* response) {
   auto settings = std::make_shared<MemorySetting>();
@@ -77,6 +78,10 @@ grpc::Status GrpcEvrpService::Replay(
     response->set_message("playbackPath is required");
     return grpc::Status(grpc::StatusCode::INVALID_ARGUMENT,
                         "playbackPath is required");
+  }
+
+  if (context != nullptr) {
+    settings->insert(kUnaryRpcServerContextSettingKey, context);
   }
 
   const int code = evrp_->replay(settings);

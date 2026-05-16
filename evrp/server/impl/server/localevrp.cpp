@@ -1,9 +1,15 @@
 #include "evrp/server/impl/server/localevrp.h"
 
+#include <grpcpp/grpcpp.h>
+
+#include <atomic>
+#include <chrono>
 #include <memory>
 #include <optional>
 #include <string>
+#include <thread>
 
+#include "evrp/server/impl/server/grpc/grpcsettingkey.h"
 #include "evrp/server/impl/server/playback.h"
 #include "evrp/server/impl/server/record.h"
 #include "evrp/device/api/client.h"
@@ -71,6 +77,9 @@ int LocalEvrp::record(std::shared_ptr<ISetting> settings) {
     return 1;
   }
   ConnectedClient c = std::move(*connected);
+  grpc::ServerContext* rpcCtx =
+      c.settings->get<grpc::ServerContext*>(kUnaryRpcServerContextSettingKey,
+                                            nullptr);
   evrp::sdk::ScopeGuard endRecording([&]() {
     std::lock_guard<std::mutex> lock(sessionMutex_);
     activeListener_ = nullptr;
@@ -85,6 +94,10 @@ int LocalEvrp::record(std::shared_ptr<ISetting> settings) {
   }
   Record rec(std::move(c.settings), c.ioc);
   rec.setExternalCancelFlag(&stopRecordingRequested_);
+  if (rpcCtx != nullptr) {
+    rec.setCancelPredicate(
+        [rpcCtx]() { return rpcCtx->IsCancelled(); });
+  }
   return rec.run();
 }
 
@@ -104,6 +117,9 @@ int LocalEvrp::replay(std::shared_ptr<ISetting> settings) {
     return 1;
   }
   ConnectedClient c = std::move(*connected);
+  grpc::ServerContext* rpcCtx =
+      c.settings->get<grpc::ServerContext*>(kUnaryRpcServerContextSettingKey,
+                                            nullptr);
   evrp::sdk::ScopeGuard endReplay([&]() {
     std::lock_guard<std::mutex> lock(sessionMutex_);
     activePlayback_ = nullptr;
@@ -114,6 +130,27 @@ int LocalEvrp::replay(std::shared_ptr<ISetting> settings) {
     std::lock_guard<std::mutex> lock(sessionMutex_);
     activePlayback_ = c.ioc.get<evrp::device::api::IPlayback>();
   }
+
+  std::atomic<bool> rpcCancelWatchDone{false};
+  std::thread rpcCancelWatch;
+  if (rpcCtx != nullptr) {
+    rpcCancelWatch = std::thread([this, rpcCtx, &rpcCancelWatchDone]() {
+      while (!rpcCancelWatchDone.load(std::memory_order_acquire)) {
+        if (rpcCtx->IsCancelled()) {
+          stopReplay();
+          break;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+      }
+    });
+  }
+  evrp::sdk::ScopeGuard joinRpcCancelWatch([&]() {
+    rpcCancelWatchDone.store(true, std::memory_order_release);
+    if (rpcCancelWatch.joinable()) {
+      rpcCancelWatch.join();
+    }
+  });
+
   return Playback(std::move(c.settings), c.ioc).run();
 }
 
