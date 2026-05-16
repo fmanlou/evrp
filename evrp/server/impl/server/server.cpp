@@ -4,7 +4,13 @@
 #include <grpcpp/grpcpp.h>
 #include <grpcpp/health_check_service_interface.h>
 
+#include <cerrno>
+#include <cstring>
+
 #include <memory>
+#include <string>
+
+#include <unistd.h>
 
 #include "evrp/device/internal/discovery/devicediscoverysettings.h"
 #include "evrp/sdk/logger.h"
@@ -41,6 +47,15 @@ int Server::run() {
   }
 
   grpc::EnableDefaultHealthCheckService(true);
+
+  if (listenAddress_.starts_with("unix:")) {
+    const std::string sockPath = listenAddress_.substr(5);
+    if (!sockPath.empty()) {
+      if (unlink(sockPath.c_str()) != 0 && errno != ENOENT) {
+        logWarn("evrp-server: unlink {}: {}", sockPath, std::strerror(errno));
+      }
+    }
+  }
 
   grpc::ServerBuilder builder;
   builder.AddListeningPort(listenAddress_, grpc::InsecureServerCredentials());

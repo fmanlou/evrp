@@ -1,9 +1,17 @@
 #include <memory>
+#include <string>
 
 #include "evrp-server/argparser.h"
+#include "evrp/device/internal/discovery/devicediscoverysettings.h"
 #include "evrp/server/api/server.h"
 #include "evrp/sdk/logger.h"
 #include "evrp/sdk/setting/memorysetting.h"
+
+namespace {
+
+constexpr char kDefaultEvrpServerUnixSocketPath[] = "/tmp/evrp.server.sock";
+
+}  // namespace
 
 int main(int argc, char *argv[]) {
   logging::LogService logSvc("evrp-server");
@@ -12,19 +20,11 @@ int main(int argc, char *argv[]) {
   parseArgvInto(*storage, argc, argv);
   logService->setLevel(storage->get("logLevel", logging::LogLevel::Info));
 
-  const bool recording = storage->get<bool>("recording", false);
-  const bool playback = storage->get<bool>("playback", false);
   if (FLAGS_listen.empty()) {
-    logError("evrp-server: --listen=HOST:PORT is required.");
-    printUsage(storage->get<std::string>("program", "evrp-server").c_str());
-    return 1;
-  }
-  if (recording || playback) {
-    logError(
-        "evrp-server runs only the EvrpService RPC host; use evrp-client for "
-        "--record / --playback.");
-    printUsage(storage->get<std::string>("program", "evrp-server").c_str());
-    return 1;
+    const std::string unixListen =
+        std::string("unix:") + kDefaultEvrpServerUnixSocketPath;
+    storage->insert(evrp::sdk::kDeviceServerListenAddress, unixListen);
+    logInfo("evrp-server: --listen omitted; using default {}", unixListen);
   }
   return evrp::server::makeServer(*storage)->run();
 }

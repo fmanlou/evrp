@@ -48,8 +48,9 @@ DEFINE_string(
     "when using evrp-client for remote Record/Replay.");
 DEFINE_string(
     listen, "",
-    "evrp-server: EvrpService gRPC listen address HOST:PORT (required; e.g. "
-    "0.0.0.0:50052).");
+    "evrp-server: optional listen URI (e.g. 0.0.0.0:50052 or "
+    "unix:/tmp/evrp.server.sock). Empty: main inserts unix:/tmp/evrp.server.sock "
+    "(see evrp-server/main.cpp).");
 DEFINE_string(
     keyboard_ctrl_c_filter, "ending",
     "Recording keyboard: off (no filter), full (drop whole Ctrl+C chord), "
@@ -117,12 +118,12 @@ void normalizeLegacyArgs(std::vector<std::string>* args) {
 void printUsage(const char* prog) {
   (void)prog;
   std::cout
-      << "evrp-server (RPC host): evrp-server --listen=HOST:PORT "
+      << "evrp-server (RPC host): evrp-server [--listen=HOST:PORT] "
          "[--log_level=LEVEL]\n"
       << "evrp-client (record/playback): evrp-client --host=HOST:PORT "
          "--record|-r ... | --playback=FILE ...\n"
-      << "  --listen=HOST:PORT: required on evrp-server; EvrpService gRPC bind "
-         "address.\n"
+      << "  --listen=URI: optional bind (TCP host:port or unix:/path). If omitted, "
+         "defaults to unix:/tmp/evrp.server.sock.\n"
       << "  --record / -r: recording (evrp-client). The token after -r (if "
          "present and not another flag) is the output path (--output "
          "equivalence). Device kinds via --kind=... .\n"
