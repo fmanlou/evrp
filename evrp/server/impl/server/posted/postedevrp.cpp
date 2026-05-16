@@ -23,4 +23,20 @@ int PostedEvrp::replay(std::shared_ptr<ISetting> settings) {
       });
 }
 
+bool PostedEvrp::isRecording() const {
+  return inner_.isRecording();
+}
+
+bool PostedEvrp::isReplaying() const {
+  return inner_.isReplaying();
+}
+
+bool PostedEvrp::stopRecording() {
+  return inner_.stopRecording();
+}
+
+bool PostedEvrp::stopReplay() {
+  return inner_.stopReplay();
+}
+
 }  // namespace evrp::server

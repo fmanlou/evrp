@@ -7,10 +7,13 @@
 #include "evrp/server/impl/server/playback.h"
 #include "evrp/server/impl/server/record.h"
 #include "evrp/device/api/client.h"
+#include "evrp/device/api/inputlistener.h"
+#include "evrp/device/api/playback.h"
 #include "evrp/sdk/filesystem/enhancedfilesystem.h"
 #include "evrp/sdk/filesystem/filesystem.h"
 #include "evrp/sdk/ioc.h"
 #include "evrp/sdk/logger.h"
+#include "evrp/sdk/scopeguard.h"
 #include "evrp/sdk/setting/isetting.h"
 
 namespace {
@@ -68,7 +71,21 @@ int LocalEvrp::record(std::shared_ptr<ISetting> settings) {
     return 1;
   }
   ConnectedClient c = std::move(*connected);
-  return Record(std::move(c.settings), c.ioc).run();
+  evrp::sdk::ScopeGuard endRecording([&]() {
+    std::lock_guard<std::mutex> lock(sessionMutex_);
+    activeListener_ = nullptr;
+    isRecording_.store(false);
+    stopRecordingRequested_.store(false);
+  });
+  stopRecordingRequested_.store(false);
+  isRecording_.store(true);
+  {
+    std::lock_guard<std::mutex> lock(sessionMutex_);
+    activeListener_ = c.ioc.get<evrp::device::api::IInputListener>();
+  }
+  Record rec(std::move(c.settings), c.ioc);
+  rec.setExternalCancelFlag(&stopRecordingRequested_);
+  return rec.run();
 }
 
 int LocalEvrp::replay(std::shared_ptr<ISetting> settings) {
@@ -87,7 +104,42 @@ int LocalEvrp::replay(std::shared_ptr<ISetting> settings) {
     return 1;
   }
   ConnectedClient c = std::move(*connected);
+  evrp::sdk::ScopeGuard endReplay([&]() {
+    std::lock_guard<std::mutex> lock(sessionMutex_);
+    activePlayback_ = nullptr;
+    isReplaying_.store(false);
+  });
+  isReplaying_.store(true);
+  {
+    std::lock_guard<std::mutex> lock(sessionMutex_);
+    activePlayback_ = c.ioc.get<evrp::device::api::IPlayback>();
+  }
   return Playback(std::move(c.settings), c.ioc).run();
+}
+
+bool LocalEvrp::isRecording() const {
+  return isRecording_.load(std::memory_order_acquire);
+}
+
+bool LocalEvrp::isReplaying() const {
+  return isReplaying_.load(std::memory_order_acquire);
+}
+
+bool LocalEvrp::stopRecording() {
+  stopRecordingRequested_.store(true, std::memory_order_release);
+  std::lock_guard<std::mutex> lock(sessionMutex_);
+  if (activeListener_) {
+    activeListener_->cancelListening();
+  }
+  return true;
+}
+
+bool LocalEvrp::stopReplay() {
+  std::lock_guard<std::mutex> lock(sessionMutex_);
+  if (!activePlayback_) {
+    return true;
+  }
+  return activePlayback_->stopPlayback();
 }
 
 }  // namespace evrp::server

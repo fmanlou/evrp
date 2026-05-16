@@ -6,6 +6,7 @@
 #include <utility>
 #include <vector>
 
+#include <google/protobuf/empty.pb.h>
 #include <google/protobuf/struct.pb.h>
 
 #include "evrp/sdk/setting/memorysetting.h"
@@ -82,6 +83,46 @@ grpc::Status GrpcEvrpService::Replay(
   response->set_code(code);
   if (code != 0) {
     response->set_message("replay failed");
+  }
+  return grpc::Status::OK;
+}
+
+grpc::Status GrpcEvrpService::IsRecording(
+    grpc::ServerContext*,
+    const google::protobuf::Empty*,
+    evrp::v1::server::BoolPayload* response) {
+  response->set_value(evrp_->isRecording());
+  return grpc::Status::OK;
+}
+
+grpc::Status GrpcEvrpService::IsReplaying(
+    grpc::ServerContext*,
+    const google::protobuf::Empty*,
+    evrp::v1::server::BoolPayload* response) {
+  response->set_value(evrp_->isReplaying());
+  return grpc::Status::OK;
+}
+
+grpc::Status GrpcEvrpService::StopRecording(
+    grpc::ServerContext*,
+    const google::protobuf::Empty*,
+    evrp::v1::sdk::StatusCode* response) {
+  const bool ok = evrp_->stopRecording();
+  response->set_code(ok ? 0 : 1);
+  if (!ok) {
+    response->set_message("stopRecording failed");
+  }
+  return grpc::Status::OK;
+}
+
+grpc::Status GrpcEvrpService::StopReplay(
+    grpc::ServerContext*,
+    const google::protobuf::Empty*,
+    evrp::v1::sdk::StatusCode* response) {
+  const bool ok = evrp_->stopReplay();
+  response->set_code(ok ? 0 : 1);
+  if (!ok) {
+    response->set_message("stopReplay failed");
   }
   return grpc::Status::OK;
 }

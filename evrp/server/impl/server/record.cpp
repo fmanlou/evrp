@@ -124,7 +124,12 @@ int Record::run() {
   constexpr int kWaitMs = 500;
   logInfo("Recording from evrp-device at {} (Ctrl+C to stop)", device_);
 
-  while (!sigint.stopRequested() && writeOk) {
+  auto externalStopRequested = [&]() {
+    return externalCancel_ &&
+           externalCancel_->load(std::memory_order_acquire);
+  };
+
+  while (!sigint.stopRequested() && !externalStopRequested() && writeOk) {
     if (!listener_->waitForInputEvent(kWaitMs)) {
       continue;
     }

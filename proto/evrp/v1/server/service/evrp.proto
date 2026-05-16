@@ -3,9 +3,18 @@ syntax = "proto3";
 package evrp.v1.server;
 
 import "google/protobuf/struct.proto";
+import "google/protobuf/empty.proto";
 import "evrp/v1/sdk/types/common.proto";
+
+message BoolPayload {
+  bool value = 1;
+}
 
 service EvrpService {
   rpc Record(google.protobuf.Struct) returns (evrp.v1.sdk.StatusCode);
   rpc Replay(google.protobuf.Struct) returns (evrp.v1.sdk.StatusCode);
+  rpc IsRecording(google.protobuf.Empty) returns (BoolPayload);
+  rpc IsReplaying(google.protobuf.Empty) returns (BoolPayload);
+  rpc StopRecording(google.protobuf.Empty) returns (evrp.v1.sdk.StatusCode);
+  rpc StopReplay(google.protobuf.Empty) returns (evrp.v1.sdk.StatusCode);
 }

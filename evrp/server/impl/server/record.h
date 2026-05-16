@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <memory>
 #include <string>
 #include <vector>
@@ -24,6 +25,8 @@ class Record {
 
   Record(std::shared_ptr<ISetting> setting, const evrp::Ioc &ioc);
 
+  void setExternalCancelFlag(std::atomic<bool>* flag) { externalCancel_ = flag; }
+
   int run();
 
  private:
@@ -36,4 +39,5 @@ class Record {
   KeyboardCtrlCFilterMode keyboardCtrlCFilterMode_{
       KeyboardCtrlCFilterMode::kEndingOnly};
   keyboard_filter_state keyboardFilterState_{};
+  std::atomic<bool>* externalCancel_{nullptr};
 };
