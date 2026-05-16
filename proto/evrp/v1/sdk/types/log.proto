@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package evrp.v1.sdk;
+
+message LogMessage {
+  int32 spdlog_level = 1;
+  string formatted_line = 2;
+}

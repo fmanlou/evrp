@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package evrp.v1.sdk;
+
+import "google/protobuf/empty.proto";
+import "evrp/v1/sdk/types/log.proto";
+
+service LogService {
+  rpc SubscribeLogs(google.protobuf.Empty) returns (stream LogMessage);
+}
