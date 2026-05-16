@@ -103,4 +103,16 @@ std::unique_ptr<Client> makeClient() {
                                       std::move(r.server_address));
 }
 
+std::unique_ptr<Client> makeClient(std::string evrp_service_address) {
+  if (evrp_service_address.empty()) {
+    return nullptr;
+  }
+  std::shared_ptr<grpc::Channel> ch =
+      evrp::sdk::makeGrpcClientChannel(evrp_service_address);
+  if (!ch) {
+    return nullptr;
+  }
+  return std::make_unique<ClientImpl>(std::move(ch), evrp_service_address);
+}
+
 }  // namespace evrp::server

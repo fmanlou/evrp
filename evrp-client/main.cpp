@@ -3,9 +3,8 @@
 #include "evrp-client/argparser.h"
 #include "evrp-client/runner.h"
 #include "evrp/sdk/logger.h"
-#include "evrp/sdk/sessionclient.h"
 #include "evrp/sdk/setting/memorysetting.h"
-#include "evrp/server/impl/client/remoteevrp.h"
+#include "evrp/server/api/client.h"
 
 int main(int argc, char* argv[]) {
   logging::LogService logSvc("evrp-client");
@@ -22,14 +21,18 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  std::shared_ptr<grpc::Channel> channel =
-      evrp::sdk::makeGrpcClientChannel(FLAGS_host);
-  if (!channel) {
-    logError("evrp-client: failed to create gRPC channel for {}", FLAGS_host);
+  std::unique_ptr<evrp::server::Client> client =
+      evrp::server::makeClient(FLAGS_host);
+  if (!client) {
+    logError("evrp-client: failed to create client for {}", FLAGS_host);
+    return 1;
+  }
+  evrp::server::Evrp* evrp = client->evrp();
+  if (!evrp) {
+    logError("evrp-client: Evrp backend is null.");
     return 1;
   }
 
-  evrp::server::RemoteEvrp evrp(std::move(channel));
-  Runner runner(storage, &evrp);
+  Runner runner(storage, evrp);
   return runner.run();
 }

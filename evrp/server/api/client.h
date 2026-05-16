@@ -17,4 +17,7 @@ class Client {
 
 std::unique_ptr<Client> makeClient();
 
+/** Connect to evrp-server `EvrpService` at HOST:PORT or unix:/PATH. */
+std::unique_ptr<Client> makeClient(std::string evrp_service_address);
+
 }  // namespace evrp::server
