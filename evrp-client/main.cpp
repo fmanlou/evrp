@@ -1,7 +1,7 @@
 #include <memory>
 
-#include "evrp-server/argparser.h"
-#include "evrp-server/runner.h"
+#include "evrp-client/argparser.h"
+#include "evrp-client/runner.h"
 #include "evrp/sdk/logger.h"
 #include "evrp/sdk/sessionclient.h"
 #include "evrp/sdk/setting/memorysetting.h"

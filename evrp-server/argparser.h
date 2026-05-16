@@ -3,12 +3,9 @@
 #include <gflags/gflags.h>
 #include <string>
 
-DECLARE_string(host);
+#include "evrp/sdk/setting/isetting.h"
+
 DECLARE_string(listen);
 DECLARE_string(log_level);
 
-#include "evrp/sdk/setting/isetting.h"
-
-void printUsage(const char* prog);
-
-void parseArgvInto(ISetting& options, int argc, char* argv[]);
+void parseServerArgvInto(ISetting& options, int argc, char* argv[]);

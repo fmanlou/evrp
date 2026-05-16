@@ -265,9 +265,14 @@ target_link_libraries(
   evrp_device PUBLIC evrp_sdk protobuf::libprotobuf gRPC::grpc++ asio::asio
   PRIVATE gflags::gflags)
 
-add_library(evrp_argparser STATIC evrp-server/argparser.cpp)
-target_include_directories(evrp_argparser PUBLIC "${EVRP_ROOT}")
-target_link_libraries(evrp_argparser PUBLIC evrp_device evrp_sdk gflags::gflags)
+add_library(evrp_server_argparser STATIC evrp-server/argparser.cpp)
+target_include_directories(evrp_server_argparser PUBLIC "${EVRP_ROOT}")
+target_link_libraries(evrp_server_argparser PUBLIC evrp_sdk gflags::gflags)
+
+add_library(evrp_client_argparser STATIC evrp-client/argparser.cpp)
+target_include_directories(evrp_client_argparser PUBLIC "${EVRP_ROOT}")
+target_link_libraries(evrp_client_argparser PUBLIC evrp_device evrp_sdk
+                                                   gflags::gflags)
 
 add_library(
   evrp_server STATIC
@@ -282,8 +287,7 @@ add_library(
   evrp/server/impl/client/remoteevrp.cpp)
 target_include_directories(evrp_server PUBLIC "${EVRP_ROOT}" ${EVRP_SERVER_DIR}
                                               ${EVRP_SDK_DIR} "${GEN_DIR}")
-target_link_libraries(
-  evrp_server PUBLIC evrp_device evrp_sdk gflags::gflags evrp_argparser)
+target_link_libraries(evrp_server PUBLIC evrp_device evrp_sdk gflags::gflags)
 
 add_subdirectory(evrp-server)
 add_subdirectory(evrp-client)
@@ -292,7 +296,14 @@ add_executable(evrp_tests tests/inputdevice_test.cpp tests/argparser_test.cpp
                                   tests/listenaddress_test.cpp
                                   tests/overlaysetting_test.cpp
                                   tests/tofromproto_test.cpp)
-target_link_libraries(evrp_tests PRIVATE evrp_server evrp_sdk GTest::gtest_main)
+if(UNIX AND NOT APPLE)
+  target_link_libraries(
+    evrp_tests PRIVATE "-Wl,--start-group" evrp_server evrp_client_argparser
+                       evrp_device evrp_sdk "-Wl,--end-group" GTest::gtest_main)
+else()
+  target_link_libraries(evrp_tests PRIVATE evrp_server evrp_client_argparser
+                                            evrp_device evrp_sdk GTest::gtest_main)
+endif()
 set_target_properties(evrp_tests PROPERTIES RUNTIME_OUTPUT_DIRECTORY
                                             "${CMAKE_BINARY_DIR}/bin")
 include(GoogleTest)

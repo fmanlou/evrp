@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
   logging::LogService logSvc("evrp-server");
   logService = &logSvc;
   auto storage = std::make_shared<MemorySetting>();
-  parseArgvInto(*storage, argc, argv);
+  parseServerArgvInto(*storage, argc, argv);
   logService->setLevel(storage->get("logLevel", logging::LogLevel::Info));
 
   if (FLAGS_listen.empty()) {
