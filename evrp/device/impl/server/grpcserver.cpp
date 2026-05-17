@@ -13,10 +13,11 @@
 #include "evrp/device/impl/server/grpc/grpcinputdeviceservice.h"
 #include "evrp/device/impl/server/grpc/grpcinputlisten.h"
 #include "evrp/device/impl/server/grpc/grpcplaybackservice.h"
+#include "evrp/device/impl/server/grpc/grpclogservice.h"
 #include "evrp/device/impl/server/grpc/grpcsessionservice.h"
 #include "evrp/sdk/ioc.h"
 #include "evrp/sdk/listenaddress.h"
-#include "evrp/sdk/logger.h"
+#include "evrp/sdk/log/logger.h"
 #include "evrp/sdk/sessionregistry.h"
 #include "evrp/sdk/setting/isetting.h"
 
@@ -51,6 +52,7 @@ int GrpcServer::run() {
   GrpcInputListenService listenService(ioc_, sessionRegistry);
   GrpcInputDeviceService deviceService(ioc_, sessionRegistry);
   GrpcPlaybackService playbackService(ioc_, sessionRegistry);
+  GrpcLogService deviceLogStreamService(sessionRegistry);
 
   std::thread([&sessionRegistry]() {
     for (;;) {
@@ -72,6 +74,7 @@ int GrpcServer::run() {
   builder.RegisterService(&listenService);
   builder.RegisterService(&deviceService);
   builder.RegisterService(&playbackService);
+  builder.RegisterService(&deviceLogStreamService);
   std::unique_ptr<grpc::Server> grpcServer(builder.BuildAndStart());
   if (!grpcServer) {
     logError("evrp-device: failed to listen on {}", listenAddress_);
