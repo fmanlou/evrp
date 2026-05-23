@@ -15,20 +15,39 @@
 #include "evrp/device/api/client.h"
 #include "evrp/device/api/inputlistener.h"
 #include "evrp/device/api/playback.h"
+#include "evrp/device/impl/client/client_session.h"
+#include "evrp/device/impl/client/remotelogservice.h"
 #include "evrp/sdk/filesystem/enhancedfilesystem.h"
 #include "evrp/sdk/filesystem/filesystem.h"
 #include "evrp/sdk/ioc.h"
-#include "evrp/sdk/logger.h"
+#include "evrp/sdk/log/logger.h"
 #include "evrp/sdk/scopeguard.h"
 #include "evrp/sdk/setting/isetting.h"
 
 namespace {
+
+struct DeviceLogForwarder {
+  std::atomic<bool> stop{false};
+  std::thread th;
+
+  DeviceLogForwarder() = default;
+  DeviceLogForwarder(const DeviceLogForwarder&) = delete;
+  DeviceLogForwarder& operator=(const DeviceLogForwarder&) = delete;
+
+  ~DeviceLogForwarder() {
+    stop.store(true, std::memory_order_release);
+    if (th.joinable()) {
+      th.join();
+    }
+  }
+};
 
 struct ConnectedClient {
   std::unique_ptr<evrp::device::api::IClient> deviceClient;
   std::unique_ptr<IEnhancedFileSystem> enhancedFs;
   evrp::Ioc ioc;
   std::shared_ptr<ISetting> settings;
+  std::unique_ptr<DeviceLogForwarder> deviceLogForward;
 };
 
 std::optional<ConnectedClient> connectDevice(
@@ -64,6 +83,22 @@ std::optional<ConnectedClient> connectDevice(
   out.ioc.emplace(out.deviceClient->inputListener());
   out.ioc.emplace(out.enhancedFs.get());
   out.settings = std::move(settings);
+
+  out.deviceLogForward = std::make_unique<DeviceLogForwarder>();
+  DeviceLogForwarder* fw = out.deviceLogForward.get();
+  std::shared_ptr<grpc::Channel> logCh;
+  std::string sid;
+  if (!evrp::device::impl::tryExportSessionForLogForwarding(
+          out.deviceClient.get(), &logCh, &sid)) {
+    logError(
+        "Device log forwarding: session export failed (unexpected IClient "
+        "implementation); device logs will not stream to the server.");
+  } else {
+    fw->th = std::thread([logCh, sid, stop = &fw->stop]() {
+      evrp::device::client::RemoteLogService logService(logCh, sid);
+      logService.forwardUntil(stop);
+    });
+  }
   return out;
 }
 

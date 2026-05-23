@@ -1,7 +1,7 @@
 #include <gflags/gflags.h>
 #include <gtest/gtest.h>
 
-#include "evrp/sdk/logger.h"
+#include "evrp/sdk/log/logger.h"
 
 #include "harness.h"
 #include "integrationgflagsdeclare.h"

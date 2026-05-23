@@ -13,9 +13,16 @@
 #include "evrp/sdk/sessionclient.h"
 #include "evrp/sdk/setting/isetting.h"
 
+namespace evrp::device::impl {
+bool tryExportSessionForLogForwarding(
+    const evrp::device::api::IClient* client,
+    std::shared_ptr<grpc::Channel>* channel,
+    std::string* session_id);
+}  // namespace evrp::device::impl
+
 namespace evrp::device::api {
 
-namespace {
+namespace detail {
 
 constexpr auto kDiscoveryConnectTimeout = std::chrono::milliseconds(800);
 
@@ -83,6 +90,11 @@ class ClientImpl final : public IClient {
   ClientImpl(ClientImpl&&) noexcept = default;
   ClientImpl& operator=(ClientImpl&&) noexcept = default;
 
+  friend bool evrp::device::impl::tryExportSessionForLogForwarding(
+      const IClient* client,
+      std::shared_ptr<grpc::Channel>* channel,
+      std::string* session_id);
+
  private:
   std::shared_ptr<grpc::Channel> channel_;
   std::string sessionId_;
@@ -112,7 +124,7 @@ class ClientImpl final : public IClient {
             inputDevice_.get())) {}
 };
 
-}  // namespace
+}  // namespace detail
 
 std::unique_ptr<IClient> makeClient(const std::string& targetHostPort,
                                     const ISetting& discovery_settings) {
@@ -120,14 +132,33 @@ std::unique_ptr<IClient> makeClient(const std::string& targetHostPort,
     const std::unique_ptr<IUdpDeviceDiscoverer> discoverer =
         createUdpDeviceDiscoverer(discovery_settings);
     for (const std::string& target : discoverer->discoverGrpcTargets()) {
-      std::unique_ptr<ClientImpl> c = ClientImpl::tryCreateWithDeadline(target);
+      std::unique_ptr<detail::ClientImpl> c =
+          detail::ClientImpl::tryCreateWithDeadline(target);
       if (c) {
         return c;
       }
     }
     return nullptr;
   }
-  return ClientImpl::create(targetHostPort);
+  return detail::ClientImpl::create(targetHostPort);
 }
 
 }  // namespace evrp::device::api
+
+namespace evrp::device::impl {
+
+bool tryExportSessionForLogForwarding(
+    const evrp::device::api::IClient* client,
+    std::shared_ptr<grpc::Channel>* channel,
+    std::string* session_id) {
+  const auto* self =
+      dynamic_cast<const evrp::device::api::detail::ClientImpl*>(client);
+  if (!self || !channel || !session_id) {
+    return false;
+  }
+  *channel = self->channel_;
+  *session_id = self->sessionId_;
+  return true;
+}
+
+}  // namespace evrp::device::impl

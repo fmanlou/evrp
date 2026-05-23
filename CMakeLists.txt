@@ -77,6 +77,8 @@ target_link_libraries(standalone_asio INTERFACE asio_separate)
 find_package(gRPC CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED PATHS "${EVRP_LIBRARY_DIR}/fmt"
              NO_DEFAULT_PATH)
+find_package(spdlog CONFIG REQUIRED PATHS "${EVRP_LIBRARY_DIR}/spdlog"
+             NO_DEFAULT_PATH)
 
 enable_testing()
 
@@ -110,7 +112,8 @@ add_library(
   evrp/sdk/inputdevice.cpp
   evrp/sdk/keyboard/keyboarddevice.cpp
   evrp/sdk/touchdevice.cpp
-  evrp/sdk/logger.cpp
+  evrp/sdk/log/logger.cpp
+  evrp/sdk/log/asynclogbuffer.cpp
   evrp/sdk/luaeventcomposer/luabindings.cpp
   evrp/sdk/luaeventcomposer/luaeventcomposer.cpp
   evrp/sdk/countingsemaphore.cpp
@@ -148,8 +151,10 @@ set(DEVICE_INPUTLISTEN_PROTO "${PROTO_ROOT}/evrp/v1/device/service/inputlisten.p
 set(DEVICE_PLAYBACK_PROTO "${PROTO_ROOT}/evrp/v1/device/service/playback.proto")
 set(DEVICE_SERVICE_PROTO "${PROTO_ROOT}/evrp/v1/device/service/service.proto")
 set(SDK_COMMON_TYPES_PROTO "${PROTO_ROOT}/evrp/v1/sdk/types/common.proto")
+set(SDK_LOG_TYPES_PROTO "${PROTO_ROOT}/evrp/v1/sdk/types/log.proto")
 set(SDK_SESSION_TYPES_PROTO "${PROTO_ROOT}/evrp/v1/sdk/types/session.proto")
 set(SDK_SESSION_SERVICES_PROTO "${PROTO_ROOT}/evrp/v1/sdk/services/session.proto")
+set(SDK_LOG_SERVICE_PROTO "${PROTO_ROOT}/evrp/v1/sdk/services/log.proto")
 set(SERVER_EVRP_SERVICE_PROTO "${PROTO_ROOT}/evrp/v1/server/service/evrp.proto")
 
 find_program(GRPC_CPP_PLUGIN_PROGRAM NAMES grpc_cpp_plugin REQUIRED
@@ -171,12 +176,18 @@ set(DEVICE_SERVICE_GRPC_CC "${GEN_DIR}/evrp/v1/device/service/service.grpc.pb.cc
 set(DEVICE_SERVICE_GRPC_H "${GEN_DIR}/evrp/v1/device/service/service.grpc.pb.h")
 set(SDK_COMMON_TYPES_PB_CC "${GEN_DIR}/evrp/v1/sdk/types/common.pb.cc")
 set(SDK_COMMON_TYPES_PB_H "${GEN_DIR}/evrp/v1/sdk/types/common.pb.h")
+set(SDK_LOG_TYPES_PB_CC "${GEN_DIR}/evrp/v1/sdk/types/log.pb.cc")
+set(SDK_LOG_TYPES_PB_H "${GEN_DIR}/evrp/v1/sdk/types/log.pb.h")
 set(SDK_SESSION_TYPES_PB_CC "${GEN_DIR}/evrp/v1/sdk/types/session.pb.cc")
 set(SDK_SESSION_TYPES_PB_H "${GEN_DIR}/evrp/v1/sdk/types/session.pb.h")
 set(SDK_SESSION_SERVICES_PB_CC "${GEN_DIR}/evrp/v1/sdk/services/session.pb.cc")
 set(SDK_SESSION_SERVICES_PB_H "${GEN_DIR}/evrp/v1/sdk/services/session.pb.h")
 set(SDK_SESSION_SERVICES_GRPC_CC "${GEN_DIR}/evrp/v1/sdk/services/session.grpc.pb.cc")
 set(SDK_SESSION_SERVICES_GRPC_H "${GEN_DIR}/evrp/v1/sdk/services/session.grpc.pb.h")
+set(SDK_LOG_SERVICE_PB_CC "${GEN_DIR}/evrp/v1/sdk/services/log.pb.cc")
+set(SDK_LOG_SERVICE_PB_H "${GEN_DIR}/evrp/v1/sdk/services/log.pb.h")
+set(SDK_LOG_SERVICE_GRPC_CC "${GEN_DIR}/evrp/v1/sdk/services/log.grpc.pb.cc")
+set(SDK_LOG_SERVICE_GRPC_H "${GEN_DIR}/evrp/v1/sdk/services/log.grpc.pb.h")
 set(SERVER_EVRP_SERVICE_PB_CC "${GEN_DIR}/evrp/v1/server/service/evrp.pb.cc")
 set(SERVER_EVRP_SERVICE_PB_H "${GEN_DIR}/evrp/v1/server/service/evrp.pb.h")
 set(SERVER_EVRP_SERVICE_GRPC_CC "${GEN_DIR}/evrp/v1/server/service/evrp.grpc.pb.cc")
@@ -188,8 +199,10 @@ set(EVRP_SERVER_PROTO_SOURCES ${SERVER_EVRP_SERVICE_PB_CC}
 set(EVRP_DEVICE_PROTO_SOURCES
   ${DEVICE_V1_TYPES_PB_CC} ${DEVICE_INPUTLISTEN_PB_CC} ${DEVICE_INPUTLISTEN_GRPC_CC}
   ${DEVICE_PLAYBACK_PB_CC} ${DEVICE_PLAYBACK_GRPC_CC} ${DEVICE_SERVICE_PB_CC}
-  ${DEVICE_SERVICE_GRPC_CC} ${SDK_COMMON_TYPES_PB_CC} ${SDK_SESSION_TYPES_PB_CC}
-  ${SDK_SESSION_SERVICES_PB_CC} ${SDK_SESSION_SERVICES_GRPC_CC})
+  ${DEVICE_SERVICE_GRPC_CC} ${SDK_COMMON_TYPES_PB_CC} ${SDK_LOG_TYPES_PB_CC}
+  ${SDK_SESSION_TYPES_PB_CC} ${SDK_SESSION_SERVICES_PB_CC}
+  ${SDK_SESSION_SERVICES_GRPC_CC} ${SDK_LOG_SERVICE_PB_CC}
+  ${SDK_LOG_SERVICE_GRPC_CC})
 
 add_custom_command(
   OUTPUT ${DEVICE_V1_TYPES_GEN} ${DEVICE_INPUTLISTEN_PB_CC} ${DEVICE_INPUTLISTEN_PB_H}
@@ -199,9 +212,12 @@ add_custom_command(
          ${DEVICE_SERVICE_PB_CC} ${DEVICE_SERVICE_PB_H}
          ${DEVICE_SERVICE_GRPC_CC} ${DEVICE_SERVICE_GRPC_H}
          ${SDK_COMMON_TYPES_PB_CC} ${SDK_COMMON_TYPES_PB_H}
+         ${SDK_LOG_TYPES_PB_CC} ${SDK_LOG_TYPES_PB_H}
          ${SDK_SESSION_TYPES_PB_CC} ${SDK_SESSION_TYPES_PB_H}
          ${SDK_SESSION_SERVICES_PB_CC} ${SDK_SESSION_SERVICES_PB_H}
          ${SDK_SESSION_SERVICES_GRPC_CC} ${SDK_SESSION_SERVICES_GRPC_H}
+         ${SDK_LOG_SERVICE_PB_CC} ${SDK_LOG_SERVICE_PB_H}
+         ${SDK_LOG_SERVICE_GRPC_CC} ${SDK_LOG_SERVICE_GRPC_H}
          ${SERVER_EVRP_SERVICE_PB_CC} ${SERVER_EVRP_SERVICE_PB_H}
          ${SERVER_EVRP_SERVICE_GRPC_CC} ${SERVER_EVRP_SERVICE_GRPC_H}
   COMMAND ${CMAKE_COMMAND} -E make_directory "${GEN_DIR}/evrp/v1/device/service"
@@ -213,13 +229,14 @@ add_custom_command(
     ${PROTOC_PROGRAM} --cpp_out=${GEN_DIR} --grpc_out=${GEN_DIR}
     --plugin=protoc-gen-grpc=${GRPC_CPP_PLUGIN_PROGRAM} -I${PROTO_ROOT}
     ${DEVICE_V1_TYPES_PROTOS} ${DEVICE_INPUTLISTEN_PROTO} ${DEVICE_PLAYBACK_PROTO}
-    ${DEVICE_SERVICE_PROTO} ${SDK_COMMON_TYPES_PROTO} ${SDK_SESSION_TYPES_PROTO}
-    ${SDK_SESSION_SERVICES_PROTO}
+    ${DEVICE_SERVICE_PROTO} ${SDK_COMMON_TYPES_PROTO} ${SDK_LOG_TYPES_PROTO}
+    ${SDK_SESSION_TYPES_PROTO} ${SDK_SESSION_SERVICES_PROTO} ${SDK_LOG_SERVICE_PROTO}
     ${SERVER_EVRP_SERVICE_PROTO}
   DEPENDS ${DEVICE_V1_TYPES_PROTOS} ${DEVICE_INPUTLISTEN_PROTO}
           ${DEVICE_PLAYBACK_PROTO} ${DEVICE_SERVICE_PROTO} ${SDK_COMMON_TYPES_PROTO}
+          ${SDK_LOG_TYPES_PROTO}
           ${SDK_SESSION_TYPES_PROTO}
-          ${SDK_SESSION_SERVICES_PROTO}
+          ${SDK_SESSION_SERVICES_PROTO} ${SDK_LOG_SERVICE_PROTO}
           ${SERVER_EVRP_SERVICE_PROTO}
   COMMENT "Generating protobuf/gRPC (evrp/v1/device + evrp/v1/sdk + evrp/v1/server)"
   VERBATIM)
@@ -251,19 +268,21 @@ add_library(
   evrp/device/impl/server/grpc/grpcinputlisten.cpp
   evrp/device/impl/server/grpc/grpcinputdeviceservice.cpp
   evrp/device/impl/server/grpc/grpcplaybackservice.cpp
+  evrp/device/impl/server/grpc/grpclogservice.cpp
   evrp/device/impl/client/remoteinputlistener.cpp
   evrp/device/impl/client/remoteplayback.cpp
   evrp/device/impl/client/client.cpp
   evrp/device/internal/discovery/impl/devicediscovery.cpp
   evrp/device/impl/client/remoteinputdeviceclient.cpp
   evrp/device/impl/client/remotedevicekindsprovider.cpp
-  evrp/device/impl/client/remotecursorposition.cpp)
+  evrp/device/impl/client/remotecursorposition.cpp
+  evrp/device/impl/client/remotelogservice.cpp)
 target_include_directories(
   evrp_device PUBLIC "${EVRP_ROOT}" ${EVRP_SDK_DIR} "${GEN_DIR}")
 target_compile_features(evrp_device PUBLIC cxx_std_20)
 target_link_libraries(
   evrp_device PUBLIC evrp_sdk protobuf::libprotobuf gRPC::grpc++ asio::asio
-  PRIVATE gflags::gflags)
+  PRIVATE gflags::gflags spdlog::spdlog)
 
 add_library(evrp_server_argparser STATIC evrp-server/argparser.cpp)
 target_include_directories(evrp_server_argparser PUBLIC "${EVRP_ROOT}")

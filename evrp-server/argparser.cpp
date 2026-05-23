@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "evrp/device/internal/discovery/devicediscoverysettings.h"
-#include "evrp/sdk/logger.h"
+#include "evrp/sdk/log/logger.h"
 
 DEFINE_string(
     log_level, "info",

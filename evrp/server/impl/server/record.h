@@ -9,7 +9,7 @@
 #include "evrp/sdk/types.h"
 #include "evrp/sdk/ioc.h"
 #include "evrp/sdk/keyboard/keyboarddevice.h"
-#include "evrp/sdk/logger.h"
+#include "evrp/sdk/log/logger.h"
 
 class IEnhancedFileSystem;
 class ISetting;

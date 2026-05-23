@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "evrp/device/internal/discovery/devicediscoverysettings.h"
-#include "evrp/sdk/logger.h"
+#include "evrp/sdk/log/logger.h"
 #include "evrp/sdk/tofromstring.h"
 
 DECLARE_int32(discovery_port);

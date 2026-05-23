@@ -7,7 +7,7 @@
 #include "evrp/sdk/tofromstring.h"
 #include "evrp/sdk/evdev.h"
 #include "evrp/sdk/inputdevice.h"
-#include "evrp/sdk/logger.h"
+#include "evrp/sdk/log/logger.h"
 
 namespace evrp::device::server {
 

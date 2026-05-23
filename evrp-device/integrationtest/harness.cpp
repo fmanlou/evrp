@@ -25,7 +25,7 @@
 #include "evrp/device/api/devicekindsprovider.h"
 #include "evrp/sdk/tofromstring.h"
 #include "evrp/device/impl/client/remotedevicekindsprovider.h"
-#include "evrp/sdk/logger.h"
+#include "evrp/sdk/log/logger.h"
 #include "evrp/sdk/setting/memorysetting.h"
 
 DECLARE_int32(discovery_port);

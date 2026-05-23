@@ -6,7 +6,7 @@
 
 #include "evrp/device/internal/discovery/devicediscovery.h"
 #include "evrp/device/internal/discovery/devicediscoverysettings.h"
-#include "evrp/sdk/logger.h"
+#include "evrp/sdk/log/logger.h"
 #include "evrp/sdk/setting/memorysetting.h"
 #include "evrp/sdk/sessionclient.h"
 #include "evrp/server/api/client.h"

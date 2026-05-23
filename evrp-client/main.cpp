@@ -3,7 +3,7 @@
 
 #include "evrp-client/argparser.h"
 #include "evrp-client/runner.h"
-#include "evrp/sdk/logger.h"
+#include "evrp/sdk/log/logger.h"
 #include "evrp/sdk/setting/memorysetting.h"
 #include "evrp/server/api/client.h"
 

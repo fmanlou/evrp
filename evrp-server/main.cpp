@@ -4,7 +4,7 @@
 #include "evrp-server/argparser.h"
 #include "evrp/device/internal/discovery/devicediscoverysettings.h"
 #include "evrp/server/api/server.h"
-#include "evrp/sdk/logger.h"
+#include "evrp/sdk/log/logger.h"
 #include "evrp/sdk/setting/memorysetting.h"
 
 namespace {

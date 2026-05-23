@@ -4,7 +4,7 @@
 
 #include "evrp/device/api/server.h"
 #include "evrp/device/internal/discovery/devicediscoverysettings.h"
-#include "evrp/sdk/logger.h"
+#include "evrp/sdk/log/logger.h"
 #include "evrp/sdk/setting/memorysetting.h"
 
 DEFINE_string(listen, "0.0.0.0:50051",

@@ -5,7 +5,7 @@
 #include "evrp/sdk/sessionmetadata.h"
 #include "evrp/sdk/fmt/fmt.h"
 #include "evrp/sdk/tofromproto.h"
-#include "evrp/sdk/logger.h"
+#include "evrp/sdk/log/logger.h"
 
 namespace evrp::device::client {
 

@@ -4,7 +4,7 @@
 
 #include "evrp-client/argparser.h"
 #include "evrp/server/api/evrp.h"
-#include "evrp/sdk/logger.h"
+#include "evrp/sdk/log/logger.h"
 #include "evrp/sdk/setting/memorysetting.h"
 
 RunnerSetting::RunnerSetting(const ISetting& settings) {

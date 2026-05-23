@@ -4,7 +4,7 @@
 #include <linux/input.h>
 
 #include "evrp/device/api/playback.h"
-#include "evrp/sdk/logger.h"
+#include "evrp/sdk/log/logger.h"
 
 void PlaybackEventCollector::clear() {
   events_.clear();

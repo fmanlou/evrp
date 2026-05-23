@@ -13,7 +13,7 @@
 #include "evrp/sdk/filesystem/enhancedfilesystem.h"
 #include "evrp/sdk/inputdevice.h"
 #include "evrp/sdk/keyboard/keyboardeventwriter.h"
-#include "evrp/sdk/logger.h"
+#include "evrp/sdk/log/logger.h"
 #include "evrp/sdk/mouse/mouseeventwriter.h"
 
 InputEventWriter::InputEventWriter(IEnhancedFileSystem *fs, ICursorPos *cursor)

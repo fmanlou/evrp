@@ -12,7 +12,7 @@
 #include "evrp/sdk/filesystem/enhancedfilesystem.h"
 #include "evrp/sdk/inputeventwriter.h"
 #include "evrp/sdk/keyboard/keyboardeventwriter.h"
-#include "evrp/sdk/logger.h"
+#include "evrp/sdk/log/logger.h"
 #include "evrp/sdk/mouse/mouseeventwriter.h"
 #include "evrp/sdk/playbackeventcollector.h"
 

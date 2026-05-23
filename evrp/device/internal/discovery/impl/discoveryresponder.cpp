@@ -12,7 +12,7 @@
 
 #include "evrp/device/internal/discovery/devicediscoverysettings.h"
 #include "evrp/device/internal/discovery/impl/devicediscoveryprotocol.h"
-#include "evrp/sdk/logger.h"
+#include "evrp/sdk/log/logger.h"
 #include "evrp/sdk/setting/isetting.h"
 
 namespace evrp::device::server {

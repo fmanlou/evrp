@@ -7,7 +7,7 @@
 #include <google/protobuf/empty.pb.h>
 #include <google/protobuf/struct.pb.h>
 
-#include "evrp/sdk/logger.h"
+#include "evrp/sdk/log/logger.h"
 #include "evrp/sdk/sessionclient.h"
 #include "evrp/sdk/sessionmetadata.h"
 #include "evrp/sdk/tofromproto.h"

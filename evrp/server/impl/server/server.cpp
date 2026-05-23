@@ -15,7 +15,7 @@
 #include <unistd.h>
 
 #include "evrp/device/internal/discovery/devicediscoverysettings.h"
-#include "evrp/sdk/logger.h"
+#include "evrp/sdk/log/logger.h"
 #include "evrp/sdk/setting/isetting.h"
 #include "evrp/server/impl/server/grpc/grpcevrpservice.h"
 
