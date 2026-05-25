@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <cctype>
 
-logging::LogService* logService = nullptr;
+logging::ILogService* logService = nullptr;
 
 logging::LogLevel logLevelFromString(const std::string& s) {
   std::string lower = s;

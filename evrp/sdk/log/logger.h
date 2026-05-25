@@ -3,10 +3,10 @@
 #include <string>
 
 namespace logging {
-class LogService;
+class ILogService;
 }
 
-extern logging::LogService* logService;
+extern logging::ILogService* logService;
 
 #include "log/common/logservice.h"
 

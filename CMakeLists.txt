@@ -114,6 +114,7 @@ add_library(
   evrp/sdk/touchdevice.cpp
   evrp/sdk/log/logger.cpp
   evrp/sdk/log/asynclogbuffer.cpp
+  evrp/sdk/log/logservicetee.cpp
   evrp/sdk/luaeventcomposer/luabindings.cpp
   evrp/sdk/luaeventcomposer/luaeventcomposer.cpp
   evrp/sdk/countingsemaphore.cpp
@@ -268,7 +269,7 @@ add_library(
   evrp/device/impl/server/grpc/grpcinputlisten.cpp
   evrp/device/impl/server/grpc/grpcinputdeviceservice.cpp
   evrp/device/impl/server/grpc/grpcplaybackservice.cpp
-  evrp/device/impl/server/grpc/grpclogservice.cpp
+  evrp/sdk/log/grpc/grpclogservice.cpp
   evrp/device/impl/client/remoteinputlistener.cpp
   evrp/device/impl/client/remoteplayback.cpp
   evrp/device/impl/client/client.cpp
@@ -276,7 +277,7 @@ add_library(
   evrp/device/impl/client/remoteinputdeviceclient.cpp
   evrp/device/impl/client/remotedevicekindsprovider.cpp
   evrp/device/impl/client/remotecursorposition.cpp
-  evrp/device/impl/client/remotelogservice.cpp)
+  evrp/sdk/log/grpc/remotelogservice.cpp)
 target_include_directories(
   evrp_device PUBLIC "${EVRP_ROOT}" ${EVRP_SDK_DIR} "${GEN_DIR}")
 target_compile_features(evrp_device PUBLIC cxx_std_20)

@@ -16,7 +16,8 @@
 #include "evrp/device/api/inputlistener.h"
 #include "evrp/device/api/playback.h"
 #include "evrp/device/impl/client/client_session.h"
-#include "evrp/device/impl/client/remotelogservice.h"
+#include "evrp/sdk/log/grpc/remotelogservice.h"
+#include "evrp/sdk/log/logservicetee.h"
 #include "evrp/sdk/filesystem/enhancedfilesystem.h"
 #include "evrp/sdk/filesystem/filesystem.h"
 #include "evrp/sdk/ioc.h"
@@ -47,7 +48,22 @@ struct ConnectedClient {
   std::unique_ptr<IEnhancedFileSystem> enhancedFs;
   evrp::Ioc ioc;
   std::shared_ptr<ISetting> settings;
+  std::unique_ptr<evrp::device::client::RemoteLogService> remoteLog;
+  std::unique_ptr<evrp::sdk::LogServiceTee> logTee;
+  logging::ILogService* priorLogService{nullptr};
   std::unique_ptr<DeviceLogForwarder> deviceLogForward;
+
+  ConnectedClient() = default;
+  ConnectedClient(ConnectedClient&&) = default;
+  ConnectedClient& operator=(ConnectedClient&&) = default;
+  ConnectedClient(const ConnectedClient&) = delete;
+  ConnectedClient& operator=(const ConnectedClient&) = delete;
+
+  ~ConnectedClient() {
+    if (logTee) {
+      logService = priorLogService;
+    }
+  }
 };
 
 std::optional<ConnectedClient> connectDevice(
@@ -94,9 +110,18 @@ std::optional<ConnectedClient> connectDevice(
         "Device log forwarding: session export failed (unexpected IClient "
         "implementation); device logs will not stream to the server.");
   } else {
-    fw->th = std::thread([logCh, sid, stop = &fw->stop]() {
-      evrp::device::client::RemoteLogService logService(logCh, sid);
-      logService.forwardUntil(stop);
+    out.remoteLog =
+        std::make_unique<evrp::device::client::RemoteLogService>(logCh, sid);
+    out.priorLogService = logService;
+    out.logTee = std::make_unique<evrp::sdk::LogServiceTee>(logService,
+                                                           out.remoteLog.get());
+    out.remoteLog->logSender()->setLevel(logLevel);
+    out.remoteLog->logReceiver()->setLevel(logLevel);
+    logService = out.logTee.get();
+
+    evrp::device::client::RemoteLogService* remoteLog = out.remoteLog.get();
+    fw->th = std::thread([remoteLog, stop = &fw->stop]() {
+      remoteLog->forwardUntil(stop);
     });
   }
   return out;

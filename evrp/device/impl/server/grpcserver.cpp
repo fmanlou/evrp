@@ -13,11 +13,12 @@
 #include "evrp/device/impl/server/grpc/grpcinputdeviceservice.h"
 #include "evrp/device/impl/server/grpc/grpcinputlisten.h"
 #include "evrp/device/impl/server/grpc/grpcplaybackservice.h"
-#include "evrp/device/impl/server/grpc/grpclogservice.h"
+#include "evrp/sdk/log/grpc/grpclogservice.h"
 #include "evrp/device/impl/server/grpc/grpcsessionservice.h"
 #include "evrp/sdk/ioc.h"
 #include "evrp/sdk/listenaddress.h"
 #include "evrp/sdk/log/logger.h"
+#include "evrp/sdk/log/logservicetee.h"
 #include "evrp/sdk/sessionregistry.h"
 #include "evrp/sdk/setting/isetting.h"
 
@@ -53,6 +54,14 @@ int GrpcServer::run() {
   GrpcInputDeviceService deviceService(ioc_, sessionRegistry);
   GrpcPlaybackService playbackService(ioc_, sessionRegistry);
   GrpcLogService deviceLogStreamService(sessionRegistry);
+  logging::ILogService* priorLogService = logService;
+  evrp::sdk::LogServiceTee logTee(priorLogService, &deviceLogStreamService);
+  if (priorLogService) {
+    const logging::LogLevel level = priorLogService->getLevel();
+    deviceLogStreamService.logSender()->setLevel(level);
+    deviceLogStreamService.logReceiver()->setLevel(level);
+  }
+  logService = &logTee;
 
   std::thread([&sessionRegistry]() {
     for (;;) {
